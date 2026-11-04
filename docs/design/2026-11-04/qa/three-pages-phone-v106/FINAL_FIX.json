@@ -1,0 +1,369 @@
+{
+  "destination": "FINAL_FIX",
+  "fontScale": 1,
+  "width": 2340,
+  "height": 1080,
+  "fixtureOnly": true,
+  "textNodes": [
+    {
+      "text": "确认并固定",
+      "id": 144,
+      "tag": "",
+      "bounds": [
+        997,
+        68,
+        1368,
+        170
+      ],
+      "measuredSize": [
+        371,
+        102
+      ],
+      "layoutSize": [
+        371,
+        102
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          370,
+          102
+        ]
+      ]
+    },
+    {
+      "text": "1 个重点句  ·  1 个章节",
+      "id": 149,
+      "tag": "",
+      "bounds": [
+        1023,
+        225,
+        1365,
+        290
+      ],
+      "measuredSize": [
+        342,
+        65
+      ],
+      "layoutSize": [
+        342,
+        65
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          342,
+          65
+        ]
+      ]
+    },
+    {
+      "text": "英语表达",
+      "id": 154,
+      "tag": "",
+      "bounds": [
+        496,
+        345,
+        616,
+        389
+      ],
+      "measuredSize": [
+        120,
+        44
+      ],
+      "layoutSize": [
+        120,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          45,
+          0,
+          165,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "1",
+      "id": 158,
+      "tag": "",
+      "bounds": [
+        441,
+        432,
+        456,
+        467
+      ],
+      "measuredSize": [
+        15,
+        35
+      ],
+      "layoutSize": [
+        15,
+        35
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          15,
+          35
+        ]
+      ]
+    },
+    {
+      "text": "It's a beautiful day today.",
+      "id": 160,
+      "tag": "",
+      "bounds": [
+        496,
+        422,
+        941,
+        477
+      ],
+      "measuredSize": [
+        445,
+        55
+      ],
+      "layoutSize": [
+        445,
+        55
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          444.2539,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "今天是美好的一天。",
+      "id": 161,
+      "tag": "",
+      "bounds": [
+        496,
+        485,
+        766,
+        530
+      ],
+      "measuredSize": [
+        270,
+        45
+      ],
+      "layoutSize": [
+        270,
+        45
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          270,
+          45
+        ]
+      ]
+    },
+    {
+      "text": "学习目标",
+      "id": 168,
+      "tag": "",
+      "bounds": [
+        1271,
+        345,
+        1391,
+        389
+      ],
+      "measuredSize": [
+        120,
+        44
+      ],
+      "layoutSize": [
+        120,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          45,
+          0,
+          165,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "beautiful",
+      "id": 173,
+      "tag": "",
+      "bounds": [
+        1254,
+        422,
+        1896,
+        477
+      ],
+      "measuredSize": [
+        642,
+        55
+      ],
+      "layoutSize": [
+        642,
+        55
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          157.5586,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "It's a ... day",
+      "id": 178,
+      "tag": "",
+      "bounds": [
+        1254,
+        512,
+        1896,
+        567
+      ],
+      "measuredSize": [
+        642,
+        55
+      ],
+      "layoutSize": [
+        642,
+        55
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          189.44531,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "返回修改",
+      "id": 188,
+      "tag": "",
+      "bounds": [
+        1295,
+        953,
+        1443,
+        1007
+      ],
+      "measuredSize": [
+        148,
+        54
+      ],
+      "layoutSize": [
+        148,
+        54
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          89,
+          0,
+          238,
+          54
+        ]
+      ]
+    },
+    {
+      "text": "确认并固定",
+      "id": 191,
+      "tag": "",
+      "bounds": [
+        1689,
+        953,
+        1874,
+        1007
+      ],
+      "measuredSize": [
+        185,
+        54
+      ],
+      "layoutSize": [
+        185,
+        54
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          71,
+          0,
+          257,
+          54
+        ]
+      ]
+    },
+    {
+      "text": "第 1 章",
+      "id": 193,
+      "tag": "formation_chapter_badge",
+      "bounds": [
+        1745,
+        49,
+        1871,
+        114
+      ],
+      "measuredSize": [
+        126,
+        65
+      ],
+      "layoutSize": [
+        126,
+        65
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          53,
+          0,
+          179,
+          65
+        ]
+      ]
+    }
+  ]
+}

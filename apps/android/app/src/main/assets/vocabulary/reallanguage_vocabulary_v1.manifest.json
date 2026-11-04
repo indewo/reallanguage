@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "dataVersion": "2026-09-17-6038fd7129d6",
+  "wordCount": 13689,
+  "senseCount": 28578,
+  "pools": [
+    "JUNIOR_HIGH",
+    "SENIOR_HIGH",
+    "CET_4",
+    "CET_6",
+    "POSTGRADUATE",
+    "TOEFL",
+    "IELTS",
+    "GRE"
+  ]
+}

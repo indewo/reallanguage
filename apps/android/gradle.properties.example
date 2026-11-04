@@ -1,0 +1,9 @@
+# Non-secret release inputs. Supply with -P or a private user-level Gradle file.
+REAL_LANGUAGE_API_BASE_URL=https://api.example.com
+
+# Release signing material must remain outside the repository. The current
+# project intentionally produces an unsigned release APK until signing is wired.
+# REAL_LANGUAGE_RELEASE_STORE_FILE=/absolute/private/path/reallanguage-release.jks
+# REAL_LANGUAGE_RELEASE_STORE_PASSWORD=REPLACE_IN_SECRET_MANAGER
+# REAL_LANGUAGE_RELEASE_KEY_ALIAS=reallanguage
+# REAL_LANGUAGE_RELEASE_KEY_PASSWORD=REPLACE_IN_SECRET_MANAGER

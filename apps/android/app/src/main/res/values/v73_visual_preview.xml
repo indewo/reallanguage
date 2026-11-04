@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v73_preview_safety_loading">安全内容准备</string>
+    <string name="v73_preview_safety_load_failed">安全内容准备失败</string>
+    <string name="v73_preview_english_generation">英语表达生成</string>
+    <string name="v73_preview_english_failed">英语表达生成失败</string>
+    <string name="v73_preview_target_loading">学习目标提取</string>
+    <string name="v73_preview_target_failed">学习目标提取失败</string>
+    <string name="v73_preview_scene_direct">直接描述场景</string>
+    <string name="v73_preview_local_recordings">本地录音</string>
+    <string name="v73_preview_explanation_preparation">讲解准备</string>
+    <string name="v73_preview_explanation_failed">讲解准备失败</string>
+    <string name="v73_preview_read_write_correction">读写订正</string>
+    <string name="v73_preview_pattern_independent">句式独立回应</string>
+    <string name="v73_preview_account_deletion">注销账号确认</string>
+</resources>

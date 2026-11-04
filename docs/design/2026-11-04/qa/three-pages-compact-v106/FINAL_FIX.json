@@ -1,0 +1,381 @@
+{
+  "destination": "FINAL_FIX",
+  "fontScale": 1,
+  "width": 1280,
+  "height": 720,
+  "fixtureOnly": true,
+  "textNodes": [
+    {
+      "text": "确认并固定",
+      "id": 129,
+      "tag": "",
+      "bounds": [
+        498,
+        55,
+        795,
+        135
+      ],
+      "measuredSize": [
+        297,
+        80
+      ],
+      "layoutSize": [
+        297,
+        80
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          296,
+          80
+        ]
+      ]
+    },
+    {
+      "text": "1 个重点句  ·  1 个章节",
+      "id": 134,
+      "tag": "",
+      "bounds": [
+        526,
+        180,
+        799,
+        232
+      ],
+      "measuredSize": [
+        273,
+        52
+      ],
+      "layoutSize": [
+        273,
+        52
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          273,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "英语表达",
+      "id": 139,
+      "tag": "",
+      "bounds": [
+        300,
+        276,
+        396,
+        312
+      ],
+      "measuredSize": [
+        96,
+        36
+      ],
+      "layoutSize": [
+        96,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          36,
+          0,
+          132,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "1",
+      "id": 143,
+      "tag": "",
+      "bounds": [
+        256,
+        346,
+        268,
+        374
+      ],
+      "measuredSize": [
+        12,
+        28
+      ],
+      "layoutSize": [
+        12,
+        28
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          12,
+          28
+        ]
+      ]
+    },
+    {
+      "text": "It's a beautiful day today.",
+      "id": 145,
+      "tag": "",
+      "bounds": [
+        300,
+        338,
+        604,
+        426
+      ],
+      "measuredSize": [
+        304,
+        88
+      ],
+      "layoutSize": [
+        304,
+        88
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          269.4375,
+          44
+        ],
+        [
+          0,
+          44,
+          88.28125,
+          88
+        ]
+      ]
+    },
+    {
+      "text": "今天是美好的一天。",
+      "id": 146,
+      "tag": "",
+      "bounds": [
+        300,
+        432,
+        516,
+        468
+      ],
+      "measuredSize": [
+        216,
+        36
+      ],
+      "layoutSize": [
+        216,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          216,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "学习目标",
+      "id": 153,
+      "tag": "",
+      "bounds": [
+        724,
+        276,
+        820,
+        312
+      ],
+      "measuredSize": [
+        96,
+        36
+      ],
+      "layoutSize": [
+        96,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          36,
+          0,
+          132,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "beautiful",
+      "id": 158,
+      "tag": "",
+      "bounds": [
+        710,
+        338,
+        1028,
+        382
+      ],
+      "measuredSize": [
+        318,
+        44
+      ],
+      "layoutSize": [
+        318,
+        44
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          123.64844,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "It's a ... day",
+      "id": 163,
+      "tag": "",
+      "bounds": [
+        710,
+        408,
+        1028,
+        452
+      ],
+      "measuredSize": [
+        318,
+        44
+      ],
+      "layoutSize": [
+        318,
+        44
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          149.94922,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "返回修改",
+      "id": 174,
+      "tag": "",
+      "bounds": [
+        508,
+        618,
+        628,
+        662
+      ],
+      "measuredSize": [
+        120,
+        44
+      ],
+      "layoutSize": [
+        120,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          71,
+          0,
+          191,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "确认并固定",
+      "id": 177,
+      "tag": "",
+      "bounds": [
+        823,
+        618,
+        973,
+        662
+      ],
+      "measuredSize": [
+        150,
+        44
+      ],
+      "layoutSize": [
+        150,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          56,
+          0,
+          206,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "第 1 章",
+      "id": 169,
+      "tag": "",
+      "bounds": [
+        941,
+        20,
+        1036,
+        88
+      ],
+      "measuredSize": [
+        95,
+        68
+      ],
+      "layoutSize": [
+        95,
+        68
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          59,
+          48
+        ],
+        [
+          0,
+          48,
+          34,
+          96
+        ]
+      ]
+    }
+  ]
+}

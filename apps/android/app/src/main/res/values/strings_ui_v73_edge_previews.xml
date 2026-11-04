@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="v73_preview_scene_direct_discard">描述场景 · 放弃确认</string>
+    <string name="v73_preview_scene_generation_failed">场景生成 · 失败</string>
+    <string name="v73_preview_safety_check_failed">内容检查 · 失败</string>
+    <string name="v73_preview_transcript_segments">转写结果 · 逐段核对</string>
+    <string name="v73_preview_local_recordings_empty">本机录音 · 空列表</string>
+    <string name="v73_preview_local_recordings_failed">本机录音 · 读取失败</string>
+    <string name="v73_preview_recording_confirmation_failed">录音确认 · 读取失败</string>
+    <string name="v73_preview_transcript_load_failed">转写结果 · 读取失败</string>
+    <string name="v73_preview_scene_questions_invalid">场景问答 · 返回内容异常</string>
+    <string name="v73_preview_scene_questions_insufficient">场景问答 · 信息不足</string>
+</resources>

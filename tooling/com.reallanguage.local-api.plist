@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.reallanguage.local-api</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/eric/Library/Application Support/RealLanguage/runtime/apps/api/node_modules/.bin/tsx</string>
+    <string>--tsconfig</string>
+    <string>apps/api/tsconfig.json</string>
+    <string>apps/api/src/local-main.ts</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/eric/Library/Application Support/RealLanguage/runtime</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/Users/eric/Library/Application Support/RealLanguage/runtime/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>REAL_LANGUAGE_LOCAL_DATA_DIRECTORY</key>
+    <string>.local-data/database</string>
+    <key>NODE_OPTIONS</key>
+    <string>--conditions=development</string>
+    <key>NODE_USE_ENV_PROXY</key>
+    <string>1</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <key>NetworkState</key>
+    <true/>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/eric/Library/Application Support/RealLanguage/reallanguage-local-api.stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/eric/Library/Application Support/RealLanguage/reallanguage-local-api.stderr.log</string>
+</dict>
+</plist>

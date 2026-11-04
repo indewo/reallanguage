@@ -1,0 +1,33 @@
+{
+  "name": "real-language",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
+  },
+  "scripts": {
+    "build": "pnpm --filter @reallanguage/database --filter './packages/**' --filter './apps/{api,worker,scheduler,admin-web}' --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "test:coverage": "pnpm -r --if-present test:coverage",
+    "lint": "eslint apps packages tooling --max-warnings=0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "arch:check": "node tooling/architecture/check-boundaries.mjs",
+    "contracts:check": "pnpm --filter @reallanguage/contracts test",
+    "verify": "pnpm format:check && pnpm lint && pnpm arch:check && pnpm contracts:check && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.4.0",
+    "@typescript-eslint/eslint-plugin": "8.68.0",
+    "@typescript-eslint/parser": "8.68.0",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint": "10.0.1",
+    "prettier": "3.9.6",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}

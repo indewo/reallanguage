@@ -1,0 +1,1071 @@
+{
+  "destination": "LEARNING_TARGETS",
+  "fontScale": 1,
+  "width": 1280,
+  "height": 720,
+  "fixtureOnly": true,
+  "textNodes": [
+    {
+      "text": "选择学习目标",
+      "id": 179,
+      "tag": "",
+      "bounds": [
+        423,
+        29,
+        766,
+        105
+      ],
+      "measuredSize": [
+        343,
+        76
+      ],
+      "layoutSize": [
+        343,
+        76
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          342,
+          76
+        ]
+      ]
+    },
+    {
+      "text": "第 1 章",
+      "id": 183,
+      "tag": "",
+      "bounds": [
+        1083,
+        52,
+        1173,
+        96
+      ],
+      "measuredSize": [
+        90,
+        44
+      ],
+      "layoutSize": [
+        90,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          90,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "句子会继续学习，下面的词义与句式可以按需选择。",
+      "id": 184,
+      "tag": "",
+      "bounds": [
+        341,
+        128,
+        939,
+        168
+      ],
+      "measuredSize": [
+        598,
+        40
+      ],
+      "layoutSize": [
+        598,
+        40
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          598,
+          40
+        ]
+      ]
+    },
+    {
+      "text": "2",
+      "id": 188,
+      "tag": "",
+      "bounds": [
+        46,
+        253,
+        122,
+        311
+      ],
+      "measuredSize": [
+        76,
+        58
+      ],
+      "layoutSize": [
+        76,
+        58
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          22,
+          58
+        ]
+      ]
+    },
+    {
+      "text": "But in the end, I worked up the courage to explain my idea clearly.",
+      "id": 189,
+      "tag": "learning_targets_english",
+      "bounds": [
+        122,
+        230,
+        716,
+        334
+      ],
+      "measuredSize": [
+        594,
+        104
+      ],
+      "layoutSize": [
+        594,
+        104
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          513.34766,
+          52
+        ],
+        [
+          0,
+          52,
+          572.0594,
+          104
+        ]
+      ]
+    },
+    {
+      "text": "但最后还是鼓起勇气把想法讲清楚了。",
+      "id": 205,
+      "tag": "learning_targets_chinese",
+      "bounds": [
+        754,
+        230,
+        1166,
+        334
+      ],
+      "measuredSize": [
+        412,
+        104
+      ],
+      "layoutSize": [
+        412,
+        104
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          408,
+          52
+        ],
+        [
+          0,
+          52,
+          170,
+          104
+        ]
+      ]
+    },
+    {
+      "text": "词义",
+      "id": 213,
+      "tag": "",
+      "bounds": [
+        122,
+        506,
+        170,
+        542
+      ],
+      "measuredSize": [
+        48,
+        36
+      ],
+      "layoutSize": [
+        48,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          40,
+          0,
+          88,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "work up the courage",
+      "id": 218,
+      "tag": "learning_target_t1_display",
+      "bounds": [
+        58,
+        554,
+        390,
+        570
+      ],
+      "measuredSize": [
+        332,
+        48
+      ],
+      "layoutSize": [
+        332,
+        48
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          331.35938,
+          48
+        ]
+      ]
+    },
+    {
+      "text": "鼓起勇气",
+      "id": 219,
+      "tag": "learning_target_t1_explanation",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        104,
+        42
+      ],
+      "layoutSize": [
+        104,
+        42
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          104,
+          42
+        ]
+      ]
+    },
+    {
+      "text": "例  It took him a while to work up the courage to apologize.",
+      "id": 221,
+      "tag": "learning_target_t1_example_en",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        1164,
+        38
+      ],
+      "layoutSize": [
+        1164,
+        38
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          670.51953,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "他花了一会儿才鼓起勇气道歉。",
+      "id": 222,
+      "tag": "learning_target_t1_example_zh",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        336,
+        38
+      ],
+      "layoutSize": [
+        336,
+        38
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          336,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "固定搭配",
+      "id": 229,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        96,
+        36
+      ],
+      "layoutSize": [
+        96,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          40,
+          0,
+          136,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "explain",
+      "id": 234,
+      "tag": "learning_target_t2_display",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        122,
+        48
+      ],
+      "layoutSize": [
+        122,
+        48
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          122,
+          48
+        ]
+      ]
+    },
+    {
+      "text": "解释；讲清楚",
+      "id": 235,
+      "tag": "learning_target_t2_explanation",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        156,
+        42
+      ],
+      "layoutSize": [
+        156,
+        42
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          156,
+          42
+        ]
+      ]
+    },
+    {
+      "text": "例  She explained the rule in a simple way.",
+      "id": 237,
+      "tag": "learning_target_t2_example_en",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        1164,
+        38
+      ],
+      "layoutSize": [
+        1164,
+        38
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          481.36328,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "她用简单的方式解释了规则。",
+      "id": 238,
+      "tag": "learning_target_t2_example_zh",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        312,
+        38
+      ],
+      "layoutSize": [
+        312,
+        38
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          312,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "句式",
+      "id": 245,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        48,
+        36
+      ],
+      "layoutSize": [
+        48,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          40,
+          0,
+          88,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "work up the courage to + 动词",
+      "id": 250,
+      "tag": "learning_target_t3_display",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        471,
+        48
+      ],
+      "layoutSize": [
+        471,
+        48
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          470.35938,
+          48
+        ]
+      ]
+    },
+    {
+      "text": "鼓起勇气做某事",
+      "id": 251,
+      "tag": "learning_target_t3_explanation",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        182,
+        42
+      ],
+      "layoutSize": [
+        182,
+        42
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          182,
+          42
+        ]
+      ]
+    },
+    {
+      "text": "例  He worked up the courage to apply for the scholarship.",
+      "id": 252,
+      "tag": "learning_target_t3_example_en",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        1164,
+        38
+      ],
+      "layoutSize": [
+        1164,
+        38
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          663.03906,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "他鼓起勇气申请了奖学金。",
+      "id": 253,
+      "tag": "learning_target_t3_example_zh",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        288,
+        38
+      ],
+      "layoutSize": [
+        288,
+        38
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          288,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "结构：work up the courage to + 动词",
+      "id": 254,
+      "tag": "learning_target_t3_structure",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        355,
+        36
+      ],
+      "layoutSize": [
+        355,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          354.35547,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "相关生词：courage",
+      "id": 255,
+      "tag": "learning_target_t3_related",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        190,
+        36
+      ],
+      "layoutSize": [
+        190,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          189.57031,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "暂未提供关联词的本句词义说明。",
+      "id": 256,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        360,
+        38
+      ],
+      "layoutSize": [
+        360,
+        38
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          360,
+          38
+        ]
+      ]
+    },
+    {
+      "text": "其他可添加词或词组",
+      "id": 259,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        252,
+        52
+      ],
+      "layoutSize": [
+        252,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          252,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "多选 · 点选后自动加入并显示 ✓",
+      "id": 261,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        303,
+        52
+      ],
+      "layoutSize": [
+        303,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          303,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "But",
+      "id": 266,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        45,
+        52
+      ],
+      "layoutSize": [
+        45,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          44.777344,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "但是；表示转折",
+      "id": 267,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        154,
+        31
+      ],
+      "layoutSize": [
+        154,
+        31
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          154,
+          31
+        ]
+      ]
+    },
+    {
+      "text": "可多选",
+      "id": 268,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        60,
+        52
+      ],
+      "layoutSize": [
+        60,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          60,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "clearly",
+      "id": 273,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        89,
+        52
+      ],
+      "layoutSize": [
+        89,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          88.71875,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "清楚地；明确地",
+      "id": 274,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        154,
+        31
+      ],
+      "layoutSize": [
+        154,
+        31
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          154,
+          31
+        ]
+      ]
+    },
+    {
+      "text": "可多选",
+      "id": 275,
+      "tag": "",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        60,
+        52
+      ],
+      "layoutSize": [
+        60,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          60,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "全部取消",
+      "id": 279,
+      "tag": "",
+      "bounds": [
+        180,
+        624,
+        300,
+        668
+      ],
+      "measuredSize": [
+        120,
+        44
+      ],
+      "layoutSize": [
+        120,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          129,
+          0,
+          250,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "返回",
+      "id": 282,
+      "tag": "",
+      "bounds": [
+        610,
+        624,
+        670,
+        668
+      ],
+      "measuredSize": [
+        60,
+        44
+      ],
+      "layoutSize": [
+        60,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          117,
+          0,
+          177,
+          44
+        ]
+      ]
+    },
+    {
+      "text": "继续",
+      "id": 285,
+      "tag": "",
+      "bounds": [
+        1011,
+        624,
+        1071,
+        668
+      ],
+      "measuredSize": [
+        60,
+        44
+      ],
+      "layoutSize": [
+        60,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          159,
+          0,
+          220,
+          44
+        ]
+      ]
+    }
+  ]
+}

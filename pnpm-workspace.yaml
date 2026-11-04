@@ -1,0 +1,12 @@
+packages:
+  - database
+  - apps/api
+  - apps/worker
+  - apps/scheduler
+  - apps/admin-web
+  - packages/*
+
+allowBuilds:
+  "@alicloud/openapi-core": set this to true or false
+  argon2: true
+  esbuild: true

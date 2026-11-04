@@ -1,0 +1,52 @@
+{
+  "targets": [
+    {
+      "targetId": "t1",
+      "unitId": "u1",
+      "display": "worked up the courage",
+      "explanationZh": "鼓起勇气；下定决心去做。",
+      "type": "FIXED_EXPRESSION",
+      "structureParts": [],
+      "relatedVocabulary": ["courage", "ask for"],
+      "selectedByDefault": true,
+      "sourceEvidence": {
+        "version": 1,
+        "startUtf16": 10,
+        "endUtf16": 31,
+        "surfaceForm": "worked up the courage",
+        "normalizedForm": "work up the courage",
+        "allowedForms": ["worked up the courage"]
+      }
+    },
+    {
+      "targetId": "t2",
+      "unitId": "u1",
+      "display": "ask for feedback",
+      "explanationZh": "请求反馈；征求意见。",
+      "type": "FIXED_EXPRESSION",
+      "structureParts": [],
+      "relatedVocabulary": ["feedback", "ask"],
+      "selectedByDefault": true,
+      "sourceEvidence": {
+        "version": 1,
+        "startUtf16": 35,
+        "endUtf16": 51,
+        "surfaceForm": "ask for feedback",
+        "normalizedForm": "ask for feedback",
+        "allowedForms": ["ask for feedback"]
+      }
+    }
+  ],
+  "queryableExpressions": [
+    {
+      "expressionId": "q1",
+      "unitId": "u1",
+      "display": "worked up the courage"
+    },
+    {
+      "expressionId": "q2",
+      "unitId": "u1",
+      "display": "ask for feedback"
+    }
+  ]
+}

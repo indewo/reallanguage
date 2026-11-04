@@ -1,0 +1,11 @@
+*.md
+*.png
+*.jpg
+*.eddx
+*.zip
+product-showcase/
+node_modules/
+**/dist/
+**/build/
+pnpm-lock.yaml
+apps/android/

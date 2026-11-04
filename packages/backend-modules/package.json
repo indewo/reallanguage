@@ -1,0 +1,92 @@
+{
+  "name": "@reallanguage/backend-modules",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./ai": {
+      "types": "./src/ai/public.ts",
+      "development": "./src/ai/public.ts",
+      "default": "./dist/ai/public.js"
+    },
+    "./identity": {
+      "types": "./src/identity/public.ts",
+      "development": "./src/identity/public.ts",
+      "default": "./dist/identity/public.js"
+    },
+    "./platform-health": {
+      "types": "./src/platform-health/public.ts",
+      "development": "./src/platform-health/public.ts",
+      "default": "./dist/platform-health/public.js"
+    },
+    "./safety": {
+      "types": "./src/safety/public.ts",
+      "development": "./src/safety/public.ts",
+      "default": "./dist/safety/public.js"
+    },
+    "./content-formation": {
+      "types": "./src/content-formation/public.ts",
+      "development": "./src/content-formation/public.ts",
+      "default": "./dist/content-formation/public.js"
+    },
+    "./settings": {
+      "types": "./src/settings/public.ts",
+      "development": "./src/settings/public.ts",
+      "default": "./dist/settings/public.js"
+    },
+    "./learning": {
+      "types": "./src/learning/public.ts",
+      "development": "./src/learning/public.ts",
+      "default": "./dist/learning/public.js"
+    },
+    "./knowledge": {
+      "types": "./src/knowledge/public.ts",
+      "development": "./src/knowledge/public.ts",
+      "default": "./dist/knowledge/public.js"
+    },
+    "./media": {
+      "types": "./src/media/public.ts",
+      "development": "./src/media/public.ts",
+      "default": "./dist/media/public.js"
+    },
+    "./sources": {
+      "types": "./src/sources/public.ts",
+      "development": "./src/sources/public.ts",
+      "default": "./dist/sources/public.js"
+    },
+    "./messaging": {
+      "types": "./src/messaging/public.ts",
+      "development": "./src/messaging/public.ts",
+      "default": "./dist/messaging/public.js"
+    },
+    "./billing": {
+      "types": "./src/billing/public.ts",
+      "development": "./src/billing/public.ts",
+      "default": "./dist/billing/public.js"
+    },
+    "./admin": {
+      "types": "./src/admin/public.ts",
+      "development": "./src/admin/public.ts",
+      "default": "./dist/admin/public.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@reallanguage/database": "workspace:*",
+    "@types/node": "26.4.0",
+    "@types/pg": "8.23.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  },
+  "dependencies": {
+    "argon2": "0.45.1",
+    "kysely": "0.29.5",
+    "pg": "8.23.0"
+  }
+}

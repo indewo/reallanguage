@@ -1,0 +1,591 @@
+{
+  "destination": "CHAPTER_LEARNING",
+  "fontScale": 1,
+  "width": 1280,
+  "height": 720,
+  "fixtureOnly": true,
+  "textNodes": [
+    {
+      "text": "第 1 章 · 共同学习",
+      "id": 71,
+      "tag": "learning-heading-title",
+      "bounds": [
+        460,
+        62,
+        820,
+        128
+      ],
+      "measuredSize": [
+        360,
+        66
+      ],
+      "layoutSize": [
+        360,
+        66
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          152,
+          0,
+          512,
+          66
+        ]
+      ]
+    },
+    {
+      "text": "退出学习",
+      "id": 79,
+      "tag": "",
+      "bounds": [
+        1087,
+        82,
+        1199,
+        122
+      ],
+      "measuredSize": [
+        112,
+        40
+      ],
+      "layoutSize": [
+        112,
+        40
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          112,
+          40
+        ]
+      ]
+    },
+    {
+      "text": "重点句 1 \/ 3",
+      "id": 16,
+      "tag": "",
+      "bounds": [
+        105,
+        166,
+        227,
+        202
+      ],
+      "measuredSize": [
+        122,
+        36
+      ],
+      "layoutSize": [
+        122,
+        36
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          37,
+          0,
+          159,
+          36
+        ]
+      ]
+    },
+    {
+      "text": "Yeah, I get really happy when I'm eating.",
+      "id": 93,
+      "tag": "learning-english-s1",
+      "bounds": [
+        164,
+        248,
+        696,
+        357
+      ],
+      "measuredSize": [
+        532,
+        109
+      ],
+      "layoutSize": [
+        532,
+        109
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          432.375,
+          55
+        ],
+        [
+          0,
+          55,
+          308.4453,
+          109
+        ]
+      ]
+    },
+    {
+      "text": "用户：嗯，吃饭时我会很开心。",
+      "id": 96,
+      "tag": "learning-chinese-s1",
+      "bounds": [
+        762,
+        255,
+        1144,
+        351
+      ],
+      "measuredSize": [
+        382,
+        96
+      ],
+      "layoutSize": [
+        382,
+        96
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          352,
+          48
+        ],
+        [
+          0,
+          48,
+          96,
+          96
+        ]
+      ]
+    },
+    {
+      "text": "That's nice.",
+      "id": 103,
+      "tag": "learning-english-s2",
+      "bounds": [
+        164,
+        398,
+        696,
+        440
+      ],
+      "measuredSize": [
+        532,
+        55
+      ],
+      "layoutSize": [
+        532,
+        55
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          208.51562,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "对方：那挺好的，",
+      "id": 106,
+      "tag": "learning-chinese-s2",
+      "bounds": [
+        762,
+        401,
+        1144,
+        440
+      ],
+      "measuredSize": [
+        382,
+        48
+      ],
+      "layoutSize": [
+        382,
+        48
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          256,
+          48
+        ]
+      ]
+    },
+    {
+      "text": "Just enjoy it for now.",
+      "id": 112,
+      "tag": "learning-english-s3",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        532,
+        55
+      ],
+      "layoutSize": [
+        532,
+        55
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          382.54688,
+          55
+        ]
+      ]
+    },
+    {
+      "text": "你就先享受吧。",
+      "id": 115,
+      "tag": "learning-chinese-s3",
+      "bounds": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "measuredSize": [
+        382,
+        48
+      ],
+      "layoutSize": [
+        382,
+        48
+      ],
+      "overflowWidth": false,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          224,
+          48
+        ]
+      ]
+    },
+    {
+      "text": "学习路径",
+      "id": 18,
+      "tag": "",
+      "bounds": [
+        584,
+        448,
+        696,
+        500
+      ],
+      "measuredSize": [
+        112,
+        52
+      ],
+      "layoutSize": [
+        112,
+        52
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          112,
+          52
+        ]
+      ]
+    },
+    {
+      "text": "01  基础讲解",
+      "id": 24,
+      "tag": "",
+      "bounds": [
+        44,
+        563,
+        151,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          100,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "02  朗读",
+      "id": 29,
+      "tag": "",
+      "bounds": [
+        212,
+        563,
+        293,
+        595
+      ],
+      "measuredSize": [
+        81,
+        32
+      ],
+      "layoutSize": [
+        81,
+        32
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          81,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "03  手写抄写",
+      "id": 34,
+      "tag": "",
+      "bounds": [
+        354,
+        563,
+        461,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          102,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "04  音频听写",
+      "id": 39,
+      "tag": "",
+      "bounds": [
+        509,
+        563,
+        616,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          102,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "05  整句会说",
+      "id": 44,
+      "tag": "",
+      "bounds": [
+        664,
+        563,
+        771,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          103,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "06  句式会说",
+      "id": 49,
+      "tag": "",
+      "bounds": [
+        819,
+        563,
+        926,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          103,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "07  完整书写",
+      "id": 54,
+      "tag": "",
+      "bounds": [
+        974,
+        563,
+        1081,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          102,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "08  场景回应",
+      "id": 59,
+      "tag": "",
+      "bounds": [
+        1129,
+        563,
+        1236,
+        595
+      ],
+      "measuredSize": [
+        107,
+        32
+      ],
+      "layoutSize": [
+        107,
+        32
+      ],
+      "overflowWidth": false,
+      "overflowHeight": true,
+      "ellipsis": false,
+      "lines": [
+        [
+          0,
+          0,
+          103,
+          32
+        ]
+      ]
+    },
+    {
+      "text": "开始学习",
+      "id": 63,
+      "tag": "",
+      "bounds": [
+        906,
+        638,
+        1026,
+        682
+      ],
+      "measuredSize": [
+        120,
+        44
+      ],
+      "layoutSize": [
+        120,
+        44
+      ],
+      "overflowWidth": true,
+      "overflowHeight": false,
+      "ellipsis": false,
+      "lines": [
+        [
+          186,
+          0,
+          306,
+          44
+        ]
+      ]
+    }
+  ]
+}

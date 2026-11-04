@@ -1,0 +1,37 @@
+{
+  "name": "@reallanguage/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "local": "NODE_OPTIONS=--conditions=development NODE_USE_ENV_PROXY=1 tsx --tsconfig tsconfig.json src/local-main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@alicloud/dm20151123": "^1.11.0",
+    "@nestjs/common": "12.0.1",
+    "@nestjs/core": "12.0.1",
+    "@nestjs/platform-fastify": "12.0.1",
+    "@reallanguage/backend-modules": "workspace:*",
+    "@reallanguage/contracts": "workspace:*",
+    "@reallanguage/database": "workspace:*",
+    "@reallanguage/observability": "workspace:*",
+    "fastify": "5.12.1",
+    "kysely": "0.29.5",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@nestjs/testing": "12.0.1",
+    "@types/node": "26.4.0",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
+  }
+}

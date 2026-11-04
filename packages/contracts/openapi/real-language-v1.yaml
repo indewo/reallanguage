@@ -1,0 +1,3552 @@
+openapi: 3.1.0
+info:
+  title: RealLanguage API
+  version: 0.0.0
+  description: Initial versioned contract for the engineering skeleton.
+servers:
+  - url: /api/v1
+paths:
+  /settings/current:
+    get:
+      operationId: getCurrentSettings
+      summary: Load the authenticated account's authoritative current settings
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current settings snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InitialSettingsCompletionRequest"
+        "401":
+          description: Authentication is required
+  /settings/current/revision:
+    get:
+      operationId: readVersionedSettings
+      summary: Read settings and their optimistic-lock version for a subsequent edit
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: One atomic settings snapshot and version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionedSettings"
+        "401":
+          description: Authentication is required
+        "404":
+          description: Initial settings have not been completed
+    put:
+      operationId: updateCurrentSettings
+      summary: Update existing settings with a version check, without generating or charging
+      description: An identical currently stored snapshot is a read-confirmed no-op. A different snapshot with a stale version is rejected, never silently rebased. This endpoint does not complete initial settings or change fixed content.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCurrentSettingsRequest"
+      responses:
+        "200":
+          description: The requested snapshot is stored at the returned version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateCurrentSettingsResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+        "404":
+          description: Initial settings have not been completed
+        "409":
+          description: SETTINGS_VERSION_CONFLICT with the latest rowVersion; reread before a new edit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+  /legal/documents/{kind}:
+    get:
+      operationId: getAgreementDocument
+      summary: Load one versioned authoritative agreement document
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - name: kind
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [user-agreement, privacy-policy]
+      responses:
+        "200":
+          description: Versioned agreement document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgreementDocument"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /settings/current/initial:
+    put:
+      operationId: completeInitialSettings
+      summary: Atomically complete the authenticated account's first settings snapshot
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InitialSettingsCompletionRequest"
+      responses:
+        "200":
+          description: Initial settings are complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InitialSettingsCompletionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /safety/checks:
+    post:
+      operationId: checkContentSafety
+      summary: Check one full confirmed source before semantic splitting
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SafetyCheckRequest"
+      responses:
+        "200":
+          description: Context-aware safety decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyCheckResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /content-formation/semantic-units/split:
+    post:
+      operationId: splitSemanticUnits
+      summary: Split one safety-approved source without rewriting it
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SemanticUnitSplitRequest"
+      responses:
+        "200":
+          description: Exact full source coverage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SemanticUnitSplitResult"
+        "401":
+          description: Authentication is required
+  /content-formation/chapters/context-selection:
+    post:
+      operationId: selectChapterContext
+      summary: Select and deterministically validate chapter context
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChapterContextSelectionRequest"
+      responses:
+        "200":
+          description: Validated chapter context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChapterContextSelectionResult"
+        "401":
+          description: Authentication is required
+  /content-formation/english-candidates:
+    post:
+      operationId: generateEnglishCandidates
+      summary: Generate and verify faithful English candidates for every chapter unit
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnglishCandidateGenerationRequest"
+      responses:
+        "200":
+          description: Fully fidelity-checked English candidates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnglishCandidateGenerationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /content-formation/learning-targets:
+    post:
+      operationId: extractLearningTargets
+      summary: Extract unique contextual learning targets for focus sentences
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningTargetExtractionRequest"
+      responses:
+        "200":
+          description: Validated focus-only learning targets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningTargetExtractionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /knowledge/examples:
+    post:
+      operationId: generateKnowledgeExamples
+      summary: Generate one stable representative scene and exactly three examples for a fixed local knowledge target
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KnowledgeExampleGenerationRequest"
+      responses:
+        "200":
+          description: Validated temporary knowledge detail for later local chapter archival
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KnowledgeExampleGenerationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /media/recording-transcriptions:
+    post:
+      operationId: transcribeRecording
+      summary: Transcribe an explicitly submitted local recording without retaining it as a long-term cloud file
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordingTranscriptionRequest"
+      responses:
+        "200":
+          description: Editable Chinese transcript with semantic end-boundary evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecordingTranscriptionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /media/transcript-repairs:
+    post:
+      operationId: repairTranscript
+      summary: Propose only audio-confirmed omission or disfluency repairs after explicit user request
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranscriptRepairRequest"
+      responses:
+        "200":
+          description: No change or an explicit comparison proposal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranscriptRepairResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /sources/scenes/recommendations:
+    post:
+      operationId: generateSceneRecommendations
+      summary: Generate up to four differentiated directions from recent local fixed-source excerpts
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    { $ref: "#/components/schemas/SceneRecommendationRequest" },
+                },
+            },
+        }
+      responses:
+        "200":
+          {
+            description: Optional recent directions,
+            content:
+              {
+                application/json:
+                  {
+                    schema:
+                      {
+                        $ref: "#/components/schemas/SceneRecommendationResult",
+                      },
+                  },
+              },
+          }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: Authentication is required }
+  /sources/scenes/next-question:
+    post:
+      operationId: getNextSceneQuestion
+      summary: Ask one of at most ten necessary questions, generate after enough facts, or return explicit insufficiency
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    { $ref: "#/components/schemas/SceneNextQuestionRequest" },
+                },
+            },
+        }
+      responses:
+        "200":
+          {
+            description: One question,
+            generation boundary,
+            or explicit insufficient-information result,
+            content:
+              {
+                application/json:
+                  {
+                    schema:
+                      { $ref: "#/components/schemas/SceneNextQuestionResult" },
+                  },
+              },
+          }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: Authentication is required }
+  /sources/scenes/drafts:
+    post:
+      operationId: generateSceneDraft
+      summary: Generate a bounded Chinese dialogue or article from confirmed answers
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                { schema: { $ref: "#/components/schemas/SceneDraftRequest" } },
+            },
+        }
+      responses:
+        "200":
+          {
+            description: Bounded editable Chinese draft,
+            content:
+              {
+                application/json:
+                  { schema: { $ref: "#/components/schemas/SceneDraftResult" } },
+              },
+          }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: Authentication is required }
+  /sources/scenes/edit-reviews:
+    post:
+      operationId: reviewSceneEdit
+      summary: Review only changed units for explicit factual or intelligibility problems
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        {
+          required: true,
+          content:
+            {
+              application/json:
+                {
+                  schema:
+                    { $ref: "#/components/schemas/SceneEditReviewRequest" },
+                },
+            },
+        }
+      responses:
+        "200":
+          {
+            description: Pass or precise issues without automatic rewriting,
+            content:
+              {
+                application/json:
+                  {
+                    schema:
+                      { $ref: "#/components/schemas/SceneEditReviewResult" },
+                  },
+              },
+          }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: Authentication is required }
+  /learning/explanations:
+    post:
+      operationId: generateLearningExplanation
+      summary: Generate a bounded sentence hint or contextual expression explanation from fixed local chapter content
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LearningExplanationRequest"
+      responses:
+        "200":
+          description: Validated explanation for the requested fixed content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LearningExplanationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/explanations/deliveries/{commandId}:
+    get:
+      operationId: recoverExistingLearningExplanation
+      summary: Read an owned existing explanation delivery without provider calls or billing writes
+      security:
+        - bearerAuth: []
+      parameters:
+        - {
+            in: path,
+            name: commandId,
+            required: true,
+            schema: { type: string, minLength: 1, maxLength: 128 },
+          }
+        - {
+            in: query,
+            name: kind,
+            required: true,
+            schema: { type: string, enum: [SENTENCE, EXPRESSION] },
+          }
+      responses:
+        "200":
+          description: Existing settled result or explicit unavailable state; NO_DELIVERY is not proof of no prior charge. Never initiates, claims, settles or extends a task.
+          headers:
+            Cache-Control:
+              { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json:
+              schema:
+                {
+                  $ref: "#/components/schemas/LearningExplanationRecoveryResult",
+                }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { description: Authentication is required }
+  /learning/reading-feedback:
+    post:
+      operationId: generateReadingFeedback
+      summary: Generate objective non-mastery reading feedback from one short raw-audio attempt
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadingFeedbackRequest"
+      responses:
+        "200":
+          description: Objective feedback without pass or fail authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingFeedbackResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/speaking-transcriptions:
+    post:
+      operationId: generateSpeakingTranscription
+      summary: Generate an editable transcript from one independent speaking attempt
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpeakingTranscriptionRequest"
+      responses:
+        "200":
+          description: Editable transcript and low-confidence evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeakingTranscriptionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/diary-dictations:
+    post:
+      operationId: generateDiaryDictation
+      summary: Recognize one editable diary dictation segment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiaryDictationRequest"
+      responses:
+        "200":
+          description: Editable Chinese transcript for insertion into the diary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeakingTranscriptionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/full-sentence-speaking-evaluations:
+    post:
+      operationId: evaluateFullSentenceSpeaking
+      summary: Evaluate only the fifth independent full-sentence retelling
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FullSentenceSpeakingEvaluationRequest"
+      responses:
+        "200":
+          description: Bounded content and pronunciation evidence candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FullSentenceSpeakingEvaluationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/pattern-practice-sets:
+    post:
+      operationId: generatePatternPractice
+      summary: Generate one to five natural new scenes for one locked pattern
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatternPracticeGenerationRequest"
+      responses:
+        "200":
+          description: Validated practice set or explicit unavailable result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatternPracticeGenerationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/pattern-practice-feedback:
+    post:
+      operationId: generatePatternPracticeFeedback
+      summary: Generate training-only feedback from visible-target raw audio
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatternPracticeFeedbackRequest"
+      responses:
+        "200":
+          description: Objective feedback without mastery authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatternPracticeFeedbackResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/pattern-independent-evaluation:
+    post:
+      operationId: evaluatePatternIndependent
+      summary: Evaluate one hidden-target pattern response during unified review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatternIndependentEvaluationRequest"
+      responses:
+        "200":
+          description: Bounded independent pattern evidence candidate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatternIndependentEvaluationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/scene-response-tasks:
+    post:
+      operationId: generateSceneResponseTask
+      summary: Fix one bounded three-round scene-response task
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SceneResponseGenerationRequest"
+      responses:
+        "200":
+          description: Fixed task reused for all three rounds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SceneResponseGenerationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/scene-response-training-feedback:
+    post:
+      operationId: generateSceneResponseTrainingFeedback
+      summary: Give training-only feedback for the first two rounds
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SceneResponseTrainingFeedbackRequest"
+      responses:
+        "200":
+          description: Objective training feedback without result authority
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SceneResponseTrainingFeedbackResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /learning/scene-response-evaluations:
+    post:
+      operationId: evaluateSceneResponse
+      summary: Evaluate only the hidden third-round scene response
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SceneResponseEvaluationRequest"
+      responses:
+        "200":
+          description: Scene-response evidence candidate only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SceneResponseEvaluationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Authentication is required
+  /safety/cases/{safetyCaseId}/handling:
+    post:
+      operationId: prepareSafetyHandling
+      summary: Prepare one internally validated deidentified candidate
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SafetyCaseId"
+      responses:
+        "200":
+          description: Owned blocked case and visible deidentification evidence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SafetyHandlingDetails"
+        "401":
+          description: Authentication is required
+        "404":
+          description: Case is not available to this account
+  /safety/cases/{safetyCaseId}/accept-deidentified:
+    post:
+      operationId: acceptDeidentifiedSafetySource
+      summary: Explicitly accept the deidentified candidate
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SafetyCaseId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SafetyHandlingCommand"
+      responses:
+        "200":
+          description: Candidate accepted
+  /safety/cases/{safetyCaseId}/return-to-edit:
+    post:
+      operationId: returnBlockedSafetySourceToEdit
+      summary: Release the blocked case back to the source editor
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SafetyCaseId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SafetyHandlingCommand"
+      responses:
+        "200":
+          description: Source returned to edit
+  /safety/cases/{safetyCaseId}/manual-reviews:
+    post:
+      operationId: submitSafetyManualReview
+      summary: Submit an explicit user-requested manual review
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SafetyCaseId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SafetyHandlingCommand"
+      responses:
+        "200":
+          description: Manual review submitted
+          content:
+            application/json:
+              schema:
+                { $ref: "#/components/schemas/ManualReviewSubmissionResult" }
+  /safety/cases/manual-reviews/{reviewRequestId}:
+    get:
+      operationId: getManualReviewResult
+      summary: Resolve one owned adjudicated manual review message target
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewRequestId
+          in: path
+          required: true
+          schema: { type: string, maxLength: 128 }
+      responses:
+        "200":
+          description: Adjudicated result with the temporary source needed for the confirmed next step
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ManualReviewResult" }
+        "401": { description: Authentication is required }
+        "404": { description: Result is pending, unavailable, or not owned }
+  /messages:
+    get:
+      operationId: listAppMessages
+      summary: List the current account's non-expired authoritative app messages
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Messages ordered newest first
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AppMessagesResponse" }
+        "401": { description: Authentication is required }
+  /messages/read-all:
+    post:
+      operationId: markAllAppMessagesRead
+      summary: Mark all current account app messages as read
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Number of messages newly marked read
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [updatedCount]
+                properties:
+                  updatedCount: { type: integer, minimum: 0 }
+        "401": { description: Authentication is required }
+  /account/current:
+    get:
+      operationId: getCurrentAccountProfile
+      summary: Read the authenticated account profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Verified account identity
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountProfile" }
+        "401": { description: Authentication is required }
+        "404": { description: Account is not available }
+    delete:
+      operationId: deleteCurrentAccount
+      summary: Permanently delete the authenticated account and its server data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountDeletionCommand" }
+      responses:
+        "200":
+          description: Account deletion completed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountDeletionResult" }
+        "401": { description: Authentication is required }
+        "404": { description: Account is not available }
+  /billing/summary:
+    get:
+      operationId: getBillingSummary
+      summary: Read the current account's available CNY balance and actual AI charge facts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Authoritative available balance and newest charges
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingSummary" }
+        "401": { description: Authentication is required }
+        "404": { description: Billing subject is not available }
+  /billing/recharge-config:
+    get:
+      operationId: getRechargeConfiguration
+      summary: Read server-authoritative recharge options and amount limits
+      responses:
+        "200":
+          description: Recharge page configuration
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RechargeConfiguration" }
+  /billing/recharge-orders:
+    post:
+      operationId: createRechargeOrder
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RechargeOrderCommand" }
+      responses:
+        "201":
+          description: Idempotently created payment order
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RechargeOrderResult" }
+        "400": { description: Invalid amount, method, or command replay }
+        "401": { description: Authentication is required }
+  /billing/recharge-orders/{orderId}:
+    get:
+      operationId: getRechargeOrder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+      responses:
+        "200":
+          description: Current server-authoritative order state
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RechargeOrderResult" }
+        "401": { description: Authentication is required }
+        "404": { description: Order is not owned or available }
+  /billing/refunds/current:
+    get:
+      operationId: getCurrentRefund
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Server-calculated refundable balance and newest request
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RefundPage" }
+        "401": { description: Authentication is required }
+  /billing/refunds:
+    post:
+      operationId: requestRefund
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RefundCommand" }
+      responses:
+        "201":
+          description: Idempotently requested full refundable balance
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RefundResult" }
+        "400":
+          { description: Amount is not the current full refundable balance }
+        "401": { description: Authentication is required }
+  /billing/payment-events:
+    post:
+      operationId: applyPaymentEvent
+      summary: Verify and atomically apply an idempotent payment-gateway callback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PaymentEventEnvelope" }
+      responses:
+        "201": { description: Verified callback accepted }
+        "400":
+          { description: Invalid, stale, mismatched, or malformed callback }
+  /billing/minor-recharge-support:
+    post:
+      operationId: requestMinorRechargeSupport
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MinorRechargeSupportCommand" }
+      responses:
+        "201":
+          description: Idempotently submitted a minor recharge support case
+          content:
+            application/json:
+              schema:
+                { $ref: "#/components/schemas/MinorRechargeSupportResult" }
+        "400": { description: Invalid or conflicting support request }
+        "401": { description: Authentication is required }
+  /auth/sessions:
+    post:
+      operationId: createSession
+      summary: Authenticate an email account and create a device session
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authentication outcome
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/sessions/refresh:
+    post:
+      operationId: refreshSession
+      summary: Rotate a valid refresh session for the same installation
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshSessionRequest"
+      responses:
+        "200":
+          description: Refresh outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshSessionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/sessions/current:
+    delete:
+      operationId: revokeCurrentSession
+      summary: Idempotently revoke the current refresh session
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RevokeSessionRequest"
+      responses:
+        "200":
+          description: Current session is revoked or already unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevokeSessionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/password-resets:
+    post:
+      operationId: requestPasswordReset
+      summary: Neutrally request a password reset email with a stable command identity
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequest"
+      responses:
+        "200":
+          description: Dispatch accepted without revealing account existence
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetRequestResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/password-resets/{challengeId}/verification:
+    post:
+      operationId: verifyPasswordReset
+      summary: Exchange an active email link bearer for a short-lived reset token
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - name: challengeId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetVerificationRequest"
+      responses:
+        "200":
+          description: Link verification outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetVerificationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/password-resets/completion:
+    post:
+      operationId: completePasswordReset
+      summary: Atomically replace the password and revoke active sessions
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetCompletionRequest"
+      responses:
+        "200":
+          description: Password reset completion outcome
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetCompletionResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /health:
+    get:
+      operationId: getHealth
+      summary: Check API readiness
+      responses:
+        "200":
+          description: API is ready
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /auth/registrations:
+    post:
+      operationId: startRegistration
+      summary: Start email registration after age and password checks
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationRequest"
+      responses:
+        "200":
+          description: Registration was rejected locally or awaits email verification
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/registrations/{registrationId}/verification:
+    post:
+      operationId: verifyRegistration
+      summary: Verify the email bearer and create the account
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - name: registrationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationVerificationRequest"
+      responses:
+        "200":
+          description: Verification outcome
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationVerificationResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/registrations/{registrationId}/verification-email:
+    post:
+      operationId: resendRegistrationVerificationEmail
+      summary: Resend an email for an active registration challenge
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - name: registrationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Resend outcome and server-controlled cooldown
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationVerificationEmailResendResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /auth/registrations/{registrationId}/verification-status:
+    get:
+      operationId: getRegistrationVerificationStatus
+      summary: Read whether an email registration has completed
+      parameters:
+        - $ref: "#/components/parameters/RequestId"
+        - name: registrationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Current registration verification status
+          headers:
+            x-request-id:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistrationVerificationStatusResult"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  responses:
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiErrorResponse"
+  parameters:
+    SafetyCaseId:
+      name: safetyCaseId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RequestId:
+      name: x-request-id
+      in: header
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+  schemas:
+    RecordingTranscriptionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          recordingId,
+          durationSeconds,
+          audioFormat,
+          languageHint,
+          endReason,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        recordingId: { type: string, minLength: 1, maxLength: 128 }
+        durationSeconds: { type: integer, minimum: 1, maximum: 120 }
+        audioFormat: { type: string, const: audio/mp4 }
+        languageHint: { type: string, const: zh-CN }
+        endReason: { type: string, enum: [USER_STOPPED, MAX_DURATION] }
+        audioBase64:
+          type: string
+          minLength: 1
+          maxLength: 8000000
+          pattern: "^[A-Za-z0-9+/]+={0,2}$"
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    RecordingTranscriptSegment:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          segmentId,
+          startMs,
+          endMs,
+          text,
+          speakerLabel,
+          confidence,
+          alternatives,
+          mostLikelyText,
+          mostLikelyIsInference,
+        ]
+      properties:
+        segmentId: { type: string, minLength: 1, maxLength: 128 }
+        startMs: { type: integer, minimum: 0 }
+        endMs: { type: integer, minimum: 0 }
+        text: { type: string, minLength: 1 }
+        speakerLabel: { type: string, enum: [USER, OTHER, UNKNOWN] }
+        confidence: { type: [number, "null"], minimum: 0, maximum: 1 }
+        alternatives:
+          type: array
+          items: { type: string }
+        mostLikelyText: { type: [string, "null"] }
+        mostLikelyIsInference: { type: boolean }
+    RecordingTranscriptionResult:
+      type: object
+      additionalProperties: false
+      required: [transcriptId, language, fullText, segments, finalBoundary]
+      properties:
+        transcriptId: { type: string, minLength: 1, maxLength: 128 }
+        language: { type: string, minLength: 1, maxLength: 32 }
+        fullText: { type: string, minLength: 1 }
+        segments:
+          type: array
+          items: { $ref: "#/components/schemas/RecordingTranscriptSegment" }
+        finalBoundary:
+          type: object
+          additionalProperties: false
+          required: [acceptedEndMs, droppedIncompleteTail]
+          properties:
+            acceptedEndMs: { type: integer, minimum: 0 }
+            droppedIncompleteTail: { type: boolean }
+    TranscriptRepairRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          transcriptId,
+          currentText,
+          manuallyEdited,
+          audioFormat,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        transcriptId: { type: string, minLength: 1, maxLength: 128 }
+        currentText: { type: string, minLength: 1 }
+        manuallyEdited: { type: boolean }
+        audioFormat: { type: string, const: audio/mp4 }
+        audioBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 8000000,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    TranscriptRepairResult:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [decision]
+          properties:
+            decision: { type: string, const: NO_CHANGE }
+        - type: object
+          additionalProperties: false
+          required: [decision, repairedText, changes]
+          properties:
+            decision: { type: string, const: PROPOSE_CHANGES }
+            repairedText: { type: string, minLength: 1 }
+            changes:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                additionalProperties: false
+                required:
+                  [originalText, proposedText, evidenceSegmentIds, reason]
+                properties:
+                  originalText: { type: string, minLength: 1 }
+                  proposedText: { type: string, minLength: 1 }
+                  evidenceSegmentIds:
+                    type: array
+                    items: { type: string, minLength: 1, maxLength: 128 }
+                  reason:
+                    {
+                      type: string,
+                      enum: [CONFIRMED_OMISSION, CONFIRMED_DISFLUENCY],
+                    }
+      discriminator: { propertyName: decision }
+    SceneStart:
+      oneOf:
+        - {
+            type: object,
+            additionalProperties: false,
+            required:
+              [kind, recommendationId, shortTopicZh, whyRelevantZh, sourceRefs],
+            properties:
+              {
+                kind: { type: string, const: RECOMMENDATION },
+                recommendationId: { type: string, minLength: 1 },
+                shortTopicZh: { type: string, minLength: 1 },
+                whyRelevantZh: { type: string, minLength: 1 },
+                sourceRefs:
+                  { type: array, items: { type: string, minLength: 1 } },
+              },
+          }
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [kind, templateId, titleZh, scopeZh],
+            properties:
+              {
+                kind: { type: string, const: TEMPLATE },
+                templateId: { type: string, minLength: 1 },
+                titleZh: { type: string, minLength: 1 },
+                scopeZh: { type: string, minLength: 1 },
+              },
+          }
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [kind, description],
+            properties:
+              {
+                kind: { type: string, const: DIRECT_DESCRIPTION },
+                description: { type: string, minLength: 1 },
+              },
+          }
+      discriminator: { propertyName: kind }
+    SceneAnswer:
+      type: object
+      additionalProperties: false
+      required: [questionId, answerZh]
+      properties:
+        {
+          questionId: { type: string, minLength: 1, maxLength: 128 },
+          questionZh: { type: string, minLength: 1 },
+          answerZh: { type: string, minLength: 1 },
+        }
+    SceneUnit:
+      type: object
+      additionalProperties: false
+      required: [unitId, speaker, textZh, factReferences]
+      properties:
+        unitId: { type: string, minLength: 1, maxLength: 128 }
+        speaker: { type: [string, "null"], enum: [USER, OTHER, null] }
+        textZh: { type: string, minLength: 1 }
+        factReferences: { type: array, items: { type: string } }
+    SceneRecommendationRequest:
+      type: object
+      additionalProperties: false
+      required: [sources, commandId]
+      properties:
+        sources:
+          type: array
+          maxItems: 12
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              [
+                sourceId,
+                sourceType,
+                completedLocalDate,
+                topicSummaryZh,
+                confirmedTextZh,
+                sceneContextZh,
+              ]
+            properties:
+              sourceId: { type: string, minLength: 1, maxLength: 128 }
+              sourceType:
+                { type: string, enum: [DIARY, QUICK_RECORDING, AI_SCENE] }
+              completedLocalDate: { type: string, format: date }
+              topicSummaryZh: { type: string, minLength: 1 }
+              confirmedTextZh: { type: string, minLength: 1 }
+              sceneContextZh: { type: string }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneRecommendationResult:
+      type: object
+      additionalProperties: false
+      required: [recommendations]
+      properties:
+        recommendations:
+          type: array
+          maxItems: 4
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              [
+                recommendationId,
+                shortTopicZh,
+                whyRelevantZh,
+                sourceRefs,
+                differentiationKey,
+              ]
+            properties:
+              recommendationId: { type: string, minLength: 1, maxLength: 128 }
+              shortTopicZh: { type: string, minLength: 1 }
+              whyRelevantZh: { type: string, minLength: 1 }
+              sourceRefs: { type: array, items: { type: string, minLength: 1 } }
+              differentiationKey: { type: string, minLength: 1 }
+    SceneNextQuestionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          operationId,
+          start,
+          contentType,
+          confirmedAnswers,
+          remainingQuestions,
+          remainingContentBudget,
+          stepIndex,
+          commandId,
+        ]
+      properties:
+        operationId: { type: string, minLength: 1, maxLength: 128 }
+        start: { $ref: "#/components/schemas/SceneStart" }
+        contentType: { type: string, enum: [DIALOGUE, ARTICLE] }
+        confirmedAnswers:
+          {
+            type: array,
+            maxItems: 10,
+            items: { $ref: "#/components/schemas/SceneAnswer" },
+          }
+        remainingQuestions: { type: integer, minimum: 0, maximum: 10 }
+        remainingContentBudget: { type: integer, minimum: 3, maximum: 10 }
+        stepIndex: { type: integer, minimum: 0, maximum: 10 }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneNextQuestionResult:
+      oneOf:
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [action, questionId, questionZh, options],
+            properties:
+              {
+                action: { type: string, const: ASK },
+                questionId: { type: string, minLength: 1 },
+                questionZh: { type: string, minLength: 1 },
+                options: { type: array, items: { type: string } },
+              },
+          }
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [action, collectedFacts, missingNonBlockingFacts],
+            properties:
+              {
+                action: { type: string, const: GENERATE },
+                collectedFacts: { type: array, items: { type: string } },
+                missingNonBlockingFacts:
+                  { type: array, items: { type: string } },
+              },
+          }
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [action],
+            properties:
+              { action: { type: string, const: INSUFFICIENT_INFORMATION } },
+          }
+      discriminator: { propertyName: action }
+    SceneDraftRequest:
+      type: object
+      additionalProperties: false
+      required: [task, session, remainingContentBudget, commandId]
+      properties:
+        task:
+          {
+            type: string,
+            enum: [SCENE_DIALOGUE_TURN_V1, SCENE_ARTICLE_DRAFT_V1],
+          }
+        session:
+          type: object
+          required:
+            [
+              operationId,
+              start,
+              contentType,
+              answers,
+              collectedFacts,
+              missingNonBlockingFacts,
+            ]
+          properties:
+            operationId: { type: string, minLength: 1, maxLength: 128 }
+            start: { $ref: "#/components/schemas/SceneStart" }
+            contentType: { type: string, enum: [DIALOGUE, ARTICLE] }
+            answers:
+              {
+                type: array,
+                minItems: 1,
+                maxItems: 10,
+                items: { $ref: "#/components/schemas/SceneAnswer" },
+              }
+            collectedFacts: { type: array, items: { type: string } }
+            missingNonBlockingFacts: { type: array, items: { type: string } }
+        remainingContentBudget: { type: integer, minimum: 3, maximum: 10 }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+        previousUnits:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items: { $ref: "#/components/schemas/SceneUnit" }
+          description: Previous visible draft supplied only for user-requested regeneration.
+    SceneDraftResult:
+      type: object
+      additionalProperties: false
+      required: [draftId, contentType, units]
+      properties:
+        draftId: { type: string, minLength: 1, maxLength: 128 }
+        contentType: { type: string, enum: [DIALOGUE, ARTICLE] }
+        units:
+          {
+            type: array,
+            minItems: 3,
+            maxItems: 10,
+            items: { $ref: "#/components/schemas/SceneUnit" },
+          }
+    SceneEditReviewRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [contentType, changedUnitIds, originalUnits, editedUnits, commandId]
+      properties:
+        contentType: { type: string, enum: [DIALOGUE, ARTICLE] }
+        changedUnitIds:
+          { type: array, minItems: 1, items: { type: string, minLength: 1 } }
+        originalUnits:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 10,
+            items: { $ref: "#/components/schemas/SceneUnit" },
+          }
+        editedUnits:
+          {
+            type: array,
+            minItems: 1,
+            maxItems: 10,
+            items: { $ref: "#/components/schemas/SceneUnit" },
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneEditReviewResult:
+      oneOf:
+        - {
+            type: object,
+            additionalProperties: false,
+            required: [decision],
+            properties: { decision: { type: string, const: PASS } },
+          }
+        - type: object
+          additionalProperties: false
+          required: [decision, issues]
+          properties:
+            decision: { type: string, const: NEEDS_USER_EDIT }
+            issues:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required:
+                  [unitId, startOffset, endOffset, reason, explanationZh]
+                properties:
+                  unitId: { type: string, minLength: 1, maxLength: 128 }
+                  startOffset: { type: integer, minimum: 0 }
+                  endOffset: { type: integer, minimum: 1 }
+                  reason:
+                    {
+                      type: string,
+                      enum:
+                        [
+                          REQUIRED_INFORMATION_MISSING,
+                          CONTRADICTION,
+                          UNINTELLIGIBLE,
+                          SEVERELY_UNNATURAL,
+                        ],
+                    }
+                  explanationZh: { type: string, minLength: 1 }
+      discriminator: { propertyName: decision }
+    ReadingFeedbackRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          sentenceId,
+          targetTextEn,
+          completionSignal,
+          audioMimeType,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        chapterId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        sentenceId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        targetTextEn:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        completionSignal:
+          type: string
+          enum: [TOUCH_REACHED_END, RECOGNITION_COMPLETE, MANUAL_CONFIRMATION]
+        audioMimeType:
+          type: string
+          const: audio/mp4
+        audioBase64:
+          type: string
+          minLength: 1
+          maxLength: 900000
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    ReadingFeedbackResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          feedbackZh,
+          feedbackItems,
+          transcript,
+          contentComplete,
+          feedbackConfidence,
+          action,
+        ]
+      properties:
+        feedbackZh:
+          type: string
+          minLength: 1
+        feedbackItems:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              [aspect, targetText, observationZh, suggestionZh, evidence]
+            properties:
+              aspect:
+                type: string
+                enum: [WORD_OR_PHRASE, RHYTHM, COMPLETENESS]
+              targetText:
+                type: [string, "null"]
+                minLength: 1
+              observationZh:
+                type: string
+                minLength: 1
+              suggestionZh:
+                type: string
+                minLength: 1
+              evidence:
+                type: string
+                enum: [AUDIO, TRANSCRIPT, GENERAL]
+        transcript:
+          type: string
+        contentComplete:
+          type: boolean
+        feedbackConfidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        action:
+          type: string
+          enum: [CONTINUE, REPEAT_FOR_CLARITY]
+    SpeakingTranscriptionRequest:
+      type: object
+      additionalProperties: false
+      required: [chapterId, sentenceId, audioMimeType, audioBase64, commandId]
+      properties:
+        chapterId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        sentenceId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        audioMimeType:
+          type: string
+          const: audio/mp4
+        audioBase64:
+          type: string
+          minLength: 1
+          maxLength: 900000
+          pattern: "^[A-Za-z0-9+/]+={0,2}$"
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    SpeakingTranscriptionResult:
+      type: object
+      additionalProperties: false
+      required: [transcript, lowConfidenceSegments, confidence]
+      properties:
+        transcript:
+          type: string
+        lowConfidenceSegments:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: [number, "null"]
+          description: Null when the transcription provider supplies no confidence evidence.
+          minimum: 0
+          maximum: 1
+    DiaryDictationRequest:
+      type: object
+      additionalProperties: false
+      required: [audioMimeType, audioBase64, commandId]
+      properties:
+        audioMimeType:
+          type: string
+          const: audio/mp4
+        audioBase64:
+          type: string
+          minLength: 1
+          maxLength: 900000
+          pattern: "^[A-Za-z0-9+/]+={0,2}$"
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    FullSentenceSpeakingEvaluationRequest:
+      allOf:
+        - $ref: "#/components/schemas/SpeakingTranscriptionRequest"
+        - type: object
+          additionalProperties: false
+          required:
+            [
+              targetTextEn,
+              confirmedTranscript,
+              targetHidden,
+              answerAudioPlayed,
+              userTranscriptConfirmed,
+            ]
+          properties:
+            targetTextEn:
+              type: string
+              minLength: 1
+              maxLength: 1000
+            confirmedTranscript:
+              type: string
+              minLength: 1
+              maxLength: 2000
+            targetHidden:
+              type: boolean
+              const: true
+            answerAudioPlayed:
+              type: boolean
+            userTranscriptConfirmed:
+              type: boolean
+              const: true
+    FullSentenceSpeakingEvaluationResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          decision,
+          completenessScore,
+          coreMeaningRecognizable,
+          pronunciationIntelligible,
+          feedbackZh,
+          pronunciationConfidence,
+        ]
+      properties:
+        decision:
+          type: string
+          enum: [PASS, FAIL, INCONCLUSIVE]
+        completenessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        coreMeaningRecognizable:
+          type: boolean
+        pronunciationIntelligible:
+          type: boolean
+        feedbackZh:
+          type: string
+          minLength: 1
+        pronunciationConfidence:
+          type: number
+          minimum: 0
+          maximum: 1
+    PatternPracticeGenerationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          sourceSentenceId,
+          sourceTextEn,
+          sourceTextZh,
+          patternId,
+          structure,
+          explanationZh,
+          commandId,
+        ]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        sourceSentenceId: { type: string, minLength: 1, maxLength: 128 }
+        sourceTextEn: { type: string, minLength: 1, maxLength: 1000 }
+        sourceTextZh: { type: string, minLength: 1, maxLength: 1000 }
+        patternId: { type: string, minLength: 1, maxLength: 128 }
+        structure: { type: string, minLength: 1, maxLength: 1000 }
+        explanationZh: { type: string, minLength: 1, maxLength: 1000 }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    PatternPracticeGenerationResult:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [status, patternId, examples]
+          properties:
+            status: { type: string, const: READY }
+            patternId: { type: string, minLength: 1, maxLength: 128 }
+            examples:
+              type: array
+              minItems: 1
+              maxItems: 5
+              items: { $ref: "#/components/schemas/PatternPracticeExample" }
+        - type: object
+          additionalProperties: false
+          required: [status]
+          properties:
+            status: { type: string, const: NOT_NATURALLY_VERIFIABLE }
+      discriminator: { propertyName: status }
+    PatternPracticeExample:
+      type: object
+      additionalProperties: false
+      required:
+        [exampleId, sceneZh, aiPromptEn, targetResponseEn, targetResponseZh]
+      properties:
+        exampleId: { type: string, minLength: 1, maxLength: 128 }
+        sceneZh: { type: string, minLength: 1 }
+        aiPromptEn: { type: string, minLength: 1 }
+        targetResponseEn: { type: string, minLength: 1 }
+        targetResponseZh: { type: string, minLength: 1 }
+    PatternPracticeFeedbackRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          patternId,
+          exampleId,
+          mode,
+          targetTextEn,
+          targetStructure,
+          targetVisible,
+          audioMimeType,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        patternId: { type: string, minLength: 1, maxLength: 128 }
+        exampleId: { type: string, minLength: 1, maxLength: 128 }
+        mode: { type: string, enum: [READING, RESPONSE] }
+        targetTextEn: { type: string, minLength: 1, maxLength: 1000 }
+        targetStructure: { type: string, minLength: 1, maxLength: 1000 }
+        targetVisible: { type: boolean, const: true }
+        audioMimeType: { type: string, const: audio/mp4 }
+        audioBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 900000,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    PatternPracticeFeedbackResult:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required:
+            [status, transcript, feedbackZh, repeatRecommended, confidence]
+          properties:
+            status: { type: string, const: READY }
+            transcript: { type: string }
+            feedbackZh: { type: string, minLength: 1 }
+            repeatRecommended: { type: boolean }
+            confidence: { type: number, minimum: 0, maximum: 1 }
+        - type: object
+          additionalProperties: false
+          required: [status]
+          properties:
+            status: { type: string, const: INCONCLUSIVE }
+      discriminator: { propertyName: status }
+    PatternIndependentEvaluationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          patternId,
+          exampleId,
+          targetResponseEn,
+          targetStructure,
+          targetHidden,
+          answerAudioPlayed,
+          helpUsed,
+          audioMimeType,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        patternId: { type: string, minLength: 1, maxLength: 128 }
+        exampleId: { type: string, minLength: 1, maxLength: 128 }
+        targetResponseEn: { type: string, minLength: 1, maxLength: 1000 }
+        targetStructure: { type: string, minLength: 1, maxLength: 1000 }
+        targetHidden: { type: boolean, const: true }
+        answerAudioPlayed: { type: boolean, const: false }
+        helpUsed: { type: boolean, const: false }
+        audioMimeType: { type: string, const: audio/mp4 }
+        audioBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 900000,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    PatternIndependentEvaluationResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          decision,
+          structurePreserved,
+          contentSuitable,
+          pronunciationIntelligible,
+          feedbackZh,
+          confidence,
+        ]
+      properties:
+        decision: { type: string, enum: [PASS, FAIL, INCONCLUSIVE] }
+        structurePreserved: { type: boolean }
+        contentSuitable: { type: boolean }
+        pronunciationIntelligible: { type: boolean }
+        feedbackZh: { type: string, minLength: 1 }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+    SceneResponseChapterSentence:
+      type: object
+      additionalProperties: false
+      required: [sentenceId, textEn, textZh, isFocus]
+      properties:
+        sentenceId: { type: string, minLength: 1, maxLength: 128 }
+        textEn: { type: string, minLength: 1, maxLength: 1000 }
+        textZh: { type: string, minLength: 1, maxLength: 1000 }
+        isFocus: { type: boolean }
+    SceneResponseContextLine:
+      type: object
+      additionalProperties: false
+      required: [speaker, textEn]
+      properties:
+        speaker: { type: string, minLength: 1, maxLength: 128 }
+        textEn: { type: string, minLength: 1, maxLength: 1000 }
+    SceneResponseGenerationRequest:
+      type: object
+      additionalProperties: false
+      required: [chapterId, focusSentenceId, chapterSentences, commandId]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        focusSentenceId: { type: string, minLength: 1, maxLength: 128 }
+        chapterSentences:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items: { $ref: "#/components/schemas/SceneResponseChapterSentence" }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneResponseGenerationResult:
+      type: object
+      additionalProperties: false
+      required:
+        [taskId, sentenceId, backgroundEn, contextLines, targetSentenceEn]
+      properties:
+        taskId: { type: string, minLength: 1, maxLength: 128 }
+        sentenceId: { type: string, minLength: 1, maxLength: 128 }
+        backgroundEn: { type: [string, "null"], minLength: 1, maxLength: 1000 }
+        contextLines:
+          type: array
+          maxItems: 3
+          items: { $ref: "#/components/schemas/SceneResponseContextLine" }
+        targetSentenceEn: { type: string, minLength: 1, maxLength: 1000 }
+    SceneResponseTrainingFeedbackRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          taskId,
+          sentenceId,
+          roundIndex,
+          targetTextEn,
+          contextLines,
+          confirmedTranscript,
+          userTranscriptConfirmed,
+          audioMimeType,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        taskId: { type: string, minLength: 1, maxLength: 128 }
+        sentenceId: { type: string, minLength: 1, maxLength: 128 }
+        roundIndex: { type: integer, enum: [0, 1] }
+        targetTextEn: { type: string, minLength: 1, maxLength: 1000 }
+        contextLines:
+          type: array
+          maxItems: 3
+          items: { $ref: "#/components/schemas/SceneResponseContextLine" }
+        confirmedTranscript: { type: string, minLength: 1, maxLength: 2000 }
+        userTranscriptConfirmed: { type: boolean, const: true }
+        audioMimeType: { type: string, const: audio/mp4 }
+        audioBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 900000,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneResponseTrainingFeedbackResult:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [status, feedbackZh, pronunciationConfidence]
+          properties:
+            status: { type: string, const: READY }
+            feedbackZh: { type: string, minLength: 1 }
+            pronunciationConfidence: { type: number, minimum: 0, maximum: 1 }
+        - type: object
+          additionalProperties: false
+          required: [status]
+          properties:
+            status: { type: string, const: INCONCLUSIVE }
+      discriminator: { propertyName: status }
+    SceneResponseEvaluationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          chapterId,
+          taskId,
+          sentenceId,
+          roundIndex,
+          targetTextEn,
+          targetHidden,
+          contextLines,
+          confirmedTranscript,
+          userTranscriptConfirmed,
+          audioMimeType,
+          audioBase64,
+          commandId,
+        ]
+      properties:
+        chapterId: { type: string, minLength: 1, maxLength: 128 }
+        taskId: { type: string, minLength: 1, maxLength: 128 }
+        sentenceId: { type: string, minLength: 1, maxLength: 128 }
+        roundIndex: { type: integer, const: 2 }
+        targetTextEn: { type: string, minLength: 1, maxLength: 1000 }
+        targetHidden: { type: boolean, const: true }
+        contextLines:
+          type: array
+          maxItems: 3
+          items: { $ref: "#/components/schemas/SceneResponseContextLine" }
+        confirmedTranscript: { type: string, minLength: 1, maxLength: 2000 }
+        userTranscriptConfirmed: { type: boolean, const: true }
+        audioMimeType: { type: string, const: audio/mp4 }
+        audioBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 900000,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SceneResponseEvaluationResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          decision,
+          correctTurn,
+          targetSentenceComplete,
+          pronunciationIntelligible,
+          feedbackZh,
+          pronunciationConfidence,
+        ]
+      properties:
+        decision: { type: string, enum: [PASS, FAIL, INCONCLUSIVE] }
+        correctTurn: { type: boolean }
+        targetSentenceComplete: { type: boolean }
+        pronunciationIntelligible: { type: boolean }
+        feedbackZh: { type: string, minLength: 1 }
+        pronunciationConfidence: { type: number, minimum: 0, maximum: 1 }
+    LearningExplanationRequest:
+      type: object
+      additionalProperties: false
+      required: [chapter, focusSentenceId, round, commandId]
+      properties:
+        chapter:
+          $ref: "#/components/schemas/FixedExplanationChapter"
+        focusSentenceId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        round:
+          type: integer
+          minimum: 1
+          maximum: 3
+        existingBaseExplanationZh:
+          type: string
+          minLength: 1
+        lockedTargets:
+          type: array
+          description: Immutable selected targets of only the current focus sentence. Absent is legacy; an explicit empty list means no selected targets. Null and malformed snapshots are rejected before any provider call. Related vocabulary remains explanation-only even when its standalone word target was cancelled.
+          items:
+            $ref: "#/components/schemas/LockedExplanationTarget"
+        requestedExpression:
+          $ref: "#/components/schemas/RequestedExpression"
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    FixedExplanationChapter:
+      type: object
+      additionalProperties: false
+      required: [chapterId, sentences]
+      properties:
+        chapterId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        sentences:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/FixedExplanationSentence"
+    FixedExplanationSentence:
+      type: object
+      additionalProperties: false
+      required: [sentenceId, textEn, textZh, isFocus]
+      properties:
+        sentenceId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        textEn:
+          type: string
+          minLength: 1
+        textZh:
+          type: string
+          minLength: 1
+        isFocus:
+          type: boolean
+    RequestedExpression:
+      type: object
+      additionalProperties: false
+      required: [expressionId, display]
+      properties:
+        expressionId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        display:
+          type: string
+          minLength: 1
+        startUtf16:
+          type: integer
+          minimum: 0
+          maximum: 9007199254740991
+          description: Paired with endUtf16. Required whenever lockedTargets is present. Exact UTF-16 full-word or natural-phrase start in the current fixed focus sentence, not a position inferred from repeated spelling.
+        endUtf16:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+          description: Exclusive UTF-16 end; must be greater than startUtf16 and the exact source substring must equal display. Both offsets may be absent only for legacy requests.
+    LockedExplanationVocabulary:
+      type: object
+      additionalProperties: false
+      required: [display, senseZh, unitType, sourceEvidence]
+      properties:
+        display: { type: string, pattern: '\S' }
+        senseZh: { type: string, pattern: '\S' }
+        unitType: { type: string, enum: [WORD, FIXED_EXPRESSION] }
+        sourceEvidence:
+          $ref: "#/components/schemas/RelatedVocabularyItem/properties/sourceEvidence"
+    LockedExplanationTarget:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          targetId,
+          type,
+          display,
+          explanationZh,
+          structureParts,
+          sourceEvidence,
+          relatedVocabulary,
+        ]
+      description: One actually selected current-focus target. IDs and actual vocabulary occurrences are unique. Same-occurrence vocabulary metadata must agree exactly across actual targets and pattern explanations. No formal knowledge identity or learning state is inferred from this input.
+      properties:
+        targetId: { type: string, maxLength: 128, pattern: '\S' }
+        type: { type: string, enum: [WORD, FIXED_EXPRESSION, PATTERN] }
+        display: { type: string, pattern: '\S' }
+        explanationZh: { type: string, pattern: '\S' }
+        structureParts:
+          type: array
+          description: Nonblank elements; PATTERN with nonnull sourceEvidence requires at least one real structure part. Legacy null evidence permits an empty array without invented decomposition.
+          items: { type: string, pattern: '\S' }
+        sourceEvidence:
+          anyOf:
+            - $ref: "#/components/schemas/RelatedVocabularyItem/properties/sourceEvidence"
+            - { type: "null" }
+          description: Null means a legacy unknown occurrence; no repeated-word location may be invented.
+        relatedVocabulary:
+          type: [array, "null"]
+          description: Resolved pattern-associated explanations, never additional selected targets. Null means legacy unknown. Non-pattern targets may only have an empty array or legacy null.
+          items:
+            $ref: "#/components/schemas/LockedExplanationVocabulary"
+    LearningExplanationRecoveryResult:
+      oneOf:
+        - type: object
+          additionalProperties: false
+          required: [status, commandId, provenance, result]
+          properties:
+            status: { type: string, const: COMPLETED }
+            commandId: { type: string, minLength: 1, maxLength: 128 }
+            provenance:
+              {
+                type: string,
+                const: EXISTING_DELIVERY,
+                description: Original stored delivery,
+                not evidence of a newly locked-context generation,
+              }
+            result: { $ref: "#/components/schemas/LearningExplanationResult" }
+        - type: object
+          additionalProperties: false
+          required: [status]
+          properties:
+            status:
+              {
+                type: string,
+                enum:
+                  [
+                    NO_DELIVERY,
+                    NO_DELIVERY_WITH_ATTEMPT,
+                    LEGACY_UNAVAILABLE,
+                    PROCESSING,
+                    FAILED,
+                    EXPIRED,
+                    INVALID_DELIVERY,
+                    BILLING_UNVERIFIED,
+                    PENDING_SETTLEMENT,
+                    RELEASED,
+                    RECONCILIATION_REQUIRED,
+                    INVALID_RESULT,
+                  ],
+              }
+    LearningExplanationResult:
+      oneOf:
+        - $ref: "#/components/schemas/SentenceLearningExplanation"
+        - $ref: "#/components/schemas/ExpressionLearningExplanation"
+      discriminator:
+        propertyName: kind
+    SentenceLearningExplanation:
+      type: object
+      additionalProperties: false
+      required: [kind, explanationZh]
+      properties:
+        kind:
+          type: string
+          const: SENTENCE
+        explanationZh:
+          type: string
+          minLength: 1
+    ExpressionLearningExplanation:
+      type: object
+      additionalProperties: false
+      required: [kind, expressionId, explanationZh, phonetic]
+      properties:
+        kind:
+          type: string
+          const: EXPRESSION
+        expressionId:
+          type: string
+          minLength: 1
+          maxLength: 128
+        explanationZh:
+          type: string
+          minLength: 1
+        phonetic:
+          type: [string, "null"]
+          minLength: 1
+    AgreementDocument:
+      type: object
+      additionalProperties: false
+      required: [kind, titleZh, version, sections]
+      properties:
+        kind:
+          type: string
+          enum: [USER_AGREEMENT, PRIVACY_POLICY]
+        titleZh:
+          type: string
+          minLength: 1
+        version:
+          type: string
+          minLength: 1
+        sections:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+    SafetyCheckRequest:
+      type: object
+      additionalProperties: false
+      required: [text, sourceType, contentShape, commandId]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          writeOnly: true
+        sourceType:
+          type: string
+          enum: [DIARY, RECORDING, AI_SCENE]
+        contentShape:
+          type: string
+          enum: [ARTICLE, DIALOGUE]
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    SafetyCheckResult:
+      oneOf:
+        - $ref: "#/components/schemas/PassedSafetyCheckResult"
+        - $ref: "#/components/schemas/BlockedSafetyCheckResult"
+      discriminator:
+        propertyName: status
+    PassedSafetyCheckResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: PASSED
+    BlockedSafetyCheckResult:
+      type: object
+      additionalProperties: false
+      required: [status, safetyCaseId]
+      properties:
+        status:
+          type: string
+          const: BLOCKED
+        safetyCaseId:
+          type: string
+          format: uuid
+    SemanticUnitSplitRequest:
+      type: object
+      additionalProperties: false
+      required: [text, contentShape, commandId]
+      properties:
+        text: { type: string, minLength: 1, writeOnly: true }
+        contentShape: { type: string, enum: [ARTICLE, DIALOGUE] }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    SemanticUnitSplitResult:
+      type: object
+      required: [units, coverage]
+      properties:
+        units:
+          type: array
+          minItems: 1
+          items: { type: object }
+        coverage:
+          type: object
+          required: [complete, missingSpans, duplicatedSpans]
+          properties:
+            complete: { type: boolean, const: true }
+            missingSpans: { type: array, maxItems: 0 }
+            duplicatedSpans: { type: array, maxItems: 0 }
+    ChapterContextSelectionRequest:
+      type: object
+      required: [units, selectedUnitIds, commandId]
+      properties:
+        units:
+          type: array
+          minItems: 1
+          items: { type: object }
+        selectedUnitIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: { type: string }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    ChapterContextSelectionResult:
+      type: object
+      required: [chapters]
+      properties:
+        chapters:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [chapterId, unitIds]
+            properties:
+              chapterId: { type: string }
+              unitIds:
+                type: array
+                minItems: 1
+                maxItems: 4
+                items: { type: string }
+    KnownKnowledgeCandidate:
+      type: object
+      additionalProperties: false
+      required: [ref, type, display, meaningZh]
+      properties:
+        ref:
+          type: string
+          minLength: 1
+          maxLength: 128
+          description: Opaque exact local item reference prefixed with its type and a colon; no whitespace. Prefix must match type.
+        type: { type: string, enum: [VOCABULARY, PATTERN] }
+        display: { type: string, minLength: 1 }
+        meaningZh: { type: string, minLength: 1 }
+    EnglishCandidateGenerationRequest:
+      type: object
+      additionalProperties: false
+      required: [sourceType, units, chapters, selectedUnitIds, commandId]
+      properties:
+        knownKnowledge:
+          type: array
+          maxItems: 16
+          description: Optional ordered snapshot of active known items. Refs must be unique; display and meaningZh together may contain at most 4000 Unicode characters across the list. No item is truncated. Missing means no known candidates, never inferred knowledge.
+          items:
+            $ref: "#/components/schemas/KnownKnowledgeCandidate"
+        sourceType: { type: string, enum: [DIARY, RECORDING, AI_SCENE] }
+        units:
+          type: array
+          minItems: 1
+          items: { type: object }
+        chapters:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [chapterId, unitIds]
+            properties:
+              chapterId: { type: string }
+              unitIds:
+                type: array
+                minItems: 1
+                maxItems: 4
+                items: { type: string }
+        selectedUnitIds:
+          type: array
+          minItems: 1
+          maxItems: 3
+          uniqueItems: true
+          items: { type: string }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    EnglishCandidateGenerationResult:
+      type: object
+      required: [chapters]
+      properties:
+        chapters:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [chapterId, sentences]
+            properties:
+              chapterId: { type: string }
+              sentences:
+                type: array
+                minItems: 1
+                maxItems: 4
+                items:
+                  type: object
+                  required: [sourceUnitId, textZh, isFocus, candidates]
+                  properties:
+                    sourceUnitId: { type: string }
+                    textZh: { type: string }
+                    isFocus: { type: boolean }
+                    candidates:
+                      type: array
+                      minItems: 1
+                      maxItems: 3
+                      items: { type: object }
+    LearningTargetExtractionRequest:
+      type: object
+      additionalProperties: false
+      required: [chapters, commandId]
+      properties:
+        chapters:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [chapterId, sentences]
+            properties:
+              chapterId: { type: string, minLength: 1, maxLength: 128 }
+              sentences:
+                type: array
+                minItems: 1
+                maxItems: 4
+                items:
+                  type: object
+                  required: [unitId, textZh, textEn, isFocus]
+                  properties:
+                    unitId: { type: string, minLength: 1, maxLength: 128 }
+                    textZh: { type: string, minLength: 1 }
+                    textEn: { type: string, minLength: 1 }
+                    isFocus: { type: boolean }
+                    reusedKnowledge:
+                      type: array
+                      maxItems: 16
+                      description: Exact existing knowledge referenced by this sentence's selected English candidate. Refs are unique per sentence; unique input items share the 4000 Unicode character budget. Each reused focus item must produce one default target with the exact same identity and meaning. A single requestedExpression does not regenerate other defaults.
+                      items:
+                        $ref: "#/components/schemas/KnownKnowledgeCandidate"
+        requestedExpression:
+          type: object
+          required: [unitId, expressionId]
+          properties:
+            unitId: { type: string, minLength: 1, maxLength: 128 }
+            expressionId: { type: string, minLength: 1, maxLength: 128 }
+            display: { type: string, minLength: 1 }
+            acceptedVocabulary:
+              $ref: "#/components/schemas/AcceptedVocabulary"
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    AcceptedVocabulary:
+      type: object
+      additionalProperties: false
+      required: [display, senseZh, unitType, sourceEvidence]
+      description: Optional only for a word:N request. A previously delivered current-occurrence explanation, never formal knowledge identity. Null is invalid. Before any provider request its exact complete word evidence must match N in the owning requested unit. The returned target preserves display, contextual Chinese meaning, category and complete evidence exactly. Other occurrences cannot contribute this snapshot; the existing request command is unchanged.
+      properties:
+        display: { type: string, pattern: '\S' }
+        senseZh: { type: string, pattern: '\S' }
+        unitType: { type: string, enum: [WORD, FIXED_EXPRESSION] }
+        sourceEvidence:
+          $ref: "#/components/schemas/RelatedVocabularyItem/properties/sourceEvidence"
+    RelatedVocabularyItem:
+      type: object
+      additionalProperties: false
+      required: [itemRef, unitId, display, senseZh, unitType, sourceEvidence]
+      description: A target-local explanatory snapshot, not a selected learning target or a shared knowledge identity. It belongs to the owning target's exact focus sentence and must have the same display, category and contextual Chinese meaning as any vocabulary target at that exact span.
+      properties:
+        itemRef: { type: string, maxLength: 128, pattern: '\S' }
+        unitId: { type: string, minLength: 1, maxLength: 128 }
+        display: { type: string, pattern: '\S' }
+        senseZh: { type: string, pattern: '\S' }
+        unitType: { type: string, enum: [WORD, FIXED_EXPRESSION] }
+        sourceEvidence:
+          type: object
+          additionalProperties: false
+          required:
+            [
+              version,
+              startUtf16,
+              endUtf16,
+              surfaceForm,
+              normalizedForm,
+              allowedForms,
+            ]
+          properties:
+            version: { type: integer, const: 1 }
+            startUtf16: { type: integer, minimum: 0, maximum: 9007199254740991 }
+            endUtf16: { type: integer, minimum: 1, maximum: 9007199254740991 }
+            surfaceForm: { type: string, pattern: '\S' }
+            normalizedForm: { type: string, pattern: '\S' }
+            allowedForms:
+              type: array
+              minItems: 1
+              maxItems: 1
+              items: { type: string }
+    LearningTargetExtractionResult:
+      type: object
+      required: [targets, queryableExpressions, learningScopes]
+      properties:
+        targets:
+          type: array
+          items:
+            type: object
+            properties:
+              relatedVocabularyItems:
+                type: [array, "null"]
+                description: Compatible group with relatedVocabularyItemRefs. Both absent or both null are legacy; otherwise both are arrays. Only PATTERN may have non-empty items. Every local item is referenced exactly once, with no duplicate spans or orphan definitions. These explanations never create extra learning tasks.
+                items:
+                  $ref: "#/components/schemas/RelatedVocabularyItem"
+              relatedVocabularyItemRefs:
+                type: [array, "null"]
+                uniqueItems: true
+                description: Resolves only against this target's relatedVocabularyItems. relatedVocabulary must equal the resolved display values in this exact order, preserving older clients' presentation.
+                items: { type: string, maxLength: 128, pattern: '\S' }
+              candidateExample:
+                type: [object, "null"]
+                additionalProperties: false
+                required: [textEn, textZh]
+                properties:
+                  textEn: { type: string, pattern: '\S' }
+                  textZh: { type: string, pattern: '\S' }
+              reusedKnowledgeRef:
+                type: [string, "null"]
+                maxLength: 128
+                pattern: '^(VOCABULARY|PATTERN):[^\s]+$'
+        queryableExpressions:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [expressionId, unitId, display]
+            properties:
+              expressionId: { type: string, minLength: 1, maxLength: 128 }
+              unitId: { type: string, minLength: 1, maxLength: 128 }
+              display: { type: string, minLength: 1 }
+              explanationZh:
+                type: string
+                minLength: 1
+                description: Optional only for an older provider response; current providers supply the contextual Chinese meaning before selection.
+        learningScopes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              [
+                PRIMARY_SCHOOL,
+                JUNIOR_HIGH,
+                SENIOR_HIGH,
+                CET_4,
+                CET_6,
+                POSTGRADUATE,
+                TOEFL,
+                IELTS,
+                GRE,
+                TEM_8,
+                IELTS_TOEFL,
+                BUSINESS_ENGLISH,
+              ]
+    KnowledgeExampleGenerationRequest:
+      type: object
+      additionalProperties: false
+      required: [itemId, targetType, display, meaningZh, sourceScene, commandId]
+      properties:
+        itemId: { type: string, minLength: 1, maxLength: 128 }
+        targetType: { type: string, enum: [VOCABULARY, PATTERN] }
+        display: { type: string, minLength: 1 }
+        meaningZh: { type: string, minLength: 1 }
+        sourceScene:
+          type: array
+          minItems: 1
+          maxItems: 4
+          items:
+            type: object
+            additionalProperties: false
+            required: [textEn, textZh]
+            properties:
+              textEn: { type: string, minLength: 1 }
+              textZh: { type: string, minLength: 1 }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    KnowledgeExampleGenerationResult:
+      type: object
+      additionalProperties: false
+      required:
+        [
+          itemId,
+          phonetic,
+          pronunciationText,
+          representativeScene,
+          naturalRevalidation,
+          examples,
+        ]
+      properties:
+        itemId: { type: string, minLength: 1, maxLength: 128 }
+        phonetic: { type: [string, "null"] }
+        pronunciationText: { type: string, minLength: 1 }
+        representativeScene: { type: string, minLength: 1 }
+        naturalRevalidation: { type: [boolean, "null"] }
+        examples:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            type: object
+            additionalProperties: false
+            required: [textEn, textZh, pronunciationText]
+            properties:
+              textEn: { type: string, minLength: 1 }
+              textZh: { type: string, minLength: 1 }
+              pronunciationText: { type: string, minLength: 1 }
+    SafetyHandlingCommand:
+      type: object
+      additionalProperties: false
+      required: [commandId]
+      properties:
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    AccountProfile:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email: { type: string, format: email, maxLength: 320 }
+    AccountDeletionCommand:
+      type: object
+      additionalProperties: false
+      required: [commandId]
+      properties:
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    AccountDeletionResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status: { type: string, const: DELETED }
+    BillingSummary:
+      type: object
+      additionalProperties: false
+      required: [balanceAmountFen, charges]
+      properties:
+        balanceAmountFen: { type: integer, minimum: 0, maximum: 100000000 }
+        charges:
+          type: array
+          maxItems: 500
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              [
+                chargeId,
+                amountFen,
+                occurredAt,
+                modelSource,
+                callType,
+                operationLabelZh,
+              ]
+            properties:
+              chargeId: { type: string, minLength: 1, maxLength: 128 }
+              amountFen: { type: integer, minimum: 0, maximum: 100000000 }
+              occurredAt: { type: string, format: date-time }
+              modelSource: { type: string, minLength: 1, maxLength: 128 }
+              callType:
+                {
+                  type: string,
+                  enum:
+                    [
+                      INITIAL_CALL,
+                      AUTOMATIC_RETRY,
+                      USER_RETRY,
+                      PROVIDER_SWITCH,
+                    ],
+                }
+              operationLabelZh: { type: string, minLength: 1, maxLength: 200 }
+    RechargeConfiguration:
+      type: object
+      additionalProperties: false
+      required: [recommendedOptions, minimumAmountFen, maximumAmountFen]
+      properties:
+        recommendedOptions:
+          type: array
+          minItems: 1
+          maxItems: 10
+          items:
+            type: object
+            additionalProperties: false
+            required: [amountFen, visionZh]
+            properties:
+              amountFen: { type: integer, minimum: 1 }
+              visionZh: { type: string, minLength: 1, maxLength: 300 }
+        minimumAmountFen: { type: integer, minimum: 1 }
+        maximumAmountFen: { type: integer, minimum: 1 }
+    RechargeOrderCommand:
+      type: object
+      additionalProperties: false
+      required: [amountFen, paymentMethod, commandId]
+      properties:
+        amountFen: { type: integer, minimum: 1 }
+        paymentMethod: { type: string, enum: [WECHAT_PAY, ALIPAY] }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    RechargeOrderResult:
+      type: object
+      additionalProperties: false
+      required: [orderId, status, paymentLaunch]
+      properties:
+        orderId: { type: string, minLength: 1, maxLength: 128 }
+        status:
+          {
+            type: string,
+            enum:
+              [CREATED, PENDING_PAYMENT, IN_PROGRESS, PAID, FAILED, CANCELLED],
+          }
+        paymentLaunch: { type: [string, "null"], minLength: 1, maxLength: 4096 }
+    RefundPage:
+      type: object
+      additionalProperties: false
+      required:
+        [refundableAmountFen, refundMethodLabelZh, requestId, requestStatus]
+      properties:
+        refundableAmountFen: { type: integer, minimum: 0 }
+        refundMethodLabelZh: { type: string, minLength: 1, maxLength: 200 }
+        requestId: { type: [string, "null"], minLength: 1, maxLength: 128 }
+        requestStatus:
+          {
+            type: [string, "null"],
+            enum:
+              [
+                REQUESTED,
+                REVIEWING,
+                APPROVED,
+                REFUNDED,
+                REJECTED,
+                FAILED,
+                null,
+              ],
+          }
+    RefundCommand:
+      type: object
+      additionalProperties: false
+      required: [amountFen, commandId]
+      properties:
+        amountFen: { type: integer, minimum: 1 }
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    RefundResult:
+      type: object
+      additionalProperties: false
+      required: [requestId, status]
+      properties:
+        requestId: { type: string, minLength: 1, maxLength: 128 }
+        status:
+          {
+            type: string,
+            enum: [REQUESTED, REVIEWING, APPROVED, REFUNDED, REJECTED, FAILED],
+          }
+    PaymentEventEnvelope:
+      type: object
+      additionalProperties: false
+      required: [payloadBase64, signature, timestamp]
+      properties:
+        payloadBase64:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 16384,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        signature:
+          {
+            type: string,
+            minLength: 1,
+            maxLength: 512,
+            pattern: "^[A-Za-z0-9+/]+={0,2}$",
+          }
+        timestamp: { type: string, pattern: "^[0-9]{10}$" }
+    MinorRechargeSupportCommand:
+      type: object
+      additionalProperties: false
+      required: [commandId]
+      properties:
+        commandId: { type: string, minLength: 1, maxLength: 128 }
+    MinorRechargeSupportResult:
+      type: object
+      additionalProperties: false
+      required: [supportCaseId, status]
+      properties:
+        supportCaseId: { type: string, minLength: 1, maxLength: 128 }
+        status:
+          { type: string, enum: [REQUESTED, REVIEWING, RESOLVED, REJECTED] }
+    AppMessagesResponse:
+      type: object
+      additionalProperties: false
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          maxItems: 200
+          items:
+            type: object
+            additionalProperties: false
+            required:
+              [
+                messageId,
+                kind,
+                summaryZh,
+                relatedContentLabelZh,
+                createdAt,
+                read,
+                target,
+              ]
+            properties:
+              messageId: { type: string, maxLength: 128 }
+              kind: { type: string, enum: [MANUAL_REVIEW_RESULT, SYSTEM] }
+              summaryZh: { type: string, maxLength: 2000 }
+              relatedContentLabelZh: { type: [string, "null"], maxLength: 500 }
+              createdAt: { type: string, format: date-time }
+              read: { type: boolean }
+              target:
+                oneOf:
+                  - type: "null"
+                  - type: object
+                    additionalProperties: false
+                    required: [route, resourceId]
+                    properties:
+                      route: { type: string, const: MANUAL_REVIEW_RESULT }
+                      resourceId: { type: string, maxLength: 128 }
+    ManualReviewSubmissionResult:
+      type: object
+      additionalProperties: false
+      required: [status, reviewRequestId]
+      properties:
+        status: { type: string, const: SUBMITTED }
+        reviewRequestId: { type: string, format: uuid }
+        reviewStatus:
+          type: string
+          enum: [PENDING, APPROVED, NOT_APPROVED]
+          description: Current saved state, including an idempotent retry after an administrator decision. Optional only for legacy wire compatibility; current clients require it before choosing a destination.
+    ManualReviewResult:
+      type: object
+      additionalProperties: false
+      required: [outcome, source]
+      properties:
+        outcome: { type: string, enum: [APPROVED, NOT_APPROVED] }
+        source:
+          type: object
+          additionalProperties: false
+          required: [safetyCaseId, text, sourceType, contentShape, userReasonZh]
+          properties:
+            safetyCaseId: { type: string, maxLength: 128 }
+            text: { type: string, maxLength: 100000 }
+            sourceType: { type: string, enum: [DIARY, RECORDING, AI_SCENE] }
+            contentShape: { type: string, enum: [ARTICLE, DIALOGUE] }
+            userReasonZh: { type: string, maxLength: 2000 }
+    SafetyHandlingDetails:
+      type: object
+      required:
+        [safetyCaseId, originalSource, userReasonZh, deidentifiedSource, edits]
+      properties:
+        safetyCaseId: { type: string, format: uuid }
+        originalSource: { type: object }
+        userReasonZh: { type: string, minLength: 1 }
+        deidentifiedSource: { type: object }
+        edits:
+          type: array
+          minItems: 1
+          items: { type: object }
+    PasswordResetRequest:
+      type: object
+      additionalProperties: false
+      required: [email, commandId]
+      properties:
+        email:
+          type: string
+          format: email
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    PasswordResetRequestResult:
+      type: object
+      additionalProperties: false
+      required: [status, challengeId]
+      properties:
+        status:
+          type: string
+          const: SENT
+        challengeId:
+          type: string
+          format: uuid
+    PasswordResetVerificationRequest:
+      type: object
+      additionalProperties: false
+      required: [bearer]
+      properties:
+        bearer:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+    PasswordResetVerificationResult:
+      oneOf:
+        - $ref: "#/components/schemas/InvalidOrExpiredSessionResult"
+        - $ref: "#/components/schemas/VerifiedPasswordResetResult"
+      discriminator:
+        propertyName: status
+    VerifiedPasswordResetResult:
+      type: object
+      additionalProperties: false
+      required: [status, resetToken]
+      properties:
+        status:
+          type: string
+          const: VERIFIED
+        resetToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+    PasswordResetCompletionRequest:
+      type: object
+      additionalProperties: false
+      required: [resetToken, newPassword, commandId]
+      properties:
+        resetToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+        newPassword:
+          type: string
+          minLength: 1
+          writeOnly: true
+        commandId:
+          type: string
+          minLength: 1
+          maxLength: 128
+    PasswordResetCompletionResult:
+      oneOf:
+        - $ref: "#/components/schemas/CompletedPasswordResetResult"
+        - $ref: "#/components/schemas/PasswordRejectedRegistrationResult"
+        - $ref: "#/components/schemas/InvalidOrExpiredSessionResult"
+      discriminator:
+        propertyName: status
+    CompletedPasswordResetResult:
+      type: object
+      additionalProperties: false
+      required: [status, sessionEstablished, initialSettingsComplete]
+      properties:
+        status:
+          type: string
+          const: COMPLETED
+        sessionEstablished:
+          type: boolean
+          const: false
+        initialSettingsComplete:
+          type: boolean
+    InitialSettingsCompletionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - formalityLevel
+        - slangEnabled
+        - basicVocabulary
+        - purposeVocabularies
+        - styleReference
+        - voiceEnabled
+        - autoPlayEnabled
+        - speechSpeedLevel
+      properties:
+        formalityLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        slangEnabled:
+          type: boolean
+        basicVocabulary:
+          type: string
+          enum:
+            [
+              PRIMARY_SCHOOL,
+              JUNIOR_HIGH,
+              SENIOR_HIGH,
+              CET_4,
+              CET_6,
+              POSTGRADUATE,
+              TOEFL,
+              IELTS,
+              GRE,
+              TEM_8,
+            ]
+        purposeVocabularies:
+          type: array
+          uniqueItems: true
+          maxItems: 3
+          items:
+            type: string
+            enum: [IELTS_TOEFL, GRE, BUSINESS_ENGLISH]
+        styleReference:
+          type: string
+        voiceEnabled:
+          type: boolean
+        autoPlayEnabled:
+          type: boolean
+        speechSpeedLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+    VersionedSettings:
+      type: object
+      additionalProperties: false
+      required: [settings, rowVersion]
+      properties:
+        settings:
+          $ref: "#/components/schemas/InitialSettingsCompletionRequest"
+        rowVersion:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    UpdateCurrentSettingsRequest:
+      type: object
+      additionalProperties: false
+      required: [settings, expectedRowVersion]
+      properties:
+        settings:
+          allOf:
+            - $ref: "#/components/schemas/InitialSettingsCompletionRequest"
+            - if:
+                properties:
+                  voiceEnabled:
+                    const: false
+              then:
+                properties:
+                  autoPlayEnabled:
+                    const: false
+        expectedRowVersion:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    UpdateCurrentSettingsResult:
+      type: object
+      additionalProperties: false
+      required: [status, rowVersion]
+      properties:
+        status:
+          type: string
+          const: SAVED
+        rowVersion:
+          type: integer
+          minimum: 1
+          maximum: 9007199254740991
+    InitialSettingsCompletionResult:
+      type: object
+      additionalProperties: false
+      required: [status, rowVersion]
+      properties:
+        status:
+          type: string
+          const: COMPLETED
+        rowVersion:
+          type: integer
+          minimum: 1
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password, deviceId]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true
+        deviceId:
+          type: string
+          minLength: 1
+          maxLength: 256
+          writeOnly: true
+          description: Installation-scoped identifier; only its digest is stored by the service.
+    LoginResult:
+      oneOf:
+        - $ref: "#/components/schemas/InvalidCredentialsLoginResult"
+        - $ref: "#/components/schemas/AuthenticatedLoginResult"
+      discriminator:
+        propertyName: status
+    InvalidCredentialsLoginResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: INVALID_CREDENTIALS
+    AuthenticatedLoginResult:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - accountId
+        - accessToken
+        - refreshToken
+        - accessTokenExpiresInSeconds
+        - settingsCompleted
+      properties:
+        status:
+          type: string
+          const: AUTHENTICATED
+        accountId:
+          type: string
+          format: uuid
+        accessToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+        refreshToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+        accessTokenExpiresInSeconds:
+          type: integer
+          minimum: 1
+        settingsCompleted:
+          type: boolean
+    RefreshSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [refreshToken, deviceId]
+      properties:
+        refreshToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+        deviceId:
+          type: string
+          minLength: 1
+          maxLength: 256
+          writeOnly: true
+    RefreshSessionResult:
+      oneOf:
+        - $ref: "#/components/schemas/InvalidOrExpiredSessionResult"
+        - $ref: "#/components/schemas/AuthenticatedLoginResult"
+      discriminator:
+        propertyName: status
+    InvalidOrExpiredSessionResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: INVALID_OR_EXPIRED
+    RevokeSessionRequest:
+      type: object
+      additionalProperties: false
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+    RevokeSessionResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: REVOKED
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, service, requestId]
+      properties:
+        status:
+          type: string
+          const: ok
+        service:
+          type: string
+        requestId:
+          type: string
+    ApiErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, retryable, requestId, details]
+          properties:
+            code:
+              type: string
+              pattern: "^[A-Z][A-Z0-9_]{1,63}$"
+            message:
+              type: string
+              minLength: 1
+            retryable:
+              type: boolean
+            requestId:
+              type: string
+              minLength: 1
+              maxLength: 128
+            details:
+              type: object
+              additionalProperties: true
+    RegistrationRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - email
+        - password
+        - birthYearMonth
+        - acceptedTerms
+        - acceptedPrivacyPolicy
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+          writeOnly: true
+          description: Validated as 15 to 64 NFC-normalized Unicode code points by the application policy.
+        birthYearMonth:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        acceptedTerms:
+          type: boolean
+          const: true
+        acceptedPrivacyPolicy:
+          type: boolean
+          const: true
+    RegistrationResult:
+      oneOf:
+        - $ref: "#/components/schemas/AgeIneligibleRegistrationResult"
+        - $ref: "#/components/schemas/PasswordRejectedRegistrationResult"
+        - $ref: "#/components/schemas/EmailVerificationRequiredRegistrationResult"
+      discriminator:
+        propertyName: status
+    AgeIneligibleRegistrationResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: AGE_INELIGIBLE
+    PasswordRejectedRegistrationResult:
+      type: object
+      additionalProperties: false
+      required: [status, reason]
+      properties:
+        status:
+          type: string
+          const: PASSWORD_REJECTED
+        reason:
+          type: string
+          enum: [TOO_SHORT, TOO_LONG, BLOCKED]
+    EmailVerificationRequiredRegistrationResult:
+      type: object
+      additionalProperties: false
+      required: [status, registrationId]
+      properties:
+        status:
+          type: string
+          const: EMAIL_VERIFICATION_REQUIRED
+        registrationId:
+          type: string
+          format: uuid
+    RegistrationVerificationRequest:
+      type: object
+      additionalProperties: false
+      required: [bearer]
+      properties:
+        bearer:
+          type: string
+          pattern: "^[A-Za-z0-9_-]{43}$"
+          writeOnly: true
+    RegistrationVerificationResult:
+      oneOf:
+        - $ref: "#/components/schemas/InvalidRegistrationVerificationResult"
+        - $ref: "#/components/schemas/AccountCreatedRegistrationVerificationResult"
+      discriminator:
+        propertyName: status
+    RegistrationVerificationStatusResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [WAITING, VERIFIED, NOT_AVAILABLE]
+    RegistrationVerificationEmailResendResult:
+      oneOf:
+        - $ref: "#/components/schemas/UnavailableRegistrationVerificationEmailResendResult"
+        - $ref: "#/components/schemas/CooldownRegistrationVerificationEmailResendResult"
+        - $ref: "#/components/schemas/ResentRegistrationVerificationEmailResendResult"
+      discriminator:
+        propertyName: status
+    UnavailableRegistrationVerificationEmailResendResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: NOT_AVAILABLE
+    CooldownRegistrationVerificationEmailResendResult:
+      type: object
+      additionalProperties: false
+      required: [status, retryAfterSeconds]
+      properties:
+        status:
+          type: string
+          const: COOLDOWN
+        retryAfterSeconds:
+          type: integer
+          minimum: 1
+    ResentRegistrationVerificationEmailResendResult:
+      type: object
+      additionalProperties: false
+      required: [status, retryAfterSeconds]
+      properties:
+        status:
+          type: string
+          const: RESENT
+        retryAfterSeconds:
+          type: integer
+          minimum: 1
+    InvalidRegistrationVerificationResult:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: INVALID_OR_EXPIRED
+    AccountCreatedRegistrationVerificationResult:
+      type: object
+      additionalProperties: false
+      required: [status, accountId]
+      properties:
+        status:
+          type: string
+          const: ACCOUNT_CREATED
+        accountId:
+          type: string
+          format: uuid
