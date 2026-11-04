@@ -2,6 +2,11 @@
 
 先读 [完整链路与当前进度](docs/ONLINE_DEVELOPMENT_HANDOFF_2026-11-04.md) 和 [云端开发说明](docs/CLOUD_DEVELOPMENT.md)。当前仍有未验收页面，请勿从零重建。
 
+- [ChatGPT 项目：英语学习APP](https://chatgpt.com/g/g-p-6aeb2ac7caf88191b0da9b7a9c49b8d1/project)：历史记录、规范和恢复资料。
+- 本私有仓库：源码、素材及后续开发同步入口，默认分支 `main`。
+- 当前云端 GitHub 连接仍需改为 `indewo` 并配置环境；源码已上传不代表云端运行与 APP 公网后台已就绪。
+- [本次上云核验记录](docs/UPLOAD_VERIFICATION_2026-11-05.md)：已从 GitHub 重新下载，初始快照 2,038 个文件逐一校验一致。
+
 # RealLanguage
 
 ## 本机 API 连接排查

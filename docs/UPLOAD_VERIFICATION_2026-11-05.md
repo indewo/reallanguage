@@ -1,0 +1,22 @@
+# 上云核验记录
+
+核验日期：2026-11-05。项目：RealLanguage。
+
+## 已完成
+
+- 普通 ChatGPT 项目：[英语学习APP](https://chatgpt.com/g/g-p-6aeb2ac7caf88191b0da9b7a9c49b8d1/project)。此前已在网页上传并读回来源；本轮项目列表再次确认项目存在。20 项来源包含总览、规范与历史记录汇编、源码与素材恢复包。来源 ZIP 是上传时的快照。
+- 私有源码仓库：[indewo/reallanguage](https://github.com/indewo/reallanguage)。通过现有 Git 登录推送 `main`；GitHub API 返回账号 `indewo`、仓库 `private: true`、默认分支 `main`。
+- 初始源码提交：`9a150851c07ec21a0b409bde9a27818f539cf349`。
+- 从 GitHub 网络重新克隆到独立空目录；不是从本机复制目录。该提交包含 **2,038 个文件，598,700,619 字节**。逐文件 SHA-256 比较全部一致，0 项不匹配；Git 对象完整性检查通过，下载后的工作区无改动。
+- 原自动测试配置完整保存为 `docs/github-workflows/ci.yml`；因当前 Git 登录缺少 `workflow` 权限，尚未启用 GitHub Actions。
+- 本次只增加接续资料和建立远程快照，没有改动原 APP 的功能代码或用户进度。
+
+## 仍需完成
+
+- 当前 ChatGPT 的 GitHub 连接账号为 `Uillneverknow`，无法读取新私有仓库。需要用户在云端连接 `indewo`，授权 `reallanguage`。
+- 未验证云端开发环境创建、依赖安装、发布、代码执行或构建。步骤见 [云端开发说明](CLOUD_DEVELOPMENT.md)。
+- 上述下载核验发生在原 Mac 的另一个空目录，**不是另一台电脑上的构建或 APP 全流程验收**。
+- APP 业务后台仍在原 Mac；本次没有部署公网后台。手机学习记录仍按原产品设计保存在本机。
+- 当前 v106 的共同学习、确认并固定、选择学习目标三页仍待实际视觉和流程验收，不能因上云成功改记为完成。
+
+本记录之后的提交用于更新入口说明与核验记录，文件数会相应增加。后续开发以 GitHub 的最新提交和仓库内进度文档为准。

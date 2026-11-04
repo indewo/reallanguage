@@ -3,10 +3,32 @@
 ## 入口与边界
 
 - ChatGPT 项目：https://chatgpt.com/g/g-p-6aeb2ac7caf88191b0da9b7a9c49b8d1/project
-- 私有源码仓库：`indewo/reallanguage`（本文件创建时正在初始化，须以远程推送与云端环境验证记录为准）。
+- 私有源码仓库：[indewo/reallanguage](https://github.com/indewo/reallanguage)。2026-11-05 已上传到 `main`；GitHub API 已确认归属 `indewo` 且 `private: true`。
 - 先读 `ONLINE_DEVELOPMENT_HANDOFF_2026-11-04.md`；`handoff-records/` 保留原规范和历史对话。72 张原始设计图在根目录对应文件夹，运行素材在 Android 资源目录。
 - 这是2026-11-04源码快照。新改动必须提交/推送，并由另一工作区拉取；聊天来源 ZIP 不会随 Git 自动更新。
 - 代码开发环境与手机访问的业务 API 是两件事。本仓库没有把 Mac 局域网后台迁到公网。
+
+## 当前还差的一步：连接云端环境
+
+2026-11-05 核查时，ChatGPT 的 GitHub 连接仍登录旧账号 `Uillneverknow`，读取 `indewo/reallanguage` 返回 404；本机 Git 登录则是 `indewo` 且上传成功。只在浏览器登录 GitHub，不会自动更换 ChatGPT 的 GitHub 连接。当前未证实云端环境已创建、发布或能运行本项目。
+
+按 [OpenAI 官方云端指南](https://learn.chatgpt.com/docs/cloud)，在网页版选择「Work in / 工作位置 → Cloud / 云端 → Select environment / 选择环境 → Create environment / 创建环境」，连接 `indewo` 并授权本仓库，选择仓库后开始配置。检查配置和测试结果，再保存、发布，等到显示环境发布成功。
+
+如果仍显示 `Uillneverknow` 或找不到本仓库，先在 GitHub 连接处改用 `indewo`；不要改成公开仓库来解决访问问题。配置完成之前，不要报告“换电脑只登录即可构建发布”。
+
+首次云端任务可以使用：
+
+> 这是现有 RealLanguage APP 的继续开发。先阅读 AGENTS.md、docs/ONLINE_DEVELOPMENT_HANDOFF_2026-11-04.md、docs/CLOUD_DEVELOPMENT.md。先核对源码版本、工具链与真实待办，报告能执行和不能执行的检查，再继续共同学习、确认并固定、选择学习目标三页的设计与真实验收。不要从零重建，不改已确认设计，不清空账号或学习进度。
+
+## 同步约定
+
+以后在选定仓库的云端环境中开发，修改、验证后提交到 `codex/` 分支并推送，再通过审查合并。另一台电脑先取得仓库最新版本再修改，避免只改下载 ZIP 后忘记上传。开发进度同时写入仓库文档；聊天记录与 Git 文件并不自动双向同步。
+
+原电脑当前应用工作区仍保留在原路径，本次上传来自独立目录 `artifacts/private-repo-upload-2026-11-04`，没有自动改造旧工作区的 Git 历史。因此原工作区之后的新修改不会自动进入这个仓库。
+
+## 自动测试配置
+
+现有 Git 登录没有启用 GitHub Actions 的 `workflow` 权限。原 `.github/workflows/ci.yml` 内容完整备份于 `docs/github-workflows/ci.yml`，当前不自动触发；详见同目录 README。手动构建和检查命令保留。本次上传不代表自动测试通过。
 
 ## 开发工具
 
