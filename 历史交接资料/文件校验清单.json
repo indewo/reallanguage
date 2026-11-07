@@ -1,0 +1,429 @@
+[
+  {
+    "path": "文档原文/AI_CONTRACTS.md",
+    "bytes": 69325,
+    "sha256": "2e5e8cea46748682c8327e2dca458e5625e5d5775b1c1f8a5c9e70e829614e4c",
+    "source": "AI_CONTRACTS.md",
+    "source_sha256": "2e5e8cea46748682c8327e2dca458e5625e5d5775b1c1f8a5c9e70e829614e4c"
+  },
+  {
+    "path": "文档原文/ARCHITECTURE.md",
+    "bytes": 70006,
+    "sha256": "55352800d89fc7613d3dd7395e5d3b7a1b364e5738fa4590a2b0c77ef4c25d82",
+    "source": "ARCHITECTURE.md",
+    "source_sha256": "55352800d89fc7613d3dd7395e5d3b7a1b364e5738fa4590a2b0c77ef4c25d82"
+  },
+  {
+    "path": "文档原文/CHAT_MIGRATION_HANDOFF.md",
+    "bytes": 13510,
+    "sha256": "d34aa79fcb7f1b39e31b0d0dc4663f1d3c24bea75aea5afd4f27f76b3c6d1b26",
+    "source": "CHAT_MIGRATION_HANDOFF.md",
+    "source_sha256": "d34aa79fcb7f1b39e31b0d0dc4663f1d3c24bea75aea5afd4f27f76b3c6d1b26"
+  },
+  {
+    "path": "文档原文/CONTEXT_SOURCES.md",
+    "bytes": 4529,
+    "sha256": "906e9fb39d110816551c44b17a5cee72dc70f5823675747cd714bd9b40dbdee8",
+    "source": "CONTEXT_SOURCES.md",
+    "source_sha256": "906e9fb39d110816551c44b17a5cee72dc70f5823675747cd714bd9b40dbdee8"
+  },
+  {
+    "path": "文档原文/CONTRIBUTING.md",
+    "bytes": 20190,
+    "sha256": "875dbc8e0c433c82351a0febf44c4ab38f5deae38a68d52fa8536cc0193f420b",
+    "source": "CONTRIBUTING.md",
+    "source_sha256": "875dbc8e0c433c82351a0febf44c4ab38f5deae38a68d52fa8536cc0193f420b"
+  },
+  {
+    "path": "文档原文/CURRENT_DEVELOPMENT_HANDOFF.md",
+    "bytes": 353734,
+    "sha256": "035a5e0eadf56ad3e1f09ed057af576a76ceba807cac434560143b1f1d69f5c4",
+    "source": "CURRENT_DEVELOPMENT_HANDOFF.md",
+    "source_sha256": "035a5e0eadf56ad3e1f09ed057af576a76ceba807cac434560143b1f1d69f5c4"
+  },
+  {
+    "path": "文档原文/DATA_MODEL.md",
+    "bytes": 76619,
+    "sha256": "218bf7f4a8cdbcd82dc42583d018e992c32c2573dbe5e8a2baeda85b03f0ee8f",
+    "source": "DATA_MODEL.md",
+    "source_sha256": "218bf7f4a8cdbcd82dc42583d018e992c32c2573dbe5e8a2baeda85b03f0ee8f"
+  },
+  {
+    "path": "文档原文/DESIGN.md",
+    "bytes": 37483,
+    "sha256": "235a620d4ac7cb838bba108df8d0c2c91616a312d150194ffeaf86380b68df9e",
+    "source": "DESIGN.md",
+    "source_sha256": "235a620d4ac7cb838bba108df8d0c2c91616a312d150194ffeaf86380b68df9e"
+  },
+  {
+    "path": "文档原文/DESIGN_SYSTEM.md",
+    "bytes": 54652,
+    "sha256": "6b055e1d78f5506e3762b49b10ed72d196313b2e49c12e346ec61d31a9ab7ada",
+    "source": "DESIGN_SYSTEM.md",
+    "source_sha256": "6b055e1d78f5506e3762b49b10ed72d196313b2e49c12e346ec61d31a9ab7ada"
+  },
+  {
+    "path": "文档原文/FUNCTIONAL_AVAILABILITY_AUDIT.md",
+    "bytes": 54320,
+    "sha256": "5fd0752411dfb8076109fdf8c3b5d572eb0017597176cb477286daeb5e46c094",
+    "source": "FUNCTIONAL_AVAILABILITY_AUDIT.md",
+    "source_sha256": "5fd0752411dfb8076109fdf8c3b5d572eb0017597176cb477286daeb5e46c094"
+  },
+  {
+    "path": "文档原文/MVP_SCOPE.md",
+    "bytes": 21405,
+    "sha256": "fc8a5f63484f9140eaf3dd2bc00a14ba74313456e0d3fb3bcdba38c74e116be6",
+    "source": "MVP_SCOPE.md",
+    "source_sha256": "fc8a5f63484f9140eaf3dd2bc00a14ba74313456e0d3fb3bcdba38c74e116be6"
+  },
+  {
+    "path": "文档原文/PRIVACY_SECURITY.md",
+    "bytes": 14394,
+    "sha256": "b84e5d1cc70ee4ada5c6ef13509bef354d0c1d25123968587883134c15e1fb0d",
+    "source": "PRIVACY_SECURITY.md",
+    "source_sha256": "b84e5d1cc70ee4ada5c6ef13509bef354d0c1d25123968587883134c15e1fb0d"
+  },
+  {
+    "path": "文档原文/PRODUCT_CONTEXT.md",
+    "bytes": 71035,
+    "sha256": "d37826f78b080452eae6daade2fcc52690c5f282bd6867f5b0ec788965953909",
+    "source": "PRODUCT_CONTEXT.md",
+    "source_sha256": "d37826f78b080452eae6daade2fcc52690c5f282bd6867f5b0ec788965953909"
+  },
+  {
+    "path": "文档原文/PRODUCT_FLOW_AUDIT.md",
+    "bytes": 22844,
+    "sha256": "fe18b9ec352750835b3e6178b12ab9acf6aac79cea4966ca965811a407c8c8d5",
+    "source": "PRODUCT_FLOW_AUDIT.md",
+    "source_sha256": "fe18b9ec352750835b3e6178b12ab9acf6aac79cea4966ca965811a407c8c8d5"
+  },
+  {
+    "path": "文档原文/PRODUCT_ROADMAP.md",
+    "bytes": 15705,
+    "sha256": "38bf524119719cc6de260b0a488dd24c5606682a9032800ac929b50122c0979a",
+    "source": "PRODUCT_ROADMAP.md",
+    "source_sha256": "38bf524119719cc6de260b0a488dd24c5606682a9032800ac929b50122c0979a"
+  },
+  {
+    "path": "文档原文/README.md",
+    "bytes": 32485,
+    "sha256": "df10944c3c77c690f79beb48330e48d8362948519bff781b6a8ee656266a58b5",
+    "source": "README.md",
+    "source_sha256": "df10944c3c77c690f79beb48330e48d8362948519bff781b6a8ee656266a58b5"
+  },
+  {
+    "path": "文档原文/REAL_LANGUAGE_PROJECT_CONTEXT.md",
+    "bytes": 28200,
+    "sha256": "a12af333ffc2bf430645509094e8bfde324230adeb7a3afeaaf797e0df0236e7",
+    "source": "REAL_LANGUAGE_PROJECT_CONTEXT.md",
+    "source_sha256": "a12af333ffc2bf430645509094e8bfde324230adeb7a3afeaaf797e0df0236e7"
+  },
+  {
+    "path": "文档原文/SCREEN_MAP.md",
+    "bytes": 29556,
+    "sha256": "1f7211bc32d858d49f939fa07872b68259bbac7bfbc7a36d47473e9a645979cd",
+    "source": "SCREEN_MAP.md",
+    "source_sha256": "1f7211bc32d858d49f939fa07872b68259bbac7bfbc7a36d47473e9a645979cd"
+  },
+  {
+    "path": "文档原文/SCREEN_SPEC.md",
+    "bytes": 35001,
+    "sha256": "c6771f11242ce4c966f35dd5613961b8233994e9cbf95b294f52e886f9bcfe23",
+    "source": "SCREEN_SPEC.md",
+    "source_sha256": "c6771f11242ce4c966f35dd5613961b8233994e9cbf95b294f52e886f9bcfe23"
+  },
+  {
+    "path": "文档原文/SPEC.md",
+    "bytes": 120972,
+    "sha256": "73e4956973e1fefa9ac88f6168be034c7afbd98826401bc15c9bf152adaea366",
+    "source": "SPEC.md",
+    "source_sha256": "73e4956973e1fefa9ac88f6168be034c7afbd98826401bc15c9bf152adaea366"
+  },
+  {
+    "path": "文档原文/TEST_PLAN.md",
+    "bytes": 31834,
+    "sha256": "996bc3bcd309671b9257e841ab04b9b4ce057a829746ee3bb87dcdb64d65b40a",
+    "source": "TEST_PLAN.md",
+    "source_sha256": "996bc3bcd309671b9257e841ab04b9b4ce057a829746ee3bb87dcdb64d65b40a"
+  },
+  {
+    "path": "文档原文/THIRD_PARTY_NOTICES.md",
+    "bytes": 907,
+    "sha256": "20d931d89fb3aad3b017519cdcfb61c7f9b17c70f46824db5bd57e47fbc0ebac",
+    "source": "THIRD_PARTY_NOTICES.md",
+    "source_sha256": "20d931d89fb3aad3b017519cdcfb61c7f9b17c70f46824db5bd57e47fbc0ebac"
+  },
+  {
+    "path": "文档原文/design-qa.md",
+    "bytes": 420961,
+    "sha256": "e6653c68ee1308f87a4acab1c96c4ee036a78d55501bf72c9ddd1a538cc8c711",
+    "source": "design-qa.md",
+    "source_sha256": "e6653c68ee1308f87a4acab1c96c4ee036a78d55501bf72c9ddd1a538cc8c711"
+  },
+  {
+    "path": "文档原文/docs/DEVICE_FEEDBACK_RECHECK_2026-09-06.md",
+    "bytes": 131087,
+    "sha256": "16cc3e2b0c97002b99f57b043cb6fe69db6ffcf9a39816d54eb2e11f635f2a49",
+    "source": "docs/DEVICE_FEEDBACK_RECHECK_2026-09-06.md",
+    "source_sha256": "16cc3e2b0c97002b99f57b043cb6fe69db6ffcf9a39816d54eb2e11f635f2a49"
+  },
+  {
+    "path": "文档原文/docs/FORMATION_BIDIRECTIONAL_SPLIT_REPAIR_2026-09-16.md",
+    "bytes": 1607,
+    "sha256": "c47cebc6a95097d474eb17ccda2958bb762697623be8321111e12b45e0356359",
+    "source": "docs/FORMATION_BIDIRECTIONAL_SPLIT_REPAIR_2026-09-16.md",
+    "source_sha256": "c47cebc6a95097d474eb17ccda2958bb762697623be8321111e12b45e0356359"
+  },
+  {
+    "path": "文档原文/docs/LOCAL_API_CONNECTION_RUNBOOK.md",
+    "bytes": 12487,
+    "sha256": "5330a11eee24e79f8acae643a5faaca63dd197739ba46890d035b7261e67ba9e",
+    "source": "docs/LOCAL_API_CONNECTION_RUNBOOK.md",
+    "source_sha256": "5330a11eee24e79f8acae643a5faaca63dd197739ba46890d035b7261e67ba9e"
+  },
+  {
+    "path": "文档原文/docs/RELEASE_READINESS.md",
+    "bytes": 67162,
+    "sha256": "81781527ad8dc3cd0de531ae8ef39a5a63352cd047fd33af3085ac9eb1794651",
+    "source": "docs/RELEASE_READINESS.md",
+    "source_sha256": "81781527ad8dc3cd0de531ae8ef39a5a63352cd047fd33af3085ac9eb1794651"
+  },
+  {
+    "path": "文档原文/docs/SCENE_SAVE_REPAIR_2026-09-15.md",
+    "bytes": 4231,
+    "sha256": "af6e7a7f44f2360bddbe04f1262f76da33aa04b759d37e9b8f96cbc3fd6df48f",
+    "source": "docs/SCENE_SAVE_REPAIR_2026-09-15.md",
+    "source_sha256": "af6e7a7f44f2360bddbe04f1262f76da33aa04b759d37e9b8f96cbc3fd6df48f"
+  },
+  {
+    "path": "文档原文/docs/TRAVEL_HANDOFF_2026-11-04.md",
+    "bytes": 6686,
+    "sha256": "d2dc2112b1d9fcc2d9cb657a64d66ccb0b6964c4183f55ea0794f05ef618fa42",
+    "source": "docs/TRAVEL_HANDOFF_2026-11-04.md",
+    "source_sha256": "d2dc2112b1d9fcc2d9cb657a64d66ccb0b6964c4183f55ea0794f05ef618fa42"
+  },
+  {
+    "path": "文档原文/docs/VOCABULARY_LEXICAL_BOUNDARY_REPAIR_2026-09-16.md",
+    "bytes": 1484,
+    "sha256": "4ec3dc4037f5b6a80cda9b98ab825e0f53b4ffe0a3752bff686e29e71aa4bece",
+    "source": "docs/VOCABULARY_LEXICAL_BOUNDARY_REPAIR_2026-09-16.md",
+    "source_sha256": "4ec3dc4037f5b6a80cda9b98ab825e0f53b4ffe0a3752bff686e29e71aa4bece"
+  },
+  {
+    "path": "文档原文/docs/VOCABULARY_POOL_MASTER_RULES_2026-09-17.md",
+    "bytes": 7062,
+    "sha256": "d02b3000b479aa4baba7cc7752bbdec90cc02db057d320d85e5d7c7acd589fc4",
+    "source": "docs/VOCABULARY_POOL_MASTER_RULES_2026-09-17.md",
+    "source_sha256": "d02b3000b479aa4baba7cc7752bbdec90cc02db057d320d85e5d7c7acd589fc4"
+  },
+  {
+    "path": "文档原文/docs/adr/0001-engineering-skeleton.md",
+    "bytes": 945,
+    "sha256": "08dccce843772c8173ca3d20f20c75a09f1a8d3a4dcfaed774f7305e1f4f50ac",
+    "source": "docs/adr/0001-engineering-skeleton.md",
+    "source_sha256": "08dccce843772c8173ca3d20f20c75a09f1a8d3a4dcfaed774f7305e1f4f50ac"
+  },
+  {
+    "path": "文档原文/docs/adr/0002-postgresql-access-and-migrations.md",
+    "bytes": 4956,
+    "sha256": "9496783304919faa7bc0e2991d1f149c58ae5ab25b1191b8263e25b82658d840",
+    "source": "docs/adr/0002-postgresql-access-and-migrations.md",
+    "source_sha256": "9496783304919faa7bc0e2991d1f149c58ae5ab25b1191b8263e25b82658d840"
+  },
+  {
+    "path": "文档原文/docs/adr/0003-local-learning-request-recovery.md",
+    "bytes": 4561,
+    "sha256": "344377b01e5ccdcaa9c304838c27e2fa0b724957e54322cc531443e2f230a3f4",
+    "source": "docs/adr/0003-local-learning-request-recovery.md",
+    "source_sha256": "344377b01e5ccdcaa9c304838c27e2fa0b724957e54322cc531443e2f230a3f4"
+  },
+  {
+    "path": "文档原文/docs/assets/vocabulary-r11-paper-prompts.md",
+    "bytes": 6570,
+    "sha256": "49aa6b5daa4ab81bbe6f27ff6c96857428027eae876b20c514c679ed74514af6",
+    "source": "docs/assets/vocabulary-r11-paper-prompts.md",
+    "source_sha256": "49aa6b5daa4ab81bbe6f27ff6c96857428027eae876b20c514c679ed74514af6"
+  },
+  {
+    "path": "文档原文/docs/assets/vocabulary-r11-search-prompts.md",
+    "bytes": 4157,
+    "sha256": "2d84c2c1472d395c003b38021f916274bb45b46510f852712fe2b740c8ebb57f",
+    "source": "docs/assets/vocabulary-r11-search-prompts.md",
+    "source_sha256": "2d84c2c1472d395c003b38021f916274bb45b46510f852712fe2b740c8ebb57f"
+  },
+  {
+    "path": "文档原文/docs/assets/vocabulary-r11-tape-prompts.md",
+    "bytes": 4295,
+    "sha256": "f6981be34348b239cce88602c1ef8503d51192f9bb6259916bd7966b0798b72f",
+    "source": "docs/assets/vocabulary-r11-tape-prompts.md",
+    "source_sha256": "f6981be34348b239cce88602c1ef8503d51192f9bb6259916bd7966b0798b72f"
+  },
+  {
+    "path": "文档原文/docs/assets/vocabulary-r11.md",
+    "bytes": 2835,
+    "sha256": "577736c194b18716f31ca20bbb8b512f3c5d808a9136df015b5eb2245c6ade21",
+    "source": "docs/assets/vocabulary-r11.md",
+    "source_sha256": "577736c194b18716f31ca20bbb8b512f3c5d808a9136df015b5eb2245c6ade21"
+  },
+  {
+    "path": "文档原文/docs/releases/2026-09-19-v72-vocabulary-r11.md",
+    "bytes": 1691,
+    "sha256": "66d9ef0f555f8a24152c16a15c16deeb2324f7ec29cfd971b385380e5e3973a5",
+    "source": "docs/releases/2026-09-19-v72-vocabulary-r11.md",
+    "source_sha256": "66d9ef0f555f8a24152c16a15c16deeb2324f7ec29cfd971b385380e5e3973a5"
+  },
+  {
+    "path": "文档原文/docs/ui-page-01-registration-assets.md",
+    "bytes": 1660,
+    "sha256": "d18ff6c0fb97a17936e7b9fef770355e0b0112361a3956639b9492df6b26c14d",
+    "source": "docs/ui-page-01-registration-assets.md",
+    "source_sha256": "d18ff6c0fb97a17936e7b9fef770355e0b0112361a3956639b9492df6b26c14d"
+  },
+  {
+    "path": "文档原文/docs/ui-page-by-page-checklist.md",
+    "bytes": 14050,
+    "sha256": "d583bb38cce4683d1da44625e01b0d82c8de866c06795b26898714804e61adc5",
+    "source": "docs/ui-page-by-page-checklist.md",
+    "source_sha256": "d583bb38cce4683d1da44625e01b0d82c8de866c06795b26898714804e61adc5"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-account-settings.md",
+    "bytes": 49920,
+    "sha256": "f3c412661a4001711efe9360575907f652c0302d6dcbe93692f1d48613f3a0e0",
+    "source": "docs/ui-v73-account-settings.md",
+    "source_sha256": "f3c412661a4001711efe9360575907f652c0302d6dcbe93692f1d48613f3a0e0"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-formation-scene-final-audit.md",
+    "bytes": 11260,
+    "sha256": "12cd50270f98c77ced0feb606bf6bf65a68158b2c733409304543a6a4129ea45",
+    "source": "docs/ui-v73-formation-scene-final-audit.md",
+    "source_sha256": "12cd50270f98c77ced0feb606bf6bf65a68158b2c733409304543a6a4129ea45"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-formation-scene.md",
+    "bytes": 27597,
+    "sha256": "fa04800b23034c93f6fdaec9f9eb36472d111060870c02876ac6168f59864b44",
+    "source": "docs/ui-v73-formation-scene.md",
+    "source_sha256": "fa04800b23034c93f6fdaec9f9eb36472d111060870c02876ac6168f59864b44"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-full-interface-restoration.md",
+    "bytes": 8338,
+    "sha256": "c9d0fe3b114934d6ab0ff7d219c31d35038c5b724eeddd8e19134472ff383ed4",
+    "source": "docs/ui-v73-full-interface-restoration.md",
+    "source_sha256": "c9d0fe3b114934d6ab0ff7d219c31d35038c5b724eeddd8e19134472ff383ed4"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-learning-review.md",
+    "bytes": 59270,
+    "sha256": "3f004192c8adf0f7183e4e46cc585f013788a63c051a0fd47c5702d519a05612",
+    "source": "docs/ui-v73-learning-review.md",
+    "source_sha256": "3f004192c8adf0f7183e4e46cc585f013788a63c051a0fd47c5702d519a05612"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-main-material-prompts.md",
+    "bytes": 7469,
+    "sha256": "0609c8ba3a71034450f0365000dc5c5dc1f031d8fa6e4bcf6a892cd5b231e0ec",
+    "source": "docs/ui-v73-main-material-prompts.md",
+    "source_sha256": "0609c8ba3a71034450f0365000dc5c5dc1f031d8fa6e4bcf6a892cd5b231e0ec"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-pattern-detail-followup.md",
+    "bytes": 4031,
+    "sha256": "1601ad8d24256ef17109b3dd05477ba6224d66c0c5de1b6c85665cf12dcdf163",
+    "source": "docs/ui-v73-pattern-detail-followup.md",
+    "source_sha256": "1601ad8d24256ef17109b3dd05477ba6224d66c0c5de1b6c85665cf12dcdf163"
+  },
+  {
+    "path": "文档原文/docs/ui-v73-root-visual-review.md",
+    "bytes": 4337,
+    "sha256": "dc586ef83e07c10c73d64283e0eca899d418519dd34de0f4baa723e0a2523a2e",
+    "source": "docs/ui-v73-root-visual-review.md",
+    "source_sha256": "dc586ef83e07c10c73d64283e0eca899d418519dd34de0f4baa723e0a2523a2e"
+  },
+  {
+    "path": "文档原文/skills/reallanguage-connection-recovery/SKILL.md",
+    "bytes": 3888,
+    "sha256": "b7b4bc67f91e8ef1617fd6d8d2e87b32e9831e7482ee4c1186e7bf4e5d55e6ca",
+    "source": "skills/reallanguage-connection-recovery/SKILL.md",
+    "source_sha256": "b7b4bc67f91e8ef1617fd6d8d2e87b32e9831e7482ee4c1186e7bf4e5d55e6ca"
+  },
+  {
+    "path": "对话记录/检查本机API运行状态_01a06cf6.md",
+    "bytes": 1038068,
+    "sha256": "81797d0d6c338b58ed7fa68f0f61e89b0e78b23186f8d2c889d31fb977e4668e",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/修复RealLanguage连接并生成APK_01a19cf6.md",
+    "bytes": 10184,
+    "sha256": "04596484738bbe461200bca7e8a411573df5300991ca7f2f045bbf59eec9151b",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/梳理RealLanguage开发基线_01a05897.md",
+    "bytes": 379130,
+    "sha256": "6efdd03ac41756ee901a57b14b2f422256ebbc34562244931227b178cc833027",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/继续RealLanguage编写SPEC_01a0078b.md",
+    "bytes": 306354,
+    "sha256": "a22d05391d0d00aee4b6879aeff47307be31636a6999f4148f1b3f9b803f2324",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/继续RealLanguage产品设计_01a03dba.md",
+    "bytes": 428309,
+    "sha256": "acb34fd8dfc36cf790e2b3ebad7e6c5b1ff67a2581804b8b2e504e52f1a31a69",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/梳理RealLanguage产品设计_01a04674.md",
+    "bytes": 228611,
+    "sha256": "d0413c4ab7c20d4d2425ca19be4822865d03b9298b165fdb6834513d5b7462e7",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/查找丢失的历史记录_01a19cfc.md",
+    "bytes": 9269,
+    "sha256": "5e488fa13c23746bc9fa310c78705b92b7c7ae265a60ca6fc619aec5547540f2",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话记录/设计英语学习角色_01a02550.md",
+    "bytes": 8165,
+    "sha256": "1664d4896e40c948f9b27ad8d0612ea8f600e4ac906a4eba4b1635ddb488175d",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "附件来源索引.json",
+    "bytes": 40109,
+    "sha256": "08c63d61c44fd02e33f566e5d3b9f9b238c2b79cadb883d295c772e457565e0b",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "对话导出范围.json",
+    "bytes": 4324,
+    "sha256": "d3c26e384fbd38840d2a80719bcdd700ed1d903259c1df3e0912387397371c44",
+    "source": null,
+    "source_sha256": null
+  },
+  {
+    "path": "开始阅读.md",
+    "bytes": 1263,
+    "sha256": "7a668a14b2411316e6f27c3ba920123e41419d4986d16e36b361b45fb440eb7f",
+    "source": null,
+    "source_sha256": null
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "thread_id": "01a06cf6-0efd-76f3-9a18-6d9962ccd0d4",
+    "title": "检查本机API运行状态",
+    "source_files": [
+      "rollout-2026-09-04T23-07-40-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4.jsonl.zst",
+      "rollout-2026-09-06T03-30-14-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a0730c-ceda-7a60-8265-70efdfa6e6c9.jsonl.zst",
+      "rollout-2026-09-06T03-31-48-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a0730e-3fc7-70d1-98e1-397d2fc941cd.jsonl.zst",
+      "rollout-2026-09-06T03-49-38-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a0731e-93ad-7443-875d-8ce5cd242890.jsonl.zst",
+      "rollout-2026-09-06T12-24-15-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a074f5-b7aa-7743-ac90-168fb91644a0.jsonl.zst",
+      "rollout-2026-09-17T09-33-33-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a0acff-658e-74f3-a249-fb05339bf640.jsonl.zst",
+      "rollout-2026-10-23T09-51-11-01a06cf6-0efd-76f3-9a18-6d9962ccd0d4_01a16674-77fb-7700-8f5f-160ebc3c0c01.jsonl"
+    ],
+    "messages": 2271,
+    "user_messages": 298,
+    "assistant_messages": 1973,
+    "first": "2026-09-04T15:07:45.320Z",
+    "last": "2026-11-04T10:31:59.726Z",
+    "errors": [],
+    "source_rows": 153662
+  },
+  {
+    "thread_id": "01a19cf6-f9d2-7ee1-b355-8a9deb43150c",
+    "title": "修复RealLanguage连接并生成APK",
+    "source_files": [
+      "rollout-2026-11-02T23-53-13-01a19cf6-f9d2-7ee1-b355-8a9deb43150c.jsonl"
+    ],
+    "messages": 16,
+    "user_messages": 6,
+    "assistant_messages": 10,
+    "first": "2026-11-02T15:53:16.534Z",
+    "last": "2026-11-02T16:00:50.928Z",
+    "errors": [],
+    "source_rows": 326
+  },
+  {
+    "thread_id": "01a05897-869b-7121-8603-737a9a2452d4",
+    "title": "梳理RealLanguage开发基线",
+    "source_files": [
+      "rollout-2026-09-01T00-12-00-01a05897-869b-7121-8603-737a9a2452d4.jsonl.zst",
+      "rollout-2026-09-01T12-52-51-01a05897-869b-7121-8603-737a9a2452d4_01a05b50-1a24-7380-b3d1-9fc0b121697f.jsonl",
+      "rollout-2026-11-02T23-44-39-01a05897-869b-7121-8603-737a9a2452d4_01a19cef-221a-7481-a1e8-616371504f87.jsonl"
+    ],
+    "messages": 938,
+    "user_messages": 179,
+    "assistant_messages": 759,
+    "first": "2026-08-31T16:12:04.032Z",
+    "last": "2026-11-02T15:46:01.302Z",
+    "errors": [],
+    "source_rows": 45647
+  },
+  {
+    "thread_id": "01a0078b-6663-7d23-a20c-28712882d631",
+    "title": "继续RealLanguage编写SPEC",
+    "source_files": [
+      "rollout-2026-08-16T06-29-31-01a0078b-6663-7d23-a20c-28712882d631.jsonl"
+    ],
+    "messages": 267,
+    "user_messages": 115,
+    "assistant_messages": 152,
+    "first": "2026-08-15T22:29:49.536Z",
+    "last": "2026-08-26T11:00:22.140Z",
+    "errors": [],
+    "source_rows": 3517
+  },
+  {
+    "thread_id": "01a03dba-90b2-77e1-b8bd-3b626bc5acd8",
+    "title": "继续RealLanguage产品设计",
+    "source_files": [
+      "rollout-2026-08-26T19-00-32-01a03dba-90b2-77e1-b8bd-3b626bc5acd8.jsonl"
+    ],
+    "messages": 620,
+    "user_messages": 286,
+    "assistant_messages": 334,
+    "first": "2026-08-26T11:00:38.667Z",
+    "last": "2026-08-28T16:23:27.004Z",
+    "errors": [],
+    "source_rows": 4805
+  },
+  {
+    "thread_id": "01a04674-25f9-7712-aa3f-679a458f4de1",
+    "title": "梳理RealLanguage产品设计",
+    "source_files": [
+      "rollout-2026-08-28T11-40-12-01a04674-25f9-7712-aa3f-679a458f4de1.jsonl"
+    ],
+    "messages": 538,
+    "user_messages": 218,
+    "assistant_messages": 320,
+    "first": "2026-08-28T03:40:16.136Z",
+    "last": "2026-08-31T16:09:38.425Z",
+    "errors": [],
+    "source_rows": 5274
+  },
+  {
+    "thread_id": "01a19cfc-83a0-7982-854c-7bf0b59aeb8c",
+    "title": "查找丢失的历史记录",
+    "source_files": [
+      "rollout-2026-11-02T23-59-16-01a19cfc-83a0-7982-854c-7bf0b59aeb8c.jsonl"
+    ],
+    "messages": 11,
+    "user_messages": 5,
+    "assistant_messages": 6,
+    "first": "2026-11-02T15:59:19.438Z",
+    "last": "2026-11-02T16:03:56.627Z",
+    "errors": [],
+    "source_rows": 296
+  },
+  {
+    "thread_id": "01a02550-4cc8-7481-9c40-c06abac52943",
+    "title": "设计英语学习角色",
+    "source_files": [
+      "rollout-2026-08-22T01-13-34-01a02550-4cc8-7481-9c40-c06abac52943.jsonl.zst"
+    ],
+    "messages": 3,
+    "user_messages": 2,
+    "assistant_messages": 1,
+    "first": "2026-08-21T17:13:54.514Z",
+    "last": "2026-08-21T17:14:28.356Z",
+    "errors": [],
+    "source_rows": 14
+  }
+]
