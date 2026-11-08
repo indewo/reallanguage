@@ -12,11 +12,13 @@
 
 ## 跨电脑继续开发
 
+2026-11-08 已把 v109 最新源码完整克隆到当前云端工作区，并实际完成 `assembleRelease` 和 Release Lint。原签名 v109 APK 已下载并验证版本、SHA-256 与 APK v2 签名。新编译产物未签名；本轮未执行单元测试、模拟器或真机流程。工作区路径、工具链与交付边界见 [当前云端工作区记录](docs/CLOUD_WORKSPACE_STATUS_2026-11-08.md)。
+
 先读 [完整链路与当前进度](docs/ONLINE_DEVELOPMENT_HANDOFF_2026-11-04.md) 和 [云端开发说明](docs/CLOUD_DEVELOPMENT.md)。当前仍有未验收页面，请勿从零重建。
 
 - [ChatGPT 项目：英语学习APP](https://chatgpt.com/g/g-p-6aeb2ac7caf88191b0da9b7a9c49b8d1/project)：历史记录、规范和恢复资料。
 - 项目仓库：源码、素材及后续开发同步入口，默认分支 `main`。
-- 用户已确认在网页连接 `indewo` 并看到 `reallanguage`；接下来需完成环境配置、发布和运行核验。源码已上传不代表云端运行与 APP 公网后台已就绪。
+- 当前云端工作区可读取、修改并编译 Android 源码；可复用云端环境发布、APP 后台公网部署与真机业务流程仍须分别核验。
 - [本次上云核验记录](docs/UPLOAD_VERIFICATION_2026-11-05.md)：已从 GitHub 重新下载，初始快照 2,038 个文件逐一校验一致。
 
 ## 本机 API 连接排查
