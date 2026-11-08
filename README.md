@@ -6,6 +6,8 @@
 
 [产品规则](docs/CAPTURE_LEARNING_V109.md) · [界面原图](docs/design-reference/v109/) · [设备实测与录屏](docs/V109_TRIAL_VALIDATION.md)
 
+本版已获准在公开仓库发布源码、项目历史交接资料、APK 及完整包。运行账号库、签名私钥、服务密钥和个人录音在交付范围之外。
+
 [v109 发布与完整交接包](https://github.com/indewo/reallanguage/releases/tag/v109) · [录音与截图导入设计基准](outputs/录音与截图导入-设计基准.md)
 
 ## 跨电脑继续开发
