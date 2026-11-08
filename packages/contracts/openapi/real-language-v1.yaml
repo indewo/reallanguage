@@ -1292,9 +1292,11 @@ components:
       properties:
         recordingId: { type: string, minLength: 1, maxLength: 128 }
         durationSeconds: { type: integer, minimum: 1, maximum: 120 }
-        audioFormat: { type: string, const: audio/mp4 }
-        languageHint: { type: string, const: zh-CN }
-        endReason: { type: string, enum: [USER_STOPPED, MAX_DURATION] }
+        audioFormat: { type: string, enum: [audio/mp4, audio/wav] }
+        languageHint: { type: string, enum: [zh-CN, auto] }
+        endReason: { type: string, enum: [USER_STOPPED, MAX_DURATION, CAPTURE_WINDOW] }
+        coreStartMs: { type: integer, minimum: 0, maximum: 120000 }
+        coreEndMs: { type: integer, minimum: 1, maximum: 120000 }
         audioBase64:
           type: string
           minLength: 1

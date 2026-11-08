@@ -55,6 +55,12 @@ sealed interface HomeDiaryRoute {
     ) : HomeDiaryRoute
     data class LocalRecordings(val entryId: String = java.util.UUID.randomUUID().toString()) : HomeDiaryRoute
     data class ResumeLearning(val chapterId: String, val moduleId: String, val stepId: String?) : HomeDiaryRoute
+    data class CaptureImport(val origin: CaptureOrigin, val entryId: String = java.util.UUID.randomUUID().toString()) : HomeDiaryRoute
+    data class Bilingual(
+        val text: String, val origin: CaptureOrigin, val shape: SourceContentShape, val commandId: String,
+        val paragraphs: List<com.reallanguage.app.feature.capture.domain.BilingualParagraph>,
+        val back: HomeDiaryRoute, val selected: Set<String> = emptySet(),
+    ) : HomeDiaryRoute
     data object RecordingIntro : HomeDiaryRoute
     data class ActiveRecording(
         val entryId: String = java.util.UUID.randomUUID().toString(),

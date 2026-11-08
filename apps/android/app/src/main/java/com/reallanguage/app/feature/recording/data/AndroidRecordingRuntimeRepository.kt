@@ -32,7 +32,15 @@ class AndroidRecordingRuntimeRepository(context: Context, private val runtime: S
         catch (failure: Exception) { PendingRecordingCaptureOwners.discard(binding); throw failure }
     }
 
+    override suspend fun setPaused(recordingId: String, paused: Boolean) {
+        sendCaptureAction(recordingId, if (paused) RecordingForegroundService.ACTION_PAUSE else RecordingForegroundService.ACTION_RESUME)
+    }
+
     override suspend fun stop(recordingId: String) {
+        sendCaptureAction(recordingId, RecordingForegroundService.ACTION_STOP)
+    }
+
+    private fun sendCaptureAction(recordingId: String, action: String) {
         requireOwner()
         require(recordingId.matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]{0,127}")))
         val current = RecordingForegroundService.ownedRuntimeState.value
@@ -40,7 +48,7 @@ class AndroidRecordingRuntimeRepository(context: Context, private val runtime: S
         if ((current.state as? RecordingRuntimeState.Completed)?.recordingId == recordingId) return
         check((current.state as? RecordingRuntimeState.Recording)?.active?.recordingId == recordingId) { "Recording is not active" }
         val intent = Intent(applicationContext, RecordingForegroundService::class.java)
-            .setAction(RecordingForegroundService.ACTION_STOP)
+            .setAction(action)
             .putExtra(RecordingForegroundService.EXTRA_RECORDING_ID, recordingId)
             .putExtra(RecordingForegroundService.EXTRA_ACCOUNT_STORAGE_KEY, ownerKey)
         applicationContext.startService(intent)

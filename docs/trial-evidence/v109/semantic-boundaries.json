@@ -1,0 +1,66 @@
+[
+  {
+    "source": "明天早上要给客户演示新系统，我原本打算今天下班前把演示材料发给跟我一起开会的同事，让她晚上有空的时候先看一遍。刚才我自己从头到尾试了一次，才发现换了账户以后，最后一步会直接回到登录页。我还没弄清楚这是网络断了一下，还是新账户碰到了权限问题。为了不让她提前练错流程，我已经把有问题的那一页标了出来，也跟她说其余部分可以照常准备。等我明天一早再用两个账户各试一遍，我就给她发最终版；如果到八点半还没找到原因，演示时我们就先跳过那一步。\n\n对了，周末野餐还去吗？",
+    "paragraphs": [
+      {
+        "textZh": "明天早上要给客户演示新系统，我原本打算今天下班前把演示材料发给跟我一起开会的同事，让她晚上有空的时候先看一遍。刚才我自己从头到尾试了一次，才发现换了账户以后，最后一步会直接回到登录页。我还没弄清楚这是网络断了一下，还是新账户碰到了权限问题。为了不让她提前练错流程，我已经把有问题的那一页标了出来，也跟她说其余部分可以照常准备。等我明天一早再用两个账户各试一遍，我就给她发最终版；如果到八点半还没找到原因，演示时我们就先跳过那一步。",
+        "textEn": "We’re demoing the new system to a client tomorrow morning. I was going to send the demo materials to the coworker I’m meeting with by the end of today so she could look them over tonight if she had time. I just ran through the whole thing myself, and I found that after switching accounts, the last step sends you straight back to the login page. I’m still not sure whether the network dropped for a second or the new account is running into a permissions issue. To keep her from practicing the wrong flow ahead of time, I’ve marked the page with the problem and told her the rest can be prepared as usual. After I test both accounts again tomorrow morning, I’ll send her the final version. If I still haven’t found the cause by 8:30, we’ll just skip that step during the demo.",
+        "sentences": [
+          {
+            "textEn": "We’re demoing the new system to a client tomorrow morning.",
+            "textZh": "我们明天上午要向一位客户演示新系统。"
+          },
+          {
+            "textEn": "I was going to send the demo materials to the coworker I’m meeting with by the end of today so she could look them over tonight if she had time.",
+            "textZh": "我本来打算在今天结束前把演示材料发给我要见的那位同事，这样如果她有时间，今晚就能看一遍。"
+          },
+          {
+            "textEn": "I just ran through the whole thing myself, and I found that after switching accounts, the last step sends you straight back to the login page.",
+            "textZh": "我刚自己把整个流程走了一遍，发现切换账户后，最后一步会直接把你带回登录页。"
+          },
+          {
+            "textEn": "I’m still not sure whether the network dropped for a second or the new account is running into a permissions issue.",
+            "textZh": "我还是不确定是网络短暂掉线了，还是新账户遇到了权限问题。"
+          },
+          {
+            "textEn": "To keep her from practicing the wrong flow ahead of time, I’ve marked the page with the problem and told her the rest can be prepared as usual.",
+            "textZh": "为了不让她提前练错流程，我已经把有问题的页面标出来了，并告诉她其余部分照常准备就行。"
+          },
+          {
+            "textEn": "After I test both accounts again tomorrow morning, I’ll send her the final version.",
+            "textZh": "我明天早上再测试两个账户后，就把最终版本发给她。"
+          },
+          {
+            "textEn": "If I still haven’t found the cause by 8:30, we’ll just skip that step during the demo.",
+            "textZh": "如果到8:30我还没找到原因，演示时我们就跳过那一步。"
+          }
+        ]
+      },
+      {
+        "textZh": "对了，周末野餐还去吗？",
+        "textEn": "By the way, are we still going to the picnic this weekend?",
+        "sentences": [
+          {
+            "textEn": "By the way, are we still going to the picnic this weekend?",
+            "textZh": "顺便问一下，我们这周末还去野餐吗？"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "source": "你要一起去吗？",
+    "paragraphs": [
+      {
+        "textZh": "你要一起去吗？",
+        "textEn": "Do you want to come with us?",
+        "sentences": [
+          {
+            "textEn": "Do you want to come with us?",
+            "textZh": "你想和我们一起去吗？"
+          }
+        ]
+      }
+    ]
+  }
+]

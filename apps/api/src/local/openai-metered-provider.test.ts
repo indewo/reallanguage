@@ -455,6 +455,27 @@ describe("LocalOpenAiMeteredProvider", () => {
     expect(JSON.stringify(request.messages)).not.toContain("I can explain it.");
     expect(decode).toHaveBeenCalledWith("bTRh", "audio/mp4");
   });
+  it("transcribes mixed-language capture and excludes words belonging to the adjacent windows", async () => {
+    const transcribeTimed = vi.fn().mockResolvedValue({
+      text: "Before. 周五 works. After.", language: "mixed", durationSeconds: 5,
+      words: [
+        { word: "Before", start: 0.1, end: 0.6 },
+        { word: "周五", start: 1.2, end: 1.8 },
+        { word: "works", start: 2.3, end: 2.7 },
+        { word: "After", start: 4.1, end: 4.6 },
+      ],
+    });
+    const client = { generateJson: vi.fn(), transcribe: vi.fn(), transcribeTimed };
+    const provider = new LocalOpenAiMeteredProvider(client);
+    const request = command("SPEECH_TRANSCRIPTION_V1", { durationSeconds: 5, audioFormat: "audio/wav",
+      endReason: "CAPTURE_WINDOW", languageHint: "auto", coreStartMs: 1000, coreEndMs: 4000, audioBase64: "YWJj" });
+    const quote = await provider.quote(request);
+    const result = await provider.execute({ ...request, providerAttemptId: quote.providerAttemptId });
+    expect(transcribeTimed).toHaveBeenCalledWith("YWJj", "audio/wav", "auto");
+    expect(result.output).toMatchObject({ fullText: "周五 works.", segments: [{ startMs: 1200, endMs: 2700 }] });
+    expect(client.generateJson).not.toHaveBeenCalled();
+  });
+
   it("does not manufacture segment confidence for recording transcription", async () => {
     const provider = new LocalOpenAiMeteredProvider({
       generateJson: vi.fn().mockResolvedValue({

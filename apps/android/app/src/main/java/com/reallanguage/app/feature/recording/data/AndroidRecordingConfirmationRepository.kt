@@ -8,6 +8,7 @@ import com.reallanguage.app.feature.recording.domain.RecordingConfirmationReposi
 import com.reallanguage.app.feature.recording.domain.RecordingLoadResult
 import com.reallanguage.app.feature.recording.domain.RecordingPlaybackResult
 import com.reallanguage.app.feature.recording.domain.RecordingEndReason
+import com.reallanguage.app.feature.recording.domain.RECORDING_LIMIT_SECONDS
 import org.json.JSONObject
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -108,16 +109,21 @@ class AndroidRecordingConfirmationRepository(context: Context, private val runti
 
 internal fun readRecordingSummary(directory: File, recordingId: String, durationMillis: Long): LocalRecordingSummary {
     require(recordingId.matches(Regex("[A-Za-z0-9][A-Za-z0-9_-]{0,127}")))
-    require(durationMillis in 1..121_000)
     val file = File(directory, "$recordingId.recording.json")
-    val reason = if (file.isFile) {
-        val evidence = JSONObject(file.readText())
-        require(evidence.get("formatVersion") == 1 && evidence.getString("recordingId") == recordingId)
+    val evidence = if (file.isFile) JSONObject(file.readText()) else null
+    val limit = when (evidence?.getInt("formatVersion")) {
+        null, 1 -> 120  // Files from v106 and earlier were recorded with a two-minute cutoff.
+        2 -> evidence.getInt("maxDurationSeconds").also { require(it == RECORDING_LIMIT_SECONDS) }
+        else -> error("Unknown recording metadata")
+    }
+    val limitMillis = limit * 1_000L
+    require(durationMillis in 1..limitMillis + 1_000)
+    val reason = if (evidence != null) {
+        require(evidence.getString("recordingId") == recordingId)
         evidence.getString("endReason").let { if (it in setOf("SESSION_ENDED", "INCOMPLETE")) null else RecordingEndReason.valueOf(it) }
-    } else if (file.exists()) null // A blocked/unreadable evidence path is not a legacy recording.
-    else if (durationMillis < 119_000) RecordingEndReason.USER_STOPPED else null
-    if (reason == RecordingEndReason.MAX_DURATION) require(durationMillis >= 119_000)
-    if (reason == RecordingEndReason.USER_STOPPED) require(durationMillis <= 120_000)
-    val seconds = if (reason == RecordingEndReason.MAX_DURATION) 120 else ((durationMillis + 999) / 1000).toInt()
+    } else if (!file.exists() && durationMillis < limitMillis - 1_000) RecordingEndReason.USER_STOPPED else null
+    if (reason == RecordingEndReason.MAX_DURATION) require(durationMillis >= limitMillis - 1_000)
+    if (evidence?.optInt("formatVersion") == 1 && reason == RecordingEndReason.USER_STOPPED) require(durationMillis <= limitMillis)
+    val seconds = if (reason == RecordingEndReason.MAX_DURATION) limit else minOf(limit, ((durationMillis + 999) / 1000).toInt())
     return LocalRecordingSummary(recordingId, seconds, reason)
 }

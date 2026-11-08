@@ -1,0 +1,5 @@
+com.reallanguage.app.feature.home.presentation.HomeScreenTest:....
+
+Time: 9.189
+
+OK (4 tests)

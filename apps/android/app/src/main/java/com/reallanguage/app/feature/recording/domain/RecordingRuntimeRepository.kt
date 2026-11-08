@@ -2,7 +2,14 @@ package com.reallanguage.app.feature.recording.domain
 
 import kotlinx.coroutines.flow.StateFlow
 
-data class ActiveRecording(val recordingId: String, val elapsedSeconds: Int)
+const val RECORDING_LIMIT_SECONDS = 60 * 60
+
+data class ActiveRecording(
+    val recordingId: String,
+    val elapsedSeconds: Int,
+    val paused: Boolean = false,
+    val levels: List<Float> = emptyList(),
+)
 
 sealed interface RecordingRuntimeState {
     data object Starting : RecordingRuntimeState
@@ -14,5 +21,6 @@ sealed interface RecordingRuntimeState {
 interface RecordingRuntimeRepository {
     val state: StateFlow<RecordingRuntimeState>
     suspend fun start()
+    suspend fun setPaused(recordingId: String, paused: Boolean)
     suspend fun stop(recordingId: String)
 }

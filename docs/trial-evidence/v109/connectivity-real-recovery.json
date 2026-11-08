@@ -1,0 +1,20 @@
+{
+  "displayedMessage": "连接中断。请恢复网络后，用原内容重试。",
+  "originalChineseEditFields": [
+    "你好，我要一杯小杯拿铁。",
+    "可以换成燕麦奶。",
+    "那要补差价吗？"
+  ],
+  "recoveredWithIdenticalText": true,
+  "result": [
+    "选择学习短句",
+    "用户：你好，我要一杯小杯拿铁。",
+    "Hi, I’d like a small latte.",
+    "对方：可以换成燕麦奶。",
+    "You can swap it for oat milk.",
+    "用户：那要补差价吗？",
+    "Will there be an extra charge?",
+    "已选 0/3",
+    "继续选择学习目标"
+  ]
+}

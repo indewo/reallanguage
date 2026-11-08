@@ -4,6 +4,7 @@ import com.reallanguage.app.feature.formation.domain.ChapterDraft
 import com.reallanguage.app.feature.formation.domain.FormationRecoveryPhase
 import com.reallanguage.app.feature.formation.domain.FormationRecoverySnapshot
 import com.reallanguage.app.feature.formation.domain.FormationSourceOrigin
+import com.reallanguage.app.feature.formation.domain.SavedBilingualReview
 import com.reallanguage.app.feature.formation.domain.isValidForRecovery
 import com.reallanguage.app.feature.safety.domain.ConfirmedSource
 import com.reallanguage.app.feature.safety.domain.SourceType
@@ -17,6 +18,7 @@ fun HomeDiaryRoute.toFormationRecoverySnapshot(
     targetSentenceIndex: Int = 0,
 ): FormationRecoverySnapshot? {
     val source = when (this) {
+        is HomeDiaryRoute.Bilingual -> ConfirmedSource(text, origin.legacy, shape)
         is HomeDiaryRoute.SemanticSplit -> ConfirmedSource(text, sourceType, contentShape)
         is HomeDiaryRoute.FocusSelection -> ConfirmedSource(text, sourceType, contentShape)
         is HomeDiaryRoute.ChapterFormation -> ConfirmedSource(text, sourceType, contentShape)
@@ -28,6 +30,7 @@ fun HomeDiaryRoute.toFormationRecoverySnapshot(
         else -> return null
     }
     val phase = when (this) {
+        is HomeDiaryRoute.Bilingual -> FormationRecoveryPhase.BILINGUAL_SELECTION
         is HomeDiaryRoute.SemanticSplit -> FormationRecoveryPhase.SEMANTIC_SPLIT
         is HomeDiaryRoute.FocusSelection -> FormationRecoveryPhase.FOCUS_SELECTION
         is HomeDiaryRoute.ChapterFormation -> FormationRecoveryPhase.CHAPTER_FORMATION
@@ -39,7 +42,9 @@ fun HomeDiaryRoute.toFormationRecoverySnapshot(
         else -> return null
     }
     val sourceEntryId = formationSourceEntryId(this) ?: return null
-    val origin = recoveryOrigin(source, formationSourceReturnRoute(this))
+    val review = (this as? HomeDiaryRoute.Bilingual) ?: (formationSourceReturnRoute(this) as? HomeDiaryRoute.Bilingual)
+    val origin = recoveryOrigin(source, review?.back ?: formationSourceReturnRoute(this))
+    val savedReview = review?.let { SavedBilingualReview(it.origin.name, it.paragraphs, it.selected) }
     // A route carries accepted inputs, not an instruction to repair a stale snapshot.
     var snapshot = previous?.takeIf {
         it.isValidForRecovery() && it.sourceEntryId == sourceEntryId && it.sourceRevision == sourceRevision &&
@@ -47,6 +52,8 @@ fun HomeDiaryRoute.toFormationRecoverySnapshot(
     }?.copy(phase = phase, sourceTitle = sourceTitle) ?: FormationRecoverySnapshot(
         sourceEntryId, sourceRevision, phase, source, sourceTitle, origin,
     )
+    if (savedReview != null) snapshot = snapshot.copy(bilingual = savedReview)
+    if (this is HomeDiaryRoute.Bilingual) return snapshot.takeIf { it.isValidForRecovery() }
     val units = when (this) {
         is HomeDiaryRoute.FocusSelection -> this.units
         is HomeDiaryRoute.ChapterFormation -> this.units
@@ -123,13 +130,24 @@ fun HomeDiaryRoute.toFormationRecoverySnapshot(
 
 fun FormationRecoverySnapshot.toFormationRecoveryRoute(): RestoredFormationRoute? {
     if (!isValidForRecovery()) return null
-    val originRoute = when (val saved = origin) {
+    val originalEntry = when (val saved = origin) {
         FormationSourceOrigin.Diary -> HomeDiaryRoute.Input(source.text)
         is FormationSourceOrigin.Recording -> HomeDiaryRoute.TranscriptResult(saved.recordingId, saved.transcriptId)
         is FormationSourceOrigin.Scene -> HomeDiaryRoute.SceneChineseReview(saved.session, saved.draft)
         is FormationSourceOrigin.Unavailable -> saved.reviewRequestId?.let { HomeDiaryRoute.ManualReviewResult(it) }
     }
+    val review = bilingual?.let { saved ->
+        val kind = CaptureOrigin.valueOf(saved.sourceKind)
+        val back = when (kind) {
+            CaptureOrigin.AUDIO_IMPORT, CaptureOrigin.SCREENSHOT -> HomeDiaryRoute.CaptureImport(kind)
+            else -> originalEntry ?: HomeDiaryRoute.Home
+        }
+        HomeDiaryRoute.Bilingual(source.text, kind, source.contentShape, sourceEntryId.removePrefix("bilingual-"),
+            saved.paragraphs, back, saved.selected)
+    }
+    val originRoute = review ?: originalEntry
     val route = when (phase) {
+        FormationRecoveryPhase.BILINGUAL_SELECTION -> review ?: return null
         FormationRecoveryPhase.SEMANTIC_SPLIT -> HomeDiaryRoute.SemanticSplit(
             source.text, source.sourceType, source.contentShape, originRoute, sourceEntryId)
         FormationRecoveryPhase.FOCUS_SELECTION -> HomeDiaryRoute.FocusSelection(

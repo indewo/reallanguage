@@ -21,7 +21,7 @@ class ActiveRecordingScreenTest {
     @get:Rule val composeRule = createComposeRule()
 
     @Test
-    fun rendersActiveTimerWithHomeContextAndDispatchesStop() {
+    fun rendersStandaloneTimerAndDispatchesPauseAndStop() {
         val actions = mutableListOf<ActiveRecordingAction>()
         composeRule.setContent {
             RlTheme {
@@ -33,12 +33,11 @@ class ActiveRecordingScreenTest {
             }
         }
 
-        composeRule.onNodeWithTag("home-review-card").assertIsDisplayed()
-        composeRule.onNodeWithTag("home-incomplete-card").assertIsDisplayed()
+        composeRule.onNodeWithTag("active-recording-pause").performClick()
         composeRule.onNodeWithTag("active-recording-timer").assertIsDisplayed()
         composeRule.onNodeWithTag("active-recording-stop").performClick()
 
-        assertEquals(listOf(ActiveRecordingAction.StopRequested), actions)
+        assertEquals(listOf(ActiveRecordingAction.TogglePauseRequested, ActiveRecordingAction.StopRequested), actions)
     }
 
     @Test

@@ -1,0 +1,5 @@
+com.reallanguage.app.feature.recording.data.RecordingForegroundServiceTest:.
+
+Time: 3,601.284
+
+OK (1 test)

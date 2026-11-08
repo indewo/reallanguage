@@ -30,6 +30,7 @@ class FormationProgressJournal(
             if (!canAccess() || !canApply()) return@withLock failure(FormationProgressFailure.ACCESS_CHANGED)
             var prior = loaded as? FormationRecoveryLoad.Loaded
             val text = when (route) {
+                is HomeDiaryRoute.Bilingual -> route.text
                 is HomeDiaryRoute.SemanticSplit -> route.text
                 is HomeDiaryRoute.FocusSelection -> route.text
                 is HomeDiaryRoute.ChapterFormation -> route.text

@@ -2,9 +2,11 @@ export type RecordingTranscriptionCommand = Readonly<{
   accountId: string;
   recordingId: string;
   durationSeconds: number;
-  audioFormat: "audio/mp4";
-  languageHint: "zh-CN";
-  endReason: "USER_STOPPED" | "MAX_DURATION";
+  audioFormat: "audio/mp4" | "audio/wav";
+  languageHint: "zh-CN" | "auto";
+  endReason: "USER_STOPPED" | "MAX_DURATION" | "CAPTURE_WINDOW";
+  coreStartMs?: number | undefined;
+  coreEndMs?: number | undefined;
   audioBase64: string;
   commandId: string;
 }>;
@@ -78,6 +80,25 @@ export class TranscribeRecording {
       !command.audioBase64.trim()
     )
       throw new Error("Invalid transcription input");
+    if (command.endReason === "CAPTURE_WINDOW") {
+      if (
+        command.audioFormat !== "audio/wav" ||
+        command.languageHint !== "auto" ||
+        !Number.isInteger(command.coreStartMs) ||
+        !Number.isInteger(command.coreEndMs) ||
+        command.coreStartMs! < 0 ||
+        command.coreEndMs! <= command.coreStartMs! ||
+        command.coreEndMs! > command.durationSeconds * 1_000
+      )
+        throw new Error("Invalid capture audio window");
+    } else if (
+      command.audioFormat !== "audio/mp4" ||
+      command.languageHint !== "zh-CN" ||
+      command.coreStartMs !== undefined ||
+      command.coreEndMs !== undefined
+    ) {
+      throw new Error("Invalid recording format");
+    }
     const result = await this.provider.transcribe(command);
     const maximumEnd = command.durationSeconds * 1_000;
     let previousEnd = 0;

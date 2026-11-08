@@ -67,6 +67,13 @@ const waveform = (
 };
 
 describe("lossless recording recognition windows", () => {
+  it("preserves continuous speech in a bounded capture window and trims only long digital silence", () => {
+    const source = waveform(40, [[22, 30]]);
+    const windows = recordingAudioWindows(source.toString("base64"), { alreadyWindowed: true });
+    expect(windows.map(({ startSeconds, durationSeconds }) => [startSeconds, durationSeconds])).toEqual([[0, 23], [29, 11]]);
+    expect(Buffer.from(windows[0]!.audioBase64, "base64").subarray(44)).toEqual(source.subarray(44, 44 + 23 * 16_000));
+  });
+
   it("caps acoustic re-observation at two distinct windows for the whole recording", async () => {
     const original = waveform(40),
       windows = recordingAudioWindows(original.toString("base64"));

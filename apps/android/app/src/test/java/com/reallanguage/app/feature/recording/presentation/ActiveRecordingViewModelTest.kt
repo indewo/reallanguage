@@ -70,10 +70,10 @@ class ActiveRecordingViewModelTest {
         assertEquals(ActiveRecordingEffect.OpenCompletion("r1"), effect.await())
     }
 
-    @Test fun serviceAutoStopsAtTwoMinutesAndOpensCompletion() = runTest {
+    @Test fun serviceAutoStopsAtOneHourAndOpensCompletion() = runTest {
         val repository = FakeRepository()
         val viewModel = ActiveRecordingViewModel(repository)
-        repository.state.value = RecordingRuntimeState.Recording(ActiveRecording("r1", 120))
+        repository.state.value = RecordingRuntimeState.Recording(ActiveRecording("r1", 3600))
         advanceUntilIdle()
         assertEquals(listOf("r1"), repository.stoppedIds)
     }
@@ -94,6 +94,10 @@ class ActiveRecordingViewModelTest {
         override val state = MutableStateFlow<RecordingRuntimeState>(RecordingRuntimeState.Starting)
         var startCount = 0
         val stoppedIds = mutableListOf<String>()
+        override suspend fun setPaused(recordingId: String, paused: Boolean) {
+            val active = (state.value as RecordingRuntimeState.Recording).active
+            state.value = RecordingRuntimeState.Recording(active.copy(paused = paused))
+        }
         override suspend fun start() { startCount++ }
         override suspend fun stop(recordingId: String) { stoppedIds += recordingId }
     }

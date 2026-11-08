@@ -1,0 +1,14 @@
+{
+  "device": "emulator-5554",
+  "test": "nativeRecorderStopsAtSixtyMinutesAndLeavesAReadableOriginalFile",
+  "source": "native Android AAC container metadata; no encoded audio copied",
+  "events": [],
+  "recordingStartedEpoch": 1794142400,
+  "observedEpoch": 1794143802,
+  "fileBytes": 21955054,
+  "finalObservedEpoch": 1794146166,
+  "movieTimeScale": 10000,
+  "movieDurationTicks": 35999840,
+  "movieDurationMillis": 3599984.0,
+  "observerExitCode": 0
+}

@@ -129,6 +129,12 @@ import com.reallanguage.app.feature.home.domain.DailyReminderIntroResult
 import com.reallanguage.app.feature.home.domain.ReminderPermission
 import com.reallanguage.app.feature.home.data.AndroidDailyReminderRuntime
 import com.reallanguage.app.feature.home.data.RuntimeReminderLocalIdentity
+import com.reallanguage.app.feature.capture.presentation.AudioImportScreen
+import com.reallanguage.app.feature.capture.presentation.ScreenshotImportScreen
+import com.reallanguage.app.feature.capture.presentation.BilingualPassagesScreen
+import com.reallanguage.app.feature.recording.data.captureRecordingUri
+import com.reallanguage.app.feature.recording.data.transcribeCaptureAudio
+import com.reallanguage.app.feature.recording.presentation.RecordingCaptureEntry
 import com.reallanguage.app.feature.home.presentation.HomeAction
 import com.reallanguage.app.feature.home.presentation.HomeUiState
 import com.reallanguage.app.feature.home.data.AndroidIncompleteLearningRepository
@@ -162,8 +168,6 @@ import com.reallanguage.app.feature.recording.data.AndroidRecordingRuntimeReposi
 import com.reallanguage.app.feature.recording.data.HttpRecordingRepositories
 import com.reallanguage.app.feature.recording.domain.RecordingEndReason
 import com.reallanguage.app.feature.recording.domain.TranscriptionRequest
-import com.reallanguage.app.feature.recording.presentation.ActiveRecordingEffect
-import com.reallanguage.app.feature.recording.presentation.ActiveRecordingScreen
 import com.reallanguage.app.feature.recording.presentation.ActiveRecordingViewModel
 import com.reallanguage.app.feature.recording.presentation.MicrophonePermissionAction
 import com.reallanguage.app.feature.recording.presentation.MicrophonePermissionEffect
@@ -518,6 +522,14 @@ class ProductionAppGraph(
     private val transport = BalanceAwareHttpTransport(
         connectionGate,
     ) { balanceRequiredSignal.tryEmit(Unit) }
+    internal suspend fun capturePassages(
+        entryId: String, text: String, origin: CaptureOrigin, shape: SourceContentShape, back: HomeDiaryRoute,
+    ) = generateCapturePassages(transport, sessionRuntime, entryId, text, origin, shape, back)
+
+    internal fun capturedRecording(id: String) = captureRecordingUri(applicationContext, sessionRuntime, id)
+    internal suspend fun captureTranscript(uri: Uri) =
+        transcribeCaptureAudio(applicationContext, uri, transport, sessionRuntime)
+
     private val reminderRuntime = AndroidDailyReminderRuntime(applicationContext)
     private val reminderHomeEntry = DailyReminderHomeEntry()
     fun reminderOwner(): String? = sessionRuntime.accountId
@@ -1600,13 +1612,31 @@ internal fun HomeProductionFlow(
     // a later session's permission merely because their old callback runs late.
     val pageLearningCheckpoints = remember(graph) { graph.learningCheckpointRepository.forCurrentSession() }
     var route by remember { mutableStateOf(initialRoute) }
+    val captureStateHolder = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
+    var captureStateKey by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(route) {
+        val current = route
+        if (current is HomeDiaryRoute.CaptureImport) {
+            if (captureStateKey != current.entryId) captureStateKey?.let(captureStateHolder::removeState)
+            captureStateKey = current.entryId
+        } else if (current == HomeDiaryRoute.Home) {
+            captureStateKey?.let(captureStateHolder::removeState)
+            captureStateKey = null
+        }
+    }
+    val recordPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (route == HomeDiaryRoute.Home) route = if (granted) HomeDiaryRoute.ActiveRecording()
+        else HomeDiaryRoute.MicrophonePermission((context as? Activity)?.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) == true)
+    }
     // Deeper learning routes intentionally contain only immutable learning data.
     // Retain the visible node that opened the chapter separately so walking all
     // the way back through the chapter never collapses to Home by accident.
     var learningRootReturnRoute by remember {
         mutableStateOf((initialRoute as? HomeDiaryRoute.ChapterLearning)?.returnRoute ?: HomeDiaryRoute.Home)
     }
-    var silentSemanticSplit by remember { mutableStateOf<SilentSemanticSplitRequest?>(null) }
+    var diaryEditorEpoch by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var diaryAttemptId by remember { mutableStateOf(UUID.randomUUID().toString()) }
+    var pendingBilingual by remember { mutableStateOf<PendingBilingualRequest?>(null) }
     // One unfixed scene operation only. Returning through questions retains its paid
     // attempt and edited review VM; a different answer/explicit regenerate replaces it.
     // Nothing here survives Home disposal, account replacement or confirmed abandonment.
@@ -1668,8 +1698,8 @@ internal fun HomeProductionFlow(
         }
     }
     LaunchedEffect(route) {
-        silentSemanticSplit?.let { request ->
-            if (request.visibleRoute != route) silentSemanticSplit = null
+        pendingBilingual?.let { request ->
+            if (request.visibleRoute != route) pendingBilingual = null
         }
         if (route is HomeDiaryRoute.Home || route is HomeDiaryRoute.ChapterLearning) {
             sceneAttempt = null
@@ -1734,6 +1764,8 @@ internal fun HomeProductionFlow(
             is HomeDiaryRoute.Refund -> HomeDiaryRoute.Billing()
             is HomeDiaryRoute.InsufficientBalance -> requireNotNull(contextualPreviousRoute(current))
             is HomeDiaryRoute.LocalRecordings -> HomeDiaryRoute.Account()
+            is HomeDiaryRoute.CaptureImport -> HomeDiaryRoute.Home
+            is HomeDiaryRoute.Bilingual -> current.back
             HomeDiaryRoute.RecordingIntro -> HomeDiaryRoute.Home
             is HomeDiaryRoute.ActiveRecording -> current
             is HomeDiaryRoute.RecordingConfirmation -> requireNotNull(contextualPreviousRoute(current))
@@ -1815,7 +1847,10 @@ internal fun HomeProductionFlow(
             homeState,
             onAction = { action ->
                 when (action) {
-                    HomeAction.DiaryRequested -> route = homeDiaryRoute(current, HomeDiaryEvent.OpenDiary)
+                    HomeAction.DiaryRequested -> {
+                        diaryAttemptId = UUID.randomUUID().toString()
+                        route = homeDiaryRoute(current, HomeDiaryEvent.OpenDiary)
+                    }
                     HomeAction.DueReviewRequested -> route = HomeDiaryRoute.TodayReview
                     HomeAction.VocabularyRequested -> route = HomeDiaryRoute.VocabularyBook
                     HomeAction.SentencePatternsRequested -> route = HomeDiaryRoute.PatternBook
@@ -1823,15 +1858,12 @@ internal fun HomeProductionFlow(
                     HomeAction.MessagesRequested -> route = HomeDiaryRoute.Messages()
                     HomeAction.SettingsRequested -> route = HomeDiaryRoute.Settings()
                     HomeAction.AccountRequested -> route = HomeDiaryRoute.Account()
+                    HomeAction.ScreenshotImportRequested -> route = HomeDiaryRoute.CaptureImport(CaptureOrigin.SCREENSHOT)
+                    HomeAction.AudioImportRequested -> route = HomeDiaryRoute.CaptureImport(CaptureOrigin.AUDIO_IMPORT)
                     HomeAction.QuickRecordingRequested -> {
-                        route = when {
-                            !graph.hasSeenRecordingIntroduction() -> HomeDiaryRoute.RecordingIntro
-                            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED -> HomeDiaryRoute.ActiveRecording(returnRoute = HomeDiaryRoute.Home)
-                            else -> HomeDiaryRoute.MicrophonePermission(
-                                (context as? Activity)?.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) != false,
-                                returnRoute = HomeDiaryRoute.Home,
-                            )
-                        }
+                        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                            route = HomeDiaryRoute.ActiveRecording()
+                        } else recordPermission.launch(Manifest.permission.RECORD_AUDIO)
                     }
                     HomeAction.AiSceneRequested -> route = HomeDiaryRoute.SceneHome()
                 }
@@ -1845,12 +1877,43 @@ internal fun HomeProductionFlow(
             },
             onHome = { route = HomeDiaryRoute.Home },
         )
-        is HomeDiaryRoute.ActiveRecording -> ActiveRecordingRoute(
-            graph = graph,
-            route = current,
-            homeState = homeState,
-            onComplete = { route = HomeDiaryRoute.RecordingConfirmation(it, current.returnRoute) },
-        )
+        is HomeDiaryRoute.CaptureImport -> captureStateHolder.SaveableStateProvider(current.entryId) {
+            val owner = remember { graph.currentSessionOwner() }
+            suspend fun finish(text: String) {
+                val review = graph.capturePassages(current.entryId, text, current.origin, SourceContentShape.DIALOGUE, current)
+                if (route == current && graph.isSessionOwnerCurrent(owner)) route = review
+            }
+            if (current.origin == CaptureOrigin.SCREENSHOT) {
+                ScreenshotImportScreen(onBack = { route = HomeDiaryRoute.Home }, onRecognized = { finish(it) })
+            } else {
+                AudioImportScreen(onBack = { route = HomeDiaryRoute.Home }, onTranscribe = { finish(graph.captureTranscript(it)) })
+            }
+        }
+        is HomeDiaryRoute.Bilingual -> {
+            var selection by remember(current.commandId) { mutableStateOf(current.selected) }
+            fun accepted() = current.copy(selected = selection)
+            BilingualPassagesScreen(current.paragraphs, selection,
+                onSelect = { id ->
+                    selection = when {
+                        id in selection -> selection - id
+                        selection.size < 3 -> selection + id
+                        else -> selection
+                    }
+                    progress.stateChanged(accepted(), 0)
+                },
+                onBack = { progress.navigate(current.back) },
+                onContinue = { if (selection.size in 1..3) progress.navigate(accepted().learningTargets()) },
+            )
+        }
+        is HomeDiaryRoute.ActiveRecording -> {
+            val recording: ActiveRecordingViewModel = viewModel(key = "active-recording:${current.entryId}", factory = graph.activeRecordingFactory())
+            val owner = remember(current.entryId) { graph.currentSessionOwner() }
+            RecordingCaptureEntry(recording, onBack = { route = HomeDiaryRoute.Home }) { id ->
+                val text = graph.captureTranscript(graph.capturedRecording(id))
+                val result = graph.capturePassages(current.entryId, text, CaptureOrigin.RECORDING, SourceContentShape.DIALOGUE, HomeDiaryRoute.Home)
+                if (route == current && graph.isSessionOwnerCurrent(owner)) route = result
+            }
+        }
         is HomeDiaryRoute.RecordingConfirmation -> RecordingConfirmationRoute(
             graph = graph,
             route = current,
@@ -1964,8 +2027,11 @@ internal fun HomeProductionFlow(
             graph = graph,
             route = current,
             onSafety = { source, confirmedDraft ->
-                if (graph.isSessionOwnerCurrent(sceneOwner)) route = HomeDiaryRoute.SafetyCheck(source.text, source.sourceType,
-                    source.contentShape, current.copy(draft = confirmedDraft))
+                if (graph.isSessionOwnerCurrent(sceneOwner) && pendingBilingual == null) {
+                    pendingBilingual = PendingBilingualRequest(current, HomeDiaryRoute.SemanticSplit(
+                        source.text, source.sourceType, source.contentShape, current.copy(draft = confirmedDraft),
+                        entryId = current.session.operationId + ":" + confirmedDraft.draftId))
+                }
             },
             onQuestions = { session ->
                 if (graph.isSessionOwnerCurrent(sceneOwner)) route = HomeDiaryRoute.SceneQuestions(
@@ -2028,7 +2094,7 @@ internal fun HomeProductionFlow(
             graph = graph,
             route = current,
             onApproved = { source ->
-                silentSemanticSplit = SilentSemanticSplitRequest(
+                pendingBilingual = PendingBilingualRequest(
                     visibleRoute = current,
                     operation = HomeDiaryRoute.SemanticSplit(
                         source.text,
@@ -2132,15 +2198,20 @@ internal fun HomeProductionFlow(
             route = current,
             onHome = { route = HomeDiaryRoute.Home },
         )
-        is HomeDiaryRoute.Input -> DiaryInputRoute(graph, current,
-            homeRequestId = matchingReminderHomeRequest?.requestId, onHomeRequestHandled = onReminderHomeConsumed) { event ->
-            route = homeDiaryRoute(current, event)
+        is HomeDiaryRoute.Input -> androidx.compose.runtime.key(diaryEditorEpoch) {
+            DiaryInputRoute(graph, current, homeRequestId = matchingReminderHomeRequest?.requestId,
+                onHomeRequestHandled = onReminderHomeConsumed) { event ->
+                if (event is HomeDiaryEvent.Submit) {
+                    if (pendingBilingual == null) pendingBilingual = PendingBilingualRequest(current, HomeDiaryRoute.SemanticSplit(
+                        event.text, sourceReturnRoute = HomeDiaryRoute.Input(event.text), entryId = diaryAttemptId))
+                } else route = homeDiaryRoute(current, event)
+            }
         }
         is HomeDiaryRoute.SafetyCheck -> SafetyCheckRoute(
             graph = graph,
             route = current,
             onPassed = { source ->
-                silentSemanticSplit = SilentSemanticSplitRequest(
+                pendingBilingual = PendingBilingualRequest(
                     visibleRoute = current,
                     operation = HomeDiaryRoute.SemanticSplit(
                         source.text,
@@ -2171,7 +2242,7 @@ internal fun HomeProductionFlow(
             graph = graph,
             route = current,
             onSplit = { source ->
-                silentSemanticSplit = SilentSemanticSplitRequest(
+                pendingBilingual = PendingBilingualRequest(
                     visibleRoute = current,
                     operation = HomeDiaryRoute.SemanticSplit(
                         source.text,
@@ -2362,23 +2433,24 @@ internal fun HomeProductionFlow(
         // Render this local confirmation outside the private learning-content cover.
         is HomeDiaryRoute.ChapterAbandonConfirmation -> Unit
     }
-        silentSemanticSplit?.let { request ->
-            SilentSemanticSplitEntry(
-                route = request.operation,
-                factory = graph::semanticSplitFactory,
-                onReady = { units ->
-                    if (silentSemanticSplit == request && route == request.visibleRoute) {
-                        silentSemanticSplit = null
-                        progress.navigate(request.operation.toFocusSelection(units))
-                    }
-                },
-                onReturn = {
-                    if (silentSemanticSplit == request && route == request.visibleRoute) {
-                        silentSemanticSplit = null
-                        progress.navigate(formationReturnDestination(context, request.operation))
-                    }
-                },
-            )
+        pendingBilingual?.let { request ->
+            CapturePreparationEntry(request, generate = {
+                val op = request.operation
+                graph.capturePassages(op.entryId, op.text, CaptureOrigin.valueOf(op.sourceType.name),
+                    op.contentShape, op.sourceReturnRoute ?: HomeDiaryRoute.Home)
+            }, onReady = { review ->
+                if (pendingBilingual == request && route == request.visibleRoute) {
+                    pendingBilingual = null
+                    route = review
+                }
+            }, onBlocked = { id ->
+                pendingBilingual = null
+                route = HomeDiaryRoute.SafetyHandlingLoading(id, request.operation.text, request.operation.sourceReturnRoute)
+            }, onReturn = {
+                pendingBilingual = null
+                if (request.visibleRoute is HomeDiaryRoute.Input) diaryEditorEpoch++
+                route = request.operation.sourceReturnRoute ?: HomeDiaryRoute.Home
+            })
         }
     }
     }
@@ -2564,26 +2636,6 @@ private fun RecordingIntroRoute(
         }
     }
     RecordingIntroScreen(state, intro::onAction)
-}
-
-@Composable
-private fun ActiveRecordingRoute(
-    graph: ProductionAppGraph,
-    route: HomeDiaryRoute.ActiveRecording,
-    homeState: HomeUiState,
-    onComplete: (String) -> Unit,
-) {
-    val recording: ActiveRecordingViewModel = viewModel(
-        key = "active-recording:${route.entryId}",
-        factory = graph.activeRecordingFactory(),
-    )
-    val state by recording.uiState.collectAsState()
-    LaunchedEffect(recording) {
-        recording.effects.collect { effect ->
-            if (effect is ActiveRecordingEffect.OpenCompletion) onComplete(effect.recordingId)
-        }
-    }
-    ActiveRecordingScreen(state, recording::onAction, homeState)
 }
 
 @Composable
@@ -4512,7 +4564,7 @@ internal fun DiaryInputEntry(
     })
 }
 
-private data class SilentSemanticSplitRequest(
+private data class PendingBilingualRequest(
     val visibleRoute: HomeDiaryRoute,
     val operation: HomeDiaryRoute.SemanticSplit,
 )

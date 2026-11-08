@@ -845,12 +845,20 @@ const recordingAudioBase64Schema = z
 export const recordingTranscriptionRequestSchema = z.object({
   recordingId: z.string().min(1).max(128),
   durationSeconds: z.number().int().min(1).max(120),
-  audioFormat: z.literal("audio/mp4"),
-  languageHint: z.literal("zh-CN"),
-  endReason: z.enum(["USER_STOPPED", "MAX_DURATION"]),
+  audioFormat: z.enum(["audio/mp4", "audio/wav"]),
+  languageHint: z.enum(["zh-CN", "auto"]),
+  endReason: z.enum(["USER_STOPPED", "MAX_DURATION", "CAPTURE_WINDOW"]),
+  coreStartMs: z.number().int().min(0).max(120000).optional(),
+  coreEndMs: z.number().int().min(1).max(120000).optional(),
   audioBase64: recordingAudioBase64Schema,
   commandId: commandIdSchema,
-});
+}).refine(request => request.endReason === "CAPTURE_WINDOW"
+  ? request.audioFormat === "audio/wav" && request.languageHint === "auto" &&
+    request.coreStartMs !== undefined && request.coreEndMs !== undefined &&
+    request.coreStartMs < request.coreEndMs && request.coreEndMs <= request.durationSeconds * 1000
+  : request.audioFormat === "audio/mp4" && request.languageHint === "zh-CN" &&
+    request.coreStartMs === undefined && request.coreEndMs === undefined,
+{ message: "Invalid recording window or source format" });
 const recordingTranscriptSegmentSchema = z
   .object({
     segmentId: z.string().min(1).max(128),
@@ -1448,3 +1456,20 @@ export const paymentEventEnvelopeSchema = z
     timestamp: z.string().regex(/^\d{10}$/),
   })
   .strict();
+
+export const bilingualPassagesRequestSchema = z.object({
+  commandId: commandIdSchema,
+  text: z.string().min(1).refine((value) => value.trim().length > 0),
+  sourceType: z.enum(["DIARY", "RECORDING", "AI_SCENE", "SCREENSHOT", "AUDIO_IMPORT"]),
+  contentShape: z.enum(["ARTICLE", "DIALOGUE"]),
+});
+export type BilingualPassagesRequest = z.infer<typeof bilingualPassagesRequestSchema>;
+
+const nonblankPassageText = z.string().min(1).refine((value) => value.trim().length > 0);
+export const bilingualPassagesResponseSchema = z.object({
+  paragraphs: z.array(z.object({
+    textZh: nonblankPassageText,
+    textEn: nonblankPassageText,
+    sentences: z.array(z.object({ textEn: nonblankPassageText, textZh: nonblankPassageText })).min(1),
+  })).min(1),
+});
