@@ -8,7 +8,7 @@ import com.reallanguage.app.feature.scene.domain.SceneGeneratedDraft
 import com.reallanguage.app.feature.scene.domain.SceneQuestionSession
 
 enum class FormationRecoveryPhase {
-    SEMANTIC_SPLIT, FOCUS_SELECTION, CHAPTER_FORMATION, ENGLISH_GENERATION,
+    BILINGUAL_SELECTION, SEMANTIC_SPLIT, FOCUS_SELECTION, CHAPTER_FORMATION, ENGLISH_GENERATION,
     ENGLISH_CONFIRMATION, LEARNING_TARGET_LOADING, LEARNING_TARGET_SELECTION, FINAL_FIX,
 }
 
@@ -19,6 +19,12 @@ sealed interface FormationSourceOrigin {
     data class Scene(val session: SceneQuestionSession, val draft: SceneGeneratedDraft) : FormationSourceOrigin
     data class Unavailable(val reviewRequestId: String? = null) : FormationSourceOrigin
 }
+
+data class SavedBilingualReview(
+    val sourceKind: String,
+    val paragraphs: List<com.reallanguage.app.feature.capture.domain.BilingualParagraph>,
+    val selected: Set<String>,
+)
 
 /** Only accepted formation data. Unsubmitted inputs and formal learning state are not this DTO. */
 data class FormationRecoverySnapshot(
@@ -39,16 +45,26 @@ data class FormationRecoverySnapshot(
     val targetSelectionEntryId: String? = null,
     val fixEntryId: String? = null,
     val targetSentenceIndex: Int = 0,
+    val bilingual: SavedBilingualReview? = null,
 )
 
 fun FormationRecoverySnapshot.isValidForRecovery(): Boolean {
     if (!Regex("[A-Za-z0-9][A-Za-z0-9:._-]{0,255}").matches(sourceEntryId) || sourceRevision < 0 ||
         source.text.isBlank() || sourceTitle.isBlank() || !validOrigin()) return false
     if (targetSelectionEntryId?.isBlank() == true || fixEntryId?.isBlank() == true || targetSentenceIndex < 0) return false
+    if (bilingual != null) {
+        val sentences = bilingual.paragraphs.flatMap { it.sentences }
+        if (!sourceEntryId.startsWith("bilingual-") || sentences.isEmpty() ||
+            bilingual.sourceKind !in setOf("DIARY","AI_SCENE","SCREENSHOT","RECORDING","AUDIO_IMPORT") ||
+            bilingual.paragraphs.any { it.textZh.isBlank() || it.textEn.isBlank() || it.sentences.isEmpty() } ||
+            sentences.any { it.id.isBlank() || it.textEn.isBlank() || it.textZh.isBlank() } ||
+            sentences.distinctBy { it.id }.size != sentences.size || bilingual.selected.size > 3 ||
+            !sentences.map { it.id }.containsAll(bilingual.selected)) return false
+    }
     val unitById = units.associateBy { it.unitId }
     if (unitById.size != units.size || units.withIndex().any { (index, unit) ->
         unit.unitId.isBlank() || unit.order != index || unit.textZh.isBlank() ||
-            !unit.textZh.hasMinimumSemanticGranularity()
+            (bilingual == null && !unit.textZh.hasMinimumSemanticGranularity())
     }) return false
     val focus = selectedUnitIds.toSet()
     if (focus.size != selectedUnitIds.size || focus.size > 3 || !unitById.keys.containsAll(focus)) return false
@@ -104,6 +120,7 @@ fun FormationRecoverySnapshot.isValidForRecovery(): Boolean {
     if (hasTargetData && (!allEnglishSelected || targetSelectionEntryId == null || targetSentenceIndex !in 0 until focus.size)) return false
     // A return to an earlier page may keep *unchanged* valid results. Phase is a minimum, not a deletion command.
     return when (phase) {
+        FormationRecoveryPhase.BILINGUAL_SELECTION -> bilingual != null
         FormationRecoveryPhase.SEMANTIC_SPLIT -> true
         FormationRecoveryPhase.FOCUS_SELECTION -> units.isNotEmpty()
         FormationRecoveryPhase.CHAPTER_FORMATION -> focus.size in 1..3

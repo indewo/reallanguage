@@ -51,6 +51,18 @@ class RecordingStopEvidenceTest {
         } finally { directory.deleteRecursively() }
     }
 
+    @Test fun hourLimitEvidenceAcceptsActualBoundaryAndPreservesOldTwoMinuteCutoff() {
+        val directory = Files.createTempDirectory("recording-hour-evidence").toFile()
+        try {
+            File(directory, "recording-1.recording.json").writeText(JSONObject()
+                .put("formatVersion", 2).put("maxDurationSeconds", 3600)
+                .put("recordingId", "recording-1").put("endReason", "MAX_DURATION").toString())
+            val atHour = readRecordingSummary(directory, "recording-1", 3_600_035)
+            assertEquals(3_600, atHour.durationSeconds)
+            assertEquals(RecordingEndReason.MAX_DURATION, atHour.endReason)
+        } finally { directory.deleteRecursively() }
+    }
+
     private fun save(directory: File, reason: String) {
         File(directory, "recording-1.recording.json").writeText(JSONObject()
             .put("formatVersion", 1).put("recordingId", "recording-1").put("endReason", reason).toString())

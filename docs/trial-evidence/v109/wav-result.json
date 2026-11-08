@@ -1,0 +1,15 @@
+{
+  "filename": "RL-Format-Friday.wav",
+  "sha256": "df6637d37392bd6c435b3ba6d0ddb234395e2fa46e0033304e8d9d729d4e111b",
+  "format": "audio/wav",
+  "labels": [
+    "选择学习短句",
+    "我们能把会议改到星期五吗？",
+    "Could we move our meeting to Friday?",
+    "已选 0/3",
+    "继续选择学习目标"
+  ],
+  "playbackSource": [
+    "  AudioPlaybackConfiguration piid:95 deviceIds:[2] type:android.media.MediaPlayer u/pid:1010226/3858 state:started attr:AudioAttributes: usage=USAGE_UNKNOWN content=CONTENT_TYPE_UNKNOWN flags=0x800 tags= bundle=nul"
+  ]
+}

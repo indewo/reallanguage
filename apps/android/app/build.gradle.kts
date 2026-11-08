@@ -16,8 +16,8 @@ android {
         applicationId = "com.reallanguage.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 106
-        versionName = "1.26.0-trial.20261104.106"
+        versionCode = 109
+        versionName = "1.27.0-trial.20261108.109"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -87,6 +87,7 @@ tasks.matching { it.name == "preDebugBuild" }.configureEach {
 }
 
 dependencies {
+    implementation("com.google.mlkit:text-recognition-chinese:16.0.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)

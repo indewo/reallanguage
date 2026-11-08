@@ -28,6 +28,12 @@ export class HttpRecordingProvider
           durationSeconds: command.durationSeconds,
           audioFormat: command.audioFormat,
           languageHint: command.languageHint,
+          ...(command.coreStartMs === undefined
+            ? {}
+            : {
+                coreStartMs: command.coreStartMs,
+                coreEndMs: command.coreEndMs,
+              }),
           endReason: command.endReason,
           audioBase64: command.audioBase64,
         },

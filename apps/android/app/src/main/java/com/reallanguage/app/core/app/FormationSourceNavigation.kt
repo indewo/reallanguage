@@ -62,9 +62,9 @@ internal fun formationPreviousRoute(
     is HomeDiaryRoute.EnglishConfirmation -> preserveFormationOrigin(current,
         HomeDiaryRoute.FocusSelection(current.text, current.units, current.sourceType, current.contentShape,
             initialSelectedUnitIds = current.chapters.flatMap { it.sentences }.filter { it.isFocus }.map { it.unitId }.toSet()))
-    is HomeDiaryRoute.LearningTargets -> preserveFormationOrigin(current,
+    is HomeDiaryRoute.LearningTargets -> current.sourceReturnRoute?.takeIf { it is HomeDiaryRoute.Bilingual } ?: preserveFormationOrigin(current,
         HomeDiaryRoute.EnglishConfirmation(current.text, current.units, current.chapters, current.sourceType, current.contentShape))
-    is HomeDiaryRoute.LearningTargetSelection -> preserveFormationOrigin(current,
+    is HomeDiaryRoute.LearningTargetSelection -> current.sourceReturnRoute?.takeIf { it is HomeDiaryRoute.Bilingual } ?: preserveFormationOrigin(current,
         HomeDiaryRoute.EnglishConfirmation(current.text, current.units, current.chapters, current.sourceType, current.contentShape))
     is HomeDiaryRoute.FinalFix -> snapshot
         ?.copy(phase = FormationRecoveryPhase.LEARNING_TARGET_SELECTION)

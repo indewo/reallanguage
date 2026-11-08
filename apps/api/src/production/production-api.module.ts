@@ -1,3 +1,5 @@
+import { BilingualPassagesController, BILINGUAL_PASSAGES_APPLICATION } from "../presentation/bilingual-passages.controller.js";
+import { generateBilingualPassages } from "./generate-bilingual-passages.js";
 import { randomUUID } from "node:crypto";
 import {
   KyselyAiResultDeliveryStore,
@@ -598,6 +600,7 @@ export const createProductionApiModule = (
       PasswordResetController,
       SafetyCheckController,
       SafetyHandlingController,
+      BilingualPassagesController,
       SemanticUnitSplitController,
       ChapterContextController,
       EnglishCandidateController,
@@ -703,6 +706,24 @@ export const createProductionApiModule = (
       {
         provide: HANDLE_BLOCKED_SAFETY_APPLICATION,
         useValue: blockedSafety,
+      },
+      {
+        provide: BILINGUAL_PASSAGES_APPLICATION,
+        useValue: (command: Parameters<typeof generateBilingualPassages>[0], checkActive?: () => void) =>
+          generateBilingualPassages(command, contentSafety, async (task, input, identity) => {
+            const response = await contentMeteredFetch(config.contentFormation.providerEndpoint, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${config.contentFormation.providerApiKey}`,
+                "Content-Type": "application/json",
+                "Idempotency-Key": identity,
+                "X-RealLanguage-Account-Id": command.accountId,
+              },
+              body: JSON.stringify({task,input}),
+            });
+            if (!response.ok) throw new Error("双语内容生成暂时不可用。");
+            return response.json() as Promise<unknown>;
+          }, checkActive),
       },
       {
         provide: SPLIT_SEMANTIC_UNITS_APPLICATION,
@@ -1091,6 +1112,9 @@ const isLoopback = (ip: string): boolean =>
 const aiOperationLabelsZh: Readonly<Record<string, string>> = {
   CONTENT_SAFETY_CHECK_V1: "内容安全检查",
   CONTENT_DEIDENTIFICATION_V1: "内容脱敏",
+  BILINGUAL_PASSAGE_WORDING_V1: "按场景表达中英段落",
+  BILINGUAL_PASSAGE_FIDELITY_V1: "核对双语段落原意",
+  BILINGUAL_ENGLISH_UNITS_V1: "拆分英文学习短句",
   SEMANTIC_UNIT_SPLIT_V1: "拆分语义单元",
   CHAPTER_CONTEXT_SELECTION_V1: "生成章节结构",
   ENGLISH_CANDIDATE_GENERATION_V1: "生成英语表达",

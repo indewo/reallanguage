@@ -418,6 +418,58 @@ try {
     } finally {
       await unlink(sessionPath).catch(() => undefined);
     }
+  } else if (process.argv.includes("--bilingual-boundaries")) {
+    stage="bilingual-boundaries";
+    const meeting="明天早上要给客户演示新系统，我原本打算今天下班前把演示材料发给跟我一起开会的同事，让她晚上有空的时候先看一遍。刚才我自己从头到尾试了一次，才发现换了账户以后，最后一步会直接回到登录页。我还没弄清楚这是网络断了一下，还是新账户碰到了权限问题。为了不让她提前练错流程，我已经把有问题的那一页标了出来，也跟她说其余部分可以照常准备。等我明天一早再用两个账户各试一遍，我就给她发最终版；如果到八点半还没找到原因，演示时我们就先跳过那一步。";
+    const newTopic="对了，周末野餐还去吗？";
+    const texts=[meeting+"\n\n"+newTopic,"你要一起去吗？"];
+    const receipts:unknown[]=[];
+    for (const text of texts) {
+      const payload={text,sourceType:"DIARY",contentShape:"ARTICLE",commandId:randomUUID()};
+      let resp=await app.inject({method:"POST",url:"/api/v1/content-formation/bilingual-passages",headers:{...headers,prefer:"respond-async"},payload});
+      if(resp.statusCode!==202) throw new Error("Long/short task did not start");
+      for(let i=0;resp.statusCode===202&&i<240;i++){
+        await new Promise(r=>setTimeout(r,1000));
+        resp=await app.inject({method:"GET",url:"/api/v1/content-formation/bilingual-passages?commandId="+payload.commandId,headers});
+      }
+      if(resp.statusCode!==200) throw new Error("Long/short output not available");
+      const result=resp.json() as {paragraphs:{textZh:string;textEn:string;sentences:{textEn:string;textZh:string}[]}[]};
+      if(result.paragraphs.map(p=>p.textZh).join("").replace(/\s+/gu,"")!==text.replace(/\s+/gu,"") ||
+        result.paragraphs.some(p=>p.sentences.map(q=>q.textEn).join(" ")!==p.textEn))
+        throw new Error("Long/short coverage mismatch");
+      if(text===texts[0]&&result.paragraphs.at(-1)?.textZh!==newTopic) throw new Error("New picnic topic merged into technical demo");
+      if(text===texts[1]&&(result.paragraphs.length!==1||result.paragraphs[0]?.sentences.length!==1)) throw new Error("Short question padded");
+      receipts.push({source:text,...result});
+    }
+    await writeFile(".local-data/v108-bilingual-length-boundaries.json",JSON.stringify(receipts,null,2));
+    console.log(JSON.stringify({stage,result:"PASSED",longSituationCharacters:Array.from(meeting).length,shortCharacters:Array.from(texts[1]!).length,cases:receipts.length}));
+  } else if (process.argv.includes("--bilingual-passages")) {
+    stage = "bilingual-passages";
+    const cafe = process.argv.includes("--cafe-dialogue");
+    const dollar = process.argv.includes("--dollar-cafe");
+    const text = dollar ? "用户：我想要一杯小杯热拿铁。\n对方：可以换燕麦奶，但要加一美元。\n用户：没问题，可以刷信用卡吗？" : cafe ? "用户：你好，我想点一杯小杯热拿铁。\n对方：可以换燕麦奶，不过要加一块钱。\n用户：可以，我接受。请帮我用信用卡付款。" :
+      "我本来约了周四和同事讨论预算，但那天下午得去接女儿。我想问她能不能改到周五上午。\n\n今天我也把上周出差的收据发给了财务。他们说少了一张出租车发票，我得再找找。";
+    const payload = {text, sourceType:cafe?"AI_SCENE":"DIARY", contentShape:cafe?"DIALOGUE":"ARTICLE", commandId:randomUUID()};
+    let response = await app.inject({method:"POST",url:"/api/v1/content-formation/bilingual-passages",headers:{...headers,prefer:"respond-async"},payload});
+    if (response.statusCode!==202 || response.json().commandId!==payload.commandId) throw new Error("Async acknowledgment missing");
+    let polls = 0;
+    while (response.statusCode === 202 && polls++ < 180) {
+      await new Promise(resolve=>setTimeout(resolve,1000));
+      response = await app.inject({method:"GET",url:"/api/v1/content-formation/bilingual-passages?commandId="+payload.commandId,headers});
+    }
+    if (response.statusCode !== 200) throw new Error("Bilingual request failed (" + response.statusCode + ")");
+    const result = response.json() as {paragraphs: {textZh:string;textEn:string;sentences:{textEn:string;textZh:string}[]}[]};
+    if (result.paragraphs.length < 2 ||
+        result.paragraphs.map(row=>row.textZh).join("").replace(/\s+/gu,"") !== text.replace(/\s+/gu,"") ||
+        result.paragraphs.some(row=>!row.sentences.length || row.sentences.map(s=>s.textEn).join(" ") !== row.textEn))
+      throw new Error("Bilingual source or English coverage mismatch");
+    if (cafe && (result.paragraphs.length!==3 || result.paragraphs.some(p=>/user:|other person:|I accept[.!]|please help me pay/iu.test(p.textEn) || (!dollar && /dollars?|yuan/iu.test(p.textEn)))))
+      throw new Error("Cafe speaker roles or register mismatch");
+    const replay = await app.inject({method:"POST",url:"/api/v1/content-formation/bilingual-passages",headers,payload});
+    if (replay.statusCode!==200 || JSON.stringify(replay.json())!==JSON.stringify(result)) throw new Error("Bilingual replay mismatch");
+    await writeFile(dollar?".local-data/v107-dollar-bilingual-live-qa.json":cafe?".local-data/v107-cafe-bilingual-live-qa.json":".local-data/v107-bilingual-live-qa.json", JSON.stringify({input:text,...result},null,2));
+    console.log(JSON.stringify({stage,result:"PASSED",paragraphs:result.paragraphs.length,
+      units:result.paragraphs.reduce((n,p)=>n+p.sentences.length,0),polls,verifiedReplay:true}));
   } else if (process.argv.includes("--scene-regeneration")) {
     const session = {
       operationId: randomUUID(),

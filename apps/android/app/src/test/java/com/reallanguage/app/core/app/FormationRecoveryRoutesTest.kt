@@ -9,12 +9,28 @@ import org.junit.Test
 class FormationRecoveryRoutesTest {
     @Test fun `eight stages round trip complete accepted data without discarding downstream cache`() {
         val original = sample()
-        FormationRecoveryPhase.entries.forEach { phase ->
+        FormationRecoveryPhase.entries.filter { it != FormationRecoveryPhase.BILINGUAL_SELECTION }.forEach { phase ->
             val snapshot = original.copy(phase = phase)
             val restored = requireNotNull(snapshot.toFormationRecoveryRoute())
             assertEquals(1, restored.targetSentenceIndex)
             assertEquals(snapshot, restored.route.toFormationRecoverySnapshot(4, "隔离日记", snapshot, restored.targetSentenceIndex))
         }
+    }
+
+    @Test fun `bilingual drafts restore the whole passage while the next learning step keeps only selected English`() {
+        val paragraph = com.reallanguage.app.feature.capture.domain.BilingualParagraph("如果周五有空，我就改邀请。还有一件事。",
+            "If Friday works, I’ll update the invite. One more thing.",
+            listOf(com.reallanguage.app.feature.capture.domain.BilingualSentence("p1-s1","If Friday works, I’ll update the invite.","如果周五有空，我就改邀请。"),
+                com.reallanguage.app.feature.capture.domain.BilingualSentence("p1-s2","One more thing.","还有一件事。")))
+        val review = HomeDiaryRoute.Bilingual(paragraph.textZh, CaptureOrigin.DIARY, SourceContentShape.ARTICLE,
+            "abc", listOf(paragraph), HomeDiaryRoute.Input(paragraph.textZh), setOf("p1-s1"))
+        val draft = requireNotNull(review.toFormationRecoverySnapshot(1, "改约"))
+        assertEquals(review, draft.toFormationRecoveryRoute()?.route)
+        val next = review.learningTargets()
+        assertEquals(listOf("p1-s1"), next.units.map { it.unitId })
+        val restoredTargets = requireNotNull(next.toFormationRecoverySnapshot(1, "改约", draft))
+        assertEquals(next, restoredTargets.toFormationRecoveryRoute()?.route)
+        assertEquals(review, formationPreviousRoute(next))
     }
 
     @Test fun `new diary split contains original full source but no invented derived content`() {

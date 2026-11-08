@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
+import android.media.MediaMetadataRetriever
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.IBinder
@@ -14,7 +15,8 @@ import com.reallanguage.app.MainActivity
 import com.reallanguage.app.R
 import com.reallanguage.app.feature.recording.domain.ActiveRecording
 import com.reallanguage.app.feature.recording.domain.RecordingRuntimeState
-import com.reallanguage.app.feature.recording.presentation.ActiveRecordingViewModel
+import com.reallanguage.app.feature.recording.domain.RECORDING_LIMIT_SECONDS
+import kotlin.math.sqrt
 import java.io.File
 import java.util.UUID
 import org.json.JSONObject
@@ -36,6 +38,7 @@ class RecordingForegroundService : Service() {
     private var timerJob: Job? = null
     private var recordingId: String? = null
     private var elapsedSeconds = 0
+    private val levels = ArrayDeque<Float>(LEVEL_SAMPLES)
     private var elapsedTime: RecordingElapsedTime? = null
     private var recordingDirectory: File? = null
     private var captureOwner: RecordingCaptureOwner? = null
@@ -48,9 +51,13 @@ class RecordingForegroundService : Service() {
             ACTION_START -> PendingRecordingCaptureOwners.take(intent.getStringExtra(EXTRA_CAPTURE_OWNER))?.let { owner ->
                 if (owner.storageKey == intent.getStringExtra(EXTRA_ACCOUNT_STORAGE_KEY)) startRecording(owner)
             }
-            ACTION_STOP -> if (intent.getStringExtra(EXTRA_RECORDING_ID) == recordingId &&
+            ACTION_STOP, ACTION_PAUSE, ACTION_RESUME -> if (intent.getStringExtra(EXTRA_RECORDING_ID) == recordingId &&
                 intent.getStringExtra(EXTRA_ACCOUNT_STORAGE_KEY) == recordingDirectory?.name
-            ) stopRecording()
+            ) when (intent.action) {
+                ACTION_STOP -> stopRecording()
+                ACTION_PAUSE -> setPaused(true)
+                ACTION_RESUME -> setPaused(false)
+            }
         }
         if (recorder == null) stopSelf(startId)
         return START_NOT_STICKY
@@ -72,13 +79,17 @@ class RecordingForegroundService : Service() {
             writeStopEvidence(directory, id, "INCOMPLETE")
             createNotificationChannel()
             startForeground(NOTIFICATION_ID, notification())
-            recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(this) else {
+            val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) MediaRecorder(this) else {
                 @Suppress("DEPRECATION") MediaRecorder()
-            }.apply {
+            }
+            recorder = device
+            device.apply {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setMaxDuration(ActiveRecordingViewModel.MAX_DURATION_SECONDS * 1_000)
+                setAudioSamplingRate(16_000)
+                setAudioEncodingBitRate(48_000)
+                setMaxDuration(RECORDING_LIMIT_SECONDS * 1_000)
                 setOnInfoListener { _, what, _ ->
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) stopRecording(maximumReached = true)
                 }
@@ -88,6 +99,7 @@ class RecordingForegroundService : Service() {
             }
             recordingId = id
             elapsedSeconds = 0
+            levels.clear()
             elapsedTime = RecordingElapsedTime(SystemClock::elapsedRealtime)
             if (!owner.isCurrent()) { stopRecording(); return }
             publish(RecordingRuntimeState.Recording(ActiveRecording(id, 0)))
@@ -96,12 +108,14 @@ class RecordingForegroundService : Service() {
             }
             timerJob = serviceScope.launch {
                 while (isActive) {
-                    delay(1_000)
+                    delay(150)
+                    if (elapsedTime?.paused == true) continue
                     elapsedSeconds = elapsedTime?.tick() ?: 0
-                    publish(RecordingRuntimeState.Recording(
-                        ActiveRecording(id, elapsedSeconds),
-                    ))
-                    if (elapsedSeconds >= ActiveRecordingViewModel.MAX_DURATION_SECONDS) {
+                    val amplitude = runCatching { recorder?.maxAmplitude ?: 0 }.getOrDefault(0)
+                    if (levels.size >= LEVEL_SAMPLES) levels.removeFirst()
+                    levels.addLast(sqrt(amplitude.coerceIn(0, 32767) / 32767f))
+                    publishCapture(id)
+                    if (elapsedSeconds >= RECORDING_LIMIT_SECONDS) {
                         stopRecording(maximumReached = true)
                         break
                     }
@@ -116,23 +130,50 @@ class RecordingForegroundService : Service() {
         }
     }
 
-    private fun stopRecording(maximumReached: Boolean = false) {
+    private fun setPaused(paused: Boolean) {
+        val id = recordingId ?: return
+        val clock = elapsedTime ?: return
+        if (paused == clock.paused) return
+        if (captureOwner?.isCurrent() != true) { stopRecording(); return }
+        try {
+            if (paused) recorder?.pause() else recorder?.resume()
+            clock.setPaused(paused)
+            elapsedSeconds = clock.tick()
+            publishCapture(id)
+        } catch (_: RuntimeException) {
+            // Finalize the original file if the audio device becomes unavailable.
+            stopRecording(interrupted = true)
+        }
+    }
+
+    private fun publishCapture(id: String) {
+        publish(RecordingRuntimeState.Recording(ActiveRecording(id, elapsedSeconds, elapsedTime?.paused == true, levels.toList())))
+    }
+
+    private fun stopRecording(maximumReached: Boolean = false, interrupted: Boolean = false) {
         val id = recordingId ?: return
         val sessionEnded = captureOwner?.isCurrent() != true
         // Native callbacks, button events and the fallback timer are serialized on Main.
         recordingId = null
-        elapsedSeconds = if (maximumReached) ActiveRecordingViewModel.MAX_DURATION_SECONDS else elapsedTime?.tick() ?: elapsedSeconds
+        elapsedSeconds = if (maximumReached) RECORDING_LIMIT_SECONDS else elapsedTime?.tick() ?: elapsedSeconds
         timerJob?.cancel()
         try {
-            recorder?.stop()
-            releaseRecorder()
             val directory = requireNotNull(recordingDirectory)
+            try {
+                recorder?.stop()
+            } catch (alreadyStopped: RuntimeException) {
+                // Some encoders finalize the container before posting MAX_DURATION to the main looper.
+                // Accept that race only after reading a finalized file that actually spans the limit.
+                if (!maximumReached || !hasCompleteHour(File(directory, "$id.m4a"))) throw alreadyStopped
+            }
+            releaseRecorder()
             writeStopEvidence(directory, id, when {
                 sessionEnded -> "SESSION_ENDED"
+                interrupted -> "INCOMPLETE"
                 maximumReached -> "MAX_DURATION"
                 else -> "USER_STOPPED"
             })
-            publish(if (sessionEnded) RecordingRuntimeState.Failed else RecordingRuntimeState.Completed(id, elapsedSeconds))
+            publish(if (sessionEnded || interrupted) RecordingRuntimeState.Failed else RecordingRuntimeState.Completed(id, elapsedSeconds))
         } catch (_: Exception) {
             releaseRecorder()
             publish(RecordingRuntimeState.Failed)
@@ -142,11 +183,21 @@ class RecordingForegroundService : Service() {
         }
     }
 
+    private fun hasCompleteHour(file: File): Boolean = runCatching {
+        val metadata = MediaMetadataRetriever()
+        try {
+            metadata.setDataSource(file.absolutePath)
+            val millis = metadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull()
+            val limit = RECORDING_LIMIT_SECONDS * 1000L
+            millis != null && millis in (limit - 1000)..(limit + 1000)
+        } finally { metadata.release() }
+    }.getOrDefault(false)
+
     private fun writeStopEvidence(directory: File, id: String, reason: String) {
         val evidence = File(directory, "$id.recording.json")
         val temporary = File.createTempFile("recording-", ".tmp", directory)
         try {
-            val value = JSONObject().put("formatVersion", 1).put("recordingId", id)
+            val value = JSONObject().put("formatVersion", 2).put("maxDurationSeconds", RECORDING_LIMIT_SECONDS).put("recordingId", id)
                 .put("endReason", reason).toString()
             temporary.writeText(value)
             check(temporary.renameTo(evidence) && evidence.readText() == value)
@@ -205,6 +256,9 @@ class RecordingForegroundService : Service() {
 
     companion object {
         internal const val EXTRA_CAPTURE_OWNER = "capture-owner"
+        private const val LEVEL_SAMPLES = 128
+        const val ACTION_PAUSE = "com.reallanguage.app.recording.PAUSE"
+        const val ACTION_RESUME = "com.reallanguage.app.recording.RESUME"
         const val ACTION_START = "com.reallanguage.app.recording.START"
         const val ACTION_STOP = "com.reallanguage.app.recording.STOP"
         const val EXTRA_RECORDING_ID = "recording_id"

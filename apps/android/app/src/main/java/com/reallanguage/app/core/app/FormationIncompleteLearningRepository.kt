@@ -53,6 +53,7 @@ class FormationIncompleteLearningRepository(
 }
 
 private fun FormationRecoveryPhase.labelZh() = when (this) {
+    FormationRecoveryPhase.BILINGUAL_SELECTION -> "选择学习短句"
     FormationRecoveryPhase.SEMANTIC_SPLIT -> "整理中文内容"
     FormationRecoveryPhase.FOCUS_SELECTION -> "选择重点句"
     FormationRecoveryPhase.CHAPTER_FORMATION -> "形成章节"

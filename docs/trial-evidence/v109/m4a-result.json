@@ -1,0 +1,15 @@
+{
+  "filename": "RL-Format-Friday.m4a",
+  "sha256": "4fac02b5851fcc51d561c985543358b92672669e5f248bd21bc8c32258a20a3e",
+  "format": "audio/mp4",
+  "labels": [
+    "选择学习短句",
+    "我们可以把我们的会议改到周五吗？",
+    "Could we move our meeting to Friday?",
+    "已选 0/3",
+    "继续选择学习目标"
+  ],
+  "playbackSource": [
+    "  AudioPlaybackConfiguration piid:103 deviceIds:[2] type:android.media.MediaPlayer u/pid:1010226/4973 state:started attr:AudioAttributes: usage=USAGE_UNKNOWN content=CONTENT_TYPE_UNKNOWN flags=0x800 tags= bundle=nul"
+  ]
+}

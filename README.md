@@ -1,13 +1,23 @@
-# 跨电脑继续开发
+# RealLanguage
+
+## 安卓测试版 v109
+
+首页提供五张可双向循环拖动的纸卡。开始录音、对话截图、导入音频、AI 设定场景和日常记录在素材准备好后进入同一个中英对照页。左侧保留整段中文，右侧展示先按整段生成、再按英语语义拆开的学习句；全文选择一到三句继续练习。
+
+[产品规则](docs/CAPTURE_LEARNING_V109.md) · [界面原图](docs/design-reference/v109/) · [设备实测与录屏](docs/V109_TRIAL_VALIDATION.md)
+
+本版已获准在公开仓库发布源码、项目历史交接资料、APK 及完整包。运行账号库、签名私钥、服务密钥和个人录音在交付范围之外。
+
+[v109 发布与完整交接包](https://github.com/indewo/reallanguage/releases/tag/v109) · [录音与截图导入设计基准](outputs/录音与截图导入-设计基准.md)
+
+## 跨电脑继续开发
 
 先读 [完整链路与当前进度](docs/ONLINE_DEVELOPMENT_HANDOFF_2026-11-04.md) 和 [云端开发说明](docs/CLOUD_DEVELOPMENT.md)。当前仍有未验收页面，请勿从零重建。
 
 - [ChatGPT 项目：英语学习APP](https://chatgpt.com/g/g-p-6aeb2ac7caf88191b0da9b7a9c49b8d1/project)：历史记录、规范和恢复资料。
-- 本私有仓库：源码、素材及后续开发同步入口，默认分支 `main`。
+- 项目仓库：源码、素材及后续开发同步入口，默认分支 `main`。
 - 用户已确认在网页连接 `indewo` 并看到 `reallanguage`；接下来需完成环境配置、发布和运行核验。源码已上传不代表云端运行与 APP 公网后台已就绪。
 - [本次上云核验记录](docs/UPLOAD_VERIFICATION_2026-11-05.md)：已从 GitHub 重新下载，初始快照 2,038 个文件逐一校验一致。
-
-# RealLanguage
 
 ## 本机 API 连接排查
 
@@ -31,7 +41,11 @@ RealLanguage 是一款面向 14 岁及以上、已有一定英语基础用户的
 
 RealLanguage 的核心目标不是让用户收集更多答案，而是让一段已经确认、真正属于用户的表达，逐渐变成可以使用的能力。
 
-## 三种开始方式
+## v1.26 历史流程
+
+<details>
+<summary>展开当时的三种开始方式及内容确认规则</summary>
+
 
 RealLanguage 保留三条独立学习路径。
 
@@ -103,6 +117,8 @@ RealLanguage 不是让 AI 随时改变答案。
 - 固定目标不代表其他表达错误，只代表这是用户本次决定掌握的版本。
 
 自然准确、符合原意和用户设置，永远优先于为了复习而硬塞单词或追求句式变化。
+
+</details>
 
 ## 用户可以控制什么
 

@@ -1,0 +1,42 @@
+[
+  {
+    "rapidArrowSequence": "++-",
+    "focus": "对话截图"
+  },
+  {
+    "rapidArrowSequence": "---++",
+    "focus": "开始录音"
+  },
+  {
+    "rapidArrowSequence": "-------",
+    "focus": "AI设定场景"
+  },
+  {
+    "rapidArrowSequence": "++",
+    "focus": "开始录音"
+  },
+  {
+    "visibleSideCover": "对话截图",
+    "touch": [
+      1819,
+      458
+    ],
+    "observedLandingControl": "添加截图"
+  },
+  {
+    "visibleSideCover": "日常记录",
+    "touch": [
+      662,
+      458
+    ],
+    "observedLandingControl": "提交"
+  },
+  {
+    "visibleSideCover": "AI设定场景",
+    "touch": [
+      322,
+      454
+    ],
+    "observedLandingControl": "直接描述你的场景"
+  }
+]

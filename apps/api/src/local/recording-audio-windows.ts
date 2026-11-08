@@ -17,6 +17,7 @@ type FrameWindow = {
 /** Recognition windows are transport units, never semantic sentence boundaries. */
 export function recordingAudioWindows(
   audioBase64: string,
+  options: { alreadyWindowed?: boolean } = {},
 ): readonly RecordingAudioWindow[] {
   const bytes = Buffer.from(audioBase64, "base64");
   if (
@@ -104,6 +105,9 @@ export function recordingAudioWindows(
     start = Math.max(start, gap.end - rate);
   }
   if (start < lastAudibleEnd) spans.push({ start, end: frames });
+  // Capture clients already bound and pad every request. Splitting continuous speech again
+  // creates a second seam, which can make genuine repeated words impossible to align.
+  if (options.alreadyWindowed) return spans.map(encodeWindow);
   const measured: FrameWindow[] = [];
   for (const span of spans) {
     let cursor = span.start;
@@ -204,7 +208,9 @@ export function recordingAudioWindows(
     // digital-zero gaps can be omitted; all nonzero PCM remains original bytes.
     windows = boundedCores({ start: spans[0]!.start, end: spans.at(-1)!.end });
   }
-  return windows.map((window) => {
+  return windows.map(encodeWindow);
+
+  function encodeWindow(window: FrameWindow): RecordingAudioWindow {
     const body = data.subarray(
       window.start * alignment,
       window.end * alignment,
@@ -230,5 +236,5 @@ export function recordingAudioWindows(
           }
         : {}),
     };
-  });
+  }
 }

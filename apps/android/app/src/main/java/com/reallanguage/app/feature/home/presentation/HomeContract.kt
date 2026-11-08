@@ -12,6 +12,8 @@ sealed interface HomeAction {
     data object DiaryRequested : HomeAction
     data object AiSceneRequested : HomeAction
     data object QuickRecordingRequested : HomeAction
+    data object ScreenshotImportRequested : HomeAction
+    data object AudioImportRequested : HomeAction
     data object DueReviewRequested : HomeAction
     data object IncompleteLearningRequested : HomeAction
     data object VocabularyRequested : HomeAction

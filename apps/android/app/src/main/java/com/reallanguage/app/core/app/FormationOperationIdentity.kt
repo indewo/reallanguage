@@ -32,6 +32,7 @@ private fun unitFields(units: List<SemanticUnit>): List<String> =
     listOf(units.size.toString()) + units.sortedBy { it.order }.flatMap { listOf(it.unitId, it.order.toString(), it.textZh) }
 
 internal fun formationSourceEntryId(route: HomeDiaryRoute): String? = when (route) {
+    is HomeDiaryRoute.Bilingual -> "bilingual-${route.commandId}"
     is HomeDiaryRoute.SemanticSplit -> route.entryId
     is HomeDiaryRoute.FocusSelection -> route.sourceEntryId
     is HomeDiaryRoute.ChapterFormation -> route.sourceEntryId

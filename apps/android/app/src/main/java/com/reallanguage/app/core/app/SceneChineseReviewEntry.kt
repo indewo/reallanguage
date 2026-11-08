@@ -38,7 +38,9 @@ internal fun SceneChineseReviewEntry(
         var navigated = false
         review.effects.collect { effect ->
             if (!navigated) {
-                navigated = true
+                // Confirmation starts work on this same page. Dismissing a failure must leave
+                // the draft editable and allow another confirmation or a different action.
+                navigated = effect !is SceneChineseReviewEffect.OpenSafetyCheck
                 when (effect) {
                     is SceneChineseReviewEffect.OpenSafetyCheck -> currentSafety(effect.source, effect.confirmedDraft)
                     is SceneChineseReviewEffect.ReturnToQuestions -> currentQuestions(effect.session)

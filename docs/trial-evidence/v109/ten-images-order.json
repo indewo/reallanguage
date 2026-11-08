@@ -1,0 +1,16 @@
+{
+  "before": {
+    "9": 2,
+    "10": 1
+  },
+  "afterDrag": {
+    "9": 1,
+    "10": 2
+  },
+  "afterReadd": {
+    "9": 2,
+    "10": 1
+  },
+  "countAfterDelete": 9,
+  "finalCount": 10
+}

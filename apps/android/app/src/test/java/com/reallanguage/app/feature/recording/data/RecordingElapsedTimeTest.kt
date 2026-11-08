@@ -17,7 +17,19 @@ class RecordingElapsedTimeTest {
         var now = 10_000L
         val elapsed = RecordingElapsedTime { now }
         assertEquals(0, elapsed.tick())
-        now += 125_000
-        assertEquals(120, elapsed.tick())
+        now += 3_700_000
+        assertEquals(3600, elapsed.tick())
+    }
+
+    @Test fun pausingExcludesWallTimeAndResumesFromTheSameAudioPosition() {
+        var now = 0L
+        val clock = RecordingElapsedTime { now }
+        now = 7_750
+        clock.setPaused(true)
+        now += 19_000
+        assertEquals(7, clock.tick())
+        clock.setPaused(false)
+        now += 350
+        assertEquals(8, clock.tick())
     }
 }

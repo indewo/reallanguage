@@ -2,6 +2,7 @@ package com.reallanguage.app.feature.recording.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.reallanguage.app.feature.recording.domain.RECORDING_LIMIT_SECONDS
 import com.reallanguage.app.feature.recording.domain.RecordingRuntimeRepository
 import com.reallanguage.app.feature.recording.domain.RecordingRuntimeState
 import kotlinx.coroutines.CancellationException
@@ -30,7 +31,22 @@ class ActiveRecordingViewModel(private val repository: RecordingRuntimeRepositor
     fun onAction(action: ActiveRecordingAction) {
         when (action) {
             ActiveRecordingAction.StopRequested -> mutableUiState.value.recordingId?.let(::stop)
-            ActiveRecordingAction.RetryRequested -> start()
+            ActiveRecordingAction.RetryRequested -> {
+                val current = mutableUiState.value
+                if (current.recording) current.recordingId?.let(::stop) else start()
+            }
+            ActiveRecordingAction.TogglePauseRequested -> {
+                val current = mutableUiState.value
+                val id = current.recordingId ?: return
+                if (!current.recording || current.stopping) return
+                viewModelScope.launch {
+                    try { repository.setPaused(id, !current.paused) }
+                    catch (cancel: CancellationException) { throw cancel }
+                    catch (_: Exception) {
+                        mutableUiState.value = mutableUiState.value.copy(error = ActiveRecordingError.RECORDING_FAILED)
+                    }
+                }
+            }
         }
     }
 
@@ -44,6 +60,8 @@ class ActiveRecordingViewModel(private val repository: RecordingRuntimeRepositor
                             recordingId = runtime.active.recordingId,
                             elapsedSeconds = runtime.active.elapsedSeconds,
                             recording = true,
+                            paused = runtime.active.paused,
+                            levels = runtime.active.levels,
                             stopping = stopRequestedFor == runtime.active.recordingId,
                         )
                         if (runtime.active.elapsedSeconds >= MAX_DURATION_SECONDS) stop(runtime.active.recordingId)
@@ -51,7 +69,7 @@ class ActiveRecordingViewModel(private val repository: RecordingRuntimeRepositor
                     is RecordingRuntimeState.Completed -> {
                         if (runtime.recordingId == previousCompletedId || runtime.recordingId == deliveredCompletionId) return@collectLatest
                         deliveredCompletionId = runtime.recordingId
-                        mutableUiState.value = ActiveRecordingUiState(elapsedSeconds = runtime.durationSeconds)
+                        mutableUiState.value = mutableUiState.value.copy(recordingId = runtime.recordingId, elapsedSeconds = runtime.durationSeconds, recording = false, stopping = true)
                         effectChannel.send(ActiveRecordingEffect.OpenCompletion(runtime.recordingId))
                     }
                     RecordingRuntimeState.Failed -> mutableUiState.value = ActiveRecordingUiState(
@@ -91,5 +109,5 @@ class ActiveRecordingViewModel(private val repository: RecordingRuntimeRepositor
         }
     }
 
-    companion object { const val MAX_DURATION_SECONDS = 120 }
+    companion object { const val MAX_DURATION_SECONDS = RECORDING_LIMIT_SECONDS }
 }

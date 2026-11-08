@@ -32,7 +32,17 @@ class RecordingForegroundServiceTest {
             runBlocking { repository.start() }
             compose.waitUntil(10_000) { (repository.state.value as? RecordingRuntimeState.Recording)?.active?.elapsedSeconds?.let { it >= 2 } == true }
             recordedId = (repository.state.value as RecordingRuntimeState.Recording).active.recordingId
-            runBlocking { repository.stop(recordedId!!) }
+            val id = requireNotNull(recordedId)
+            runBlocking { repository.setPaused(id, true) }
+            compose.waitUntil(3_000) { (repository.state.value as? RecordingRuntimeState.Recording)?.active?.paused == true }
+            val pausedAt = (repository.state.value as RecordingRuntimeState.Recording).active.elapsedSeconds
+            android.os.SystemClock.sleep(2_200)
+            org.junit.Assert.assertEquals(pausedAt, (repository.state.value as RecordingRuntimeState.Recording).active.elapsedSeconds)
+            runBlocking { repository.setPaused(id, false) }
+            compose.waitUntil(5_000) {
+                (repository.state.value as? RecordingRuntimeState.Recording)?.active?.let { !it.paused && it.elapsedSeconds >= pausedAt + 1 } == true
+            }
+            runBlocking { repository.stop(id) }
             compose.waitUntil(5_000) { repository.state.value is RecordingRuntimeState.Completed || repository.state.value is RecordingRuntimeState.Failed }
             assertTrue(repository.state.value is RecordingRuntimeState.Completed)
             val evidence = File(accountRecordingsDirectory(context.filesDir, account), "$recordedId.recording.json")
@@ -46,7 +56,7 @@ class RecordingForegroundServiceTest {
         }
     }
 
-    @Test fun nativeRecorderStopsAtTwoMinutesAndLeavesAReadableOriginalFile() {
+    @Test fun nativeRecorderStopsAtSixtyMinutesAndLeavesAReadableOriginalFile() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val account = "native-recording-test-${UUID.randomUUID()}"
         InstrumentationRegistry.getInstrumentation().uiAutomation.grantRuntimePermission(context.packageName, Manifest.permission.RECORD_AUDIO)
@@ -59,7 +69,7 @@ class RecordingForegroundServiceTest {
             runBlocking { repository.start() }
             compose.waitUntil(10_000) { repository.state.value is RecordingRuntimeState.Recording }
             recordedId = (repository.state.value as RecordingRuntimeState.Recording).active.recordingId
-            compose.waitUntil(125_000) {
+            compose.waitUntil(3_615_000) {
                 val state = repository.state.value
                 (state is RecordingRuntimeState.Completed && state.recordingId == recordedId) || state is RecordingRuntimeState.Failed
             }
@@ -71,7 +81,7 @@ class RecordingForegroundServiceTest {
                 metadata.setDataSource(file.absolutePath)
                 metadata.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!.toLong()
             } finally { metadata.release() }
-            assertTrue("Measured original duration was $actualDuration ms", actualDuration in 119_000L..120_500L)
+            assertTrue("Measured original duration was $actualDuration ms", actualDuration in 3_599_000L..3_601_000L)
         } finally {
             recordedId?.let { runBlocking { repository.stop(it) } }
             // Only this test's fresh account directory is disposable.

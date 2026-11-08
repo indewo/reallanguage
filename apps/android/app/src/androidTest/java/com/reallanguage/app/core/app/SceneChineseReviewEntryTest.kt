@@ -4,6 +4,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.reallanguage.app.core.designsystem.RlTheme
@@ -86,6 +88,29 @@ class SceneChineseReviewEntryTest {
         assertEquals(1, returns)
         assertEquals(0, parent)
         assertEquals(0, safety)
+    }
+
+    @Test fun confirmingAgainAndReturningToQuestionsRemainAvailableOnTheSamePage() {
+        var submissions = 0
+        var returns = 0
+        val factory = factory { SceneChineseReviewViewModel(session, draft, "review",
+            repository { _, _ -> error("The approved text did not change") }) }
+        rule.setContent { RlTheme {
+            SceneChineseReviewEntry(factory, "inline-scene", { source, confirmed ->
+                assertEquals("用户：需要延期。", source.text)
+                assertEquals(draft, confirmed)
+                submissions++
+            }, { returns++ }, { _, _ -> })
+        } }
+        rule.onNodeWithTag("scene-review-confirm").performClick()
+        rule.waitUntil(3_000) { submissions == 1 }
+        rule.onNodeWithTag("scene-review-confirm").performClick()
+        rule.waitUntil(3_000) { submissions == 2 }
+        rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
+        rule.waitUntil(3_000) { returns == 1 }
+        rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
+        rule.waitForIdle()
+        assertEquals(1, returns)
     }
 
     private fun repository(review: suspend (SceneEditReviewRequest, String) -> SceneEditReviewResult) = object : SceneEditReviewRepository {

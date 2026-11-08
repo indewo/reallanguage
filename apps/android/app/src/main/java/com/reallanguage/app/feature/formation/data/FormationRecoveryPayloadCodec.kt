@@ -46,7 +46,16 @@ class FormationRecoveryPayloadCodec {
             "selectedTargetIds" to JSONArray(snapshot.selectedTargetIds.sorted()),
             "targetSelectionEntryId" to snapshot.targetSelectionEntryId, "fixEntryId" to snapshot.fixEntryId,
             "targetSentenceIndex" to snapshot.targetSentenceIndex,
-        ).toString()
+        ).apply {
+            snapshot.bilingual?.let { saved ->
+                put("bilingual", fields("sourceKind" to saved.sourceKind, "selected" to JSONArray(saved.selected.sorted()),
+                    "paragraphs" to JSONArray(saved.paragraphs.map { p ->
+                        fields("zh" to p.textZh, "en" to p.textEn, "sentences" to JSONArray(p.sentences.map { line ->
+                            fields("id" to line.id, "en" to line.textEn, "zh" to line.textZh)
+                        }))
+                    })))
+            }
+        }.toString()
         val bytes = Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT)
             .encode(CharBuffer.wrap(json))
         return ByteArray(bytes.remaining()).also { bytes.get(it) }
@@ -58,13 +67,20 @@ class FormationRecoveryPayloadCodec {
         val tokener = JSONTokener(text)
         val root = tokener.nextValue().objectValue().checked(setOf("schemaVersion", "sourceEntryId", "sourceRevision", "phase",
             "source", "sourceTitle", "origin", "units", "selectedUnitIds", "chapters", "englishChapters", "selectedCandidateIds",
-            "targets", "queryableExpressions", "selectedTargetIds", "targetSelectionEntryId", "fixEntryId", "targetSentenceIndex"))
+            "targets", "queryableExpressions", "selectedTargetIds", "targetSelectionEntryId", "fixEntryId", "targetSentenceIndex"), setOf("bilingual"))
         require(tokener.nextClean() == '\u0000' && root.integer("schemaVersion") == 1)
         val source = root.obj("source").checked(setOf("text", "sourceType", "contentShape"))
         FormationRecoverySnapshot(
             sourceEntryId = root.string("sourceEntryId"), sourceRevision = root.longInteger("sourceRevision"), phase = root.enum("phase"),
             source = ConfirmedSource(source.string("text"), source.enum("sourceType"), source.enum("contentShape")),
             sourceTitle = root.string("sourceTitle"), origin = root.obj("origin").recoveryOrigin(),
+            bilingual = if (!root.has("bilingual")) null else root.obj("bilingual").let { saved ->
+                SavedBilingualReview(saved.string("sourceKind"), saved.objects("paragraphs") { p ->
+                    com.reallanguage.app.feature.capture.domain.BilingualParagraph(p.string("zh"),p.string("en"),p.objects("sentences") { line ->
+                        com.reallanguage.app.feature.capture.domain.BilingualSentence(line.string("id"),line.string("en"),line.string("zh"))
+                    })
+                }, saved.strings("selected").toSet())
+            },
             units = root.objects("units") { unit -> unit.checked(setOf("unitId", "order", "textZh", "recommendationReasonZh"))
                 SemanticUnit(unit.string("unitId"), unit.integer("order"), unit.string("textZh"), unit.nullableString("recommendationReasonZh")) },
             selectedUnitIds = root.strings("selectedUnitIds"),
