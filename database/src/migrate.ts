@@ -20,6 +20,7 @@ import { idempotentRegistrationVerificationMigration } from "../migrations/20260
 import { adminReviewMigration } from "../migrations/202609040014_admin_review.js";
 import { adminMfaEnrollmentMigration } from "../migrations/202609040015_admin_mfa_enrollment.js";
 import { aiResultDeliveryMigration } from "../migrations/202609070016_ai_result_delivery.js";
+import { settingsBasicVocabularyOptionsMigration } from "../migrations/202609080017_settings_basic_vocabulary_options.js";
 
 const provider: MigrationProvider = {
   async getMigrations() {
@@ -42,6 +43,8 @@ const provider: MigrationProvider = {
         idempotentRegistrationVerificationMigration,
       "202609040014_admin_review": adminReviewMigration,
       "202609040015_admin_mfa_enrollment": adminMfaEnrollmentMigration,
+      "202609080017_settings_basic_vocabulary_options":
+        settingsBasicVocabularyOptionsMigration,
     };
   },
 };
