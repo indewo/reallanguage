@@ -11,6 +11,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.derivedStateOf
@@ -383,6 +384,7 @@ fun ChapterWritingFrame(
     workspaceArtworkRes: Int? = null,
     workspaceMinHeight: Dp = 160.dp,
     centerLeftPanelContent: Boolean = false,
+    fitWorkspaceToViewport: Boolean = false,
     onBack: (() -> Unit)? = null,
     leftPanelContent: (@Composable ColumnScope.() -> Unit)? = null,
     footer: (@Composable () -> Unit)? = null,
@@ -394,14 +396,22 @@ fun ChapterWritingFrame(
         var headerHeight by remember { mutableStateOf(48.dp) }
         var ledgerHeight by remember { mutableStateOf(120.dp) }
         var footerHeight by remember { mutableStateOf(48.dp) }
-        val calculatedWorkspaceHeight = if (compact || density.fontScale > 1.2f || maxHeight < 360.dp) {
+        val availableWorkspaceHeight = maxHeight - headerHeight - ledgerHeight - footerHeight - 36.dp
+        val calculatedWorkspaceHeight = if (fitWorkspaceToViewport && !compact) {
+            availableWorkspaceHeight
+        } else if (compact || density.fontScale > 1.2f || maxHeight < 360.dp) {
             (maxHeight * .58f).coerceAtLeast(240.dp)
         } else (maxHeight - headerHeight - ledgerHeight - footerHeight - 44.dp).coerceAtLeast(160.dp)
         val workspaceHeight = maxOf(calculatedWorkspaceHeight, workspaceMinHeight)
+        val pageScroll = rememberScrollState()
+        val keyboardVisible = WindowInsets.ime.getBottom(density) > 0
+        LaunchedEffect(fitWorkspaceToViewport, keyboardVisible) {
+            if (fitWorkspaceToViewport && !keyboardVisible) pageScroll.scrollTo(0)
+        }
         Column(Modifier.fillMaxSize().padding(horizontal = if (compact) 12.dp else 20.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(pageScroll),
+            verticalArrangement = Arrangement.spacedBy(if (fitWorkspaceToViewport) 4.dp else 8.dp)) {
             LearningHeading("第 ${chapter.chapterNumber} 章 · $stageTitle",
                 Modifier.onSizeChanged { headerHeight = with(density) { it.height.toDp() } }, onBack = onBack)
             LearningSentenceLedger(chapter, currentFocusSentenceId, Modifier.fillMaxWidth().testTag("learning-context-paper")

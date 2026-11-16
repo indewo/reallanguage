@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -55,12 +54,13 @@ fun CompleteWritingScreen(
         stageTitle = stringResource(R.string.complete_writing_title),
         hideAllFocusEnglish = finalBatch,
         hideCurrentFocusEnglish = !state.helpUsed,
-        workspaceMinHeight = 300.dp,
+        workspaceMinHeight = if (finalBatch) 300.dp else 104.dp,
+        fitWorkspaceToViewport = !finalBatch,
         centerLeftPanelContent = true,
         onBack = { onAction(CompleteWritingAction.BackRequested) },
         leftPanelContent = {
             Text(
-                if (finalBatch) "根据中文连续写出全部重点句。" else "根据中文写出当前重点句。",
+                if (finalBatch) "根据中文连续写出全部重点句。" else "根据中文写出本句。",
                 color = RlColor.OnPrimary,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontFamily = EditorialFont.Serif,
@@ -84,7 +84,7 @@ fun CompleteWritingScreen(
             modifier = Modifier.fillMaxSize().testTag("complete-writing-workspace"),
             verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
         ) {
-            if (!keyboardVisible) CompleteWritingStageHeader(state, finalBatch)
+            if (finalBatch && !keyboardVisible) CompleteWritingStageHeader(state, finalBatch)
 
             Column(
                 modifier = Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
@@ -93,7 +93,7 @@ fun CompleteWritingScreen(
             ) {
               // In the reduced IME window, keep this explanation reachable without
               // taking fixed height away from the actual line being edited.
-              if (keyboardVisible) CompleteWritingStageHeader(state, finalBatch)
+              if (finalBatch && keyboardVisible) CompleteWritingStageHeader(state, finalBatch)
               CompleteWritingStatus(state, finalBatch, onAction)
               if (finalBatch) {
                   state.focusSentences.forEachIndexed { index, sentence ->
@@ -121,32 +121,16 @@ fun CompleteWritingScreen(
 
 @Composable
 private fun CompleteWritingSingleInput(state: CompleteWritingUiState, onAction: (CompleteWritingAction) -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val stacked = maxWidth < 360.dp * LocalDensity.current.fontScale.coerceAtMost(1.5f)
-        val editor: @Composable (Modifier) -> Unit = { modifier ->
-            RlKeyboardAwareOutlinedTextField(
-                value = state.input,
-                onValueChange = { onAction(CompleteWritingAction.InputChanged(it)) },
-                modifier = modifier.heightIn(min = 140.dp).testTag("complete-writing-input-single"),
-                label = { Text(stringResource(R.string.complete_writing_input)) },
-                enabled = !state.attemptFinished,
-                shape = RlShape.Input,
-                minLines = 5,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
-            )
-        }
-        val audio: @Composable () -> Unit = {
-            LearningAction(stringResource(if (state.audioPlaying) R.string.learning_mute else R.string.learning_pronounce),
-                { onAction(CompleteWritingAction.AudioToggled) }, Modifier.heightIn(min = 48.dp))
-        }
-        if (stacked) Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            editor(Modifier.fillMaxWidth())
-            audio()
-        } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            editor(Modifier.weight(1f))
-            audio()
-        }
-    }
+    RlKeyboardAwareOutlinedTextField(
+        value = state.input,
+        onValueChange = { onAction(CompleteWritingAction.InputChanged(it)) },
+        modifier = Modifier.fillMaxWidth().heightIn(min = 76.dp).testTag("complete-writing-input-single"),
+        label = { Text(stringResource(R.string.complete_writing_input)) },
+        enabled = !state.attemptFinished,
+        shape = RlShape.Input,
+        minLines = 2,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+    )
 }
 
 @Composable
@@ -161,6 +145,13 @@ private fun CompleteWritingActions(
         horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        if (!finalBatch) {
+            LearningAction(
+                text = stringResource(if (state.audioPlaying) R.string.learning_mute else R.string.learning_pronounce),
+                onClick = { onAction(CompleteWritingAction.AudioToggled) },
+                modifier = Modifier.weight(.55f).testTag("complete-writing-audio"),
+            )
+        }
         if (state.phase != CompleteWritingPhase.AUDIBLE_SINGLE) {
             LearningAction(
                 text = stringResource(R.string.complete_writing_view),
