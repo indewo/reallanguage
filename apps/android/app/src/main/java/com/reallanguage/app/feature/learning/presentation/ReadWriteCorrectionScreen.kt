@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
@@ -53,7 +54,7 @@ fun ReadWriteCorrectionScreen(
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
             val points = remember { mutableStateListOf<Offset?>() }
             Canvas(
-                Modifier.fillMaxWidth().weight(1f)
+                Modifier.fillMaxWidth().weight(1f).clipToBounds()
                     .pointerInput(state.saving) {
                         if (!state.saving) {
                             detectDragGestures(

@@ -36,7 +36,7 @@ import com.reallanguage.app.core.designsystem.*
 /** Reference 42/43: physical book decoration is separate from the adaptive reading surface. */
 @Composable
 internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, onBack: () -> Unit,
-    scrollState: ScrollState, detailVisible: Boolean = false,
+    scrollState: ScrollState, detailVisible: Boolean = false, hasVisiblePatterns: Boolean,
     feedback: @Composable () -> Unit = {}, content: @Composable ColumnScope.() -> Unit,
 ) {
     val focus = LocalFocusManager.current
@@ -83,7 +83,7 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
                 onSearch = { keyboard?.hide(); focus.clearFocus() })
             Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(scrollState)
                 .padding(start = if (compact) 0.dp else pageWidth * if (detailVisible) .04f else .171f), content = content)
-            if (!compact && !detailVisible) Row(Modifier.fillMaxWidth().padding(top = 8.dp),
+            if (!compact && !detailVisible && hasVisiblePatterns) Row(Modifier.fillMaxWidth().padding(top = 8.dp),
                 horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 HorizontalDivider(Modifier.width(68.dp), color = RlColor.Border)
                 Image(patternBotanicalPainter(), null, Modifier.padding(horizontal = 8.dp).size(20.dp)

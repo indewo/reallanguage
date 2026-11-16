@@ -41,7 +41,6 @@ fun ChapterAbandonScreen(
     state: ChapterAbandonUiState,
     onAction: (ChapterAbandonAction) -> Unit,
 ) {
-    val chapterNumber = state.chapterId.takeLastWhile(Char::isDigit).toIntOrNull()
     LearningArchivePage(Modifier.testTag("chapter-abandon-sheet"), startFraction = .105f) {
         LearningTwoPane(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), leftWeight = .25f, contentFirstWhenStacked = true, left = { pane ->
             Column(
@@ -80,7 +79,7 @@ fun ChapterAbandonScreen(
             Column(Modifier.fillMaxWidth().padding(start = 27.dp, end = 40.dp, top = 32.dp, bottom = 48.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    chapterNumber?.let { "确认放弃第 $it 章？" }
+                    state.chapterNumber?.let { stringResource(R.string.chapter_abandon_numbered_title, it) }
                         ?: stringResource(R.string.chapter_abandon_title),
                     modifier = Modifier.fillMaxWidth(),
                     color = RlColor.Ink,

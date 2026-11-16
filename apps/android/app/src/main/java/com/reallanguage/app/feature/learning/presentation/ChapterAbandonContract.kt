@@ -7,6 +7,7 @@ data class ChapterAbandonUiState(
     val deleteFailed: Boolean = false,
     val alreadyArchived: Boolean = false,
     val completed: Boolean = false,
+    val chapterNumber: Int? = null,
 )
 
 sealed interface ChapterAbandonAction {

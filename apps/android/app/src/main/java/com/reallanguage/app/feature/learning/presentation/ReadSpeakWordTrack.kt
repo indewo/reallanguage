@@ -68,7 +68,7 @@ internal fun ReadSpeakWordTrack(
         val contentX = visibleX + scroll.value
         val last = words.indices.lastOrNull { index ->
             contentX >= starts[index] &&
-                (index < words.lastIndex || ends[index] <= scroll.value + visibleBounds.right)
+                (index < words.lastIndex || ends[index] <= scroll.value + visibleBounds.right + 1f)
         } ?: -1
         val first = maxOf(lastNotified[0] + 1, latestHighlight)
         if (last >= first) {
@@ -95,9 +95,11 @@ internal fun ReadSpeakWordTrack(
             if (!visibleBounds.contains(position)) break
             val seconds = ((frame - previousFrame) / 1_000_000_000f).coerceIn(0f, .05f)
             previousFrame = frame
-            val moved = scroll.scrollBy(edgeDirection * paddingPx * 30f * seconds)
+            scroll.scrollBy(edgeDirection * paddingPx * 30f * seconds)
             latestNotify(position.x)
-            if (moved == 0f) break
+            if ((edgeDirection > 0 && !scroll.canScrollForward) ||
+                (edgeDirection < 0 && !scroll.canScrollBackward)
+            ) break
         }
     }
     Row(
@@ -110,7 +112,10 @@ internal fun ReadSpeakWordTrack(
             }
             .pointerInput(sentence.sentenceId, sentence.textEn) {
                 fun track(position: Offset) {
-                    pointer = position.takeIf { visibleBounds.contains(it) }
+                    val bounds = visibleBounds
+                    pointer = if (bounds.width > 1f && position.y >= bounds.top && position.y < bounds.bottom) {
+                        Offset(position.x.coerceIn(bounds.left, bounds.right - 1f), position.y)
+                    } else null
                     pointer?.let { latestNotify(it.x) }
                 }
                 detectHorizontalDragGestures(
@@ -150,7 +155,7 @@ internal fun ReadSpeakWordTrack(
                     )
                     .testTag("read-speak-word-$index")
                     .clickable(enabled = listening) {
-                        if (index < words.lastIndex || ends[index] <= scroll.value + visibleBounds.right) {
+                        if (index < words.lastIndex || ends[index] <= scroll.value + visibleBounds.right + 1f) {
                             onAction(ReadSpeakAction.WordReached(index))
                         }
                     }

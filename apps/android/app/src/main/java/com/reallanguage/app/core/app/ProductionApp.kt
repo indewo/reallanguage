@@ -1392,6 +1392,7 @@ class ProductionAppGraph(
             chapterId,
             commandId,
             AndroidChapterAbandonRepository(applicationContext, sessionRuntime),
+            AndroidFixedChapterRepository(applicationContext, sessionRuntime),
         )
     }
     fun todayReviewFactory() = viewModelFactory {

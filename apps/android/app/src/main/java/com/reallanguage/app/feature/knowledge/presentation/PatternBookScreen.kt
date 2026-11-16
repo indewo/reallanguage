@@ -76,7 +76,9 @@ import com.reallanguage.app.feature.knowledge.domain.PatternRecord
     }
     PatternBookFrame(state.query, { onAction(PatternBookAction.QueryChanged(it)) },
         { onAction(PatternBookAction.ReturnHomeRequested) }, scrollState = contentScrollState,
-        detailVisible = selectedPattern != null, feedback = {
+        detailVisible = selectedPattern != null,
+        hasVisiblePatterns = !state.loading && !state.loadFailed && state.visiblePatterns.isNotEmpty(),
+        feedback = {
         if (state.pronunciationBusy) Text(stringResource(R.string.vocabulary_playback_busy), color = RlColor.TextSecondary,
             modifier = Modifier.testTag("pattern-pronunciation-busy"))
         if (state.pronunciationFailed) {

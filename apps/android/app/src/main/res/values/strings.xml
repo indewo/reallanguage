@@ -206,7 +206,7 @@
     <string name="audio_dictation_continue">继续</string>
     <string name="audio_dictation_incorrect">本次听写需要订正，正在进入跟读跟写。</string>
     <string name="audio_dictation_save_failed">保存失败，请重新提交当前答案。</string>
-    <string name="learning_audio_failed">语音播放失败，请点“发音”重试。此操作不改变学习结果。</string>
+    <string name="learning_audio_failed">语音播放失败，请点“发音”再试。</string>
     <string name="read_write_correction_title">跟读跟写</string>
     <string name="read_write_correction_save_failed">保存失败，请再次确认我已写完。</string>
     <string name="dev_preview_audio_dictation">音频听写</string>
@@ -233,9 +233,9 @@
     <string name="full_sentence_speaking_start_retell">开始复述</string>
     <string name="full_sentence_speaking_retell_finished">复述完毕</string>
     <string name="full_sentence_speaking_retry_capture">本次无法形成有效判断，请重试。</string>
-    <string name="full_sentence_speaking_retry_blocked">本次请求不能安全重试，未形成学习结果。你可以重新录音，明确开始一次新练习。</string>
+    <string name="full_sentence_speaking_retry_blocked">这段录音没能完成检查，请重新录音。</string>
     <string name="full_sentence_speaking_new_recording">重新录音</string>
-    <string name="learning_audio_retry_pending">上次请求尚未取得结果。录音已保留，重试将继续同一次请求。</string>
+    <string name="learning_audio_retry_pending">检查还没有结果。录音已保留，请点“重试”。</string>
     <string name="full_sentence_speaking_continue">继续</string>
     <string name="full_sentence_speaking_retry">再练一次</string>
     <string name="full_sentence_speaking_stop">暂不练习</string>
@@ -318,6 +318,7 @@
     <string name="chapter_selection_failed">无法读取剩余章节，请重试。</string>
     <string name="dev_preview_chapter_selection">章节选择</string>
     <string name="chapter_abandon_title">确认放弃本章</string>
+    <string name="chapter_abandon_numbered_title">确认放弃第 %1$d 章？</string>
     <string name="chapter_abandon_delete_scope">确认后将删除本章固定句、学习目标、临时进度和临时结果；本章不会进入知识本、回顾或统计。</string>
     <string name="chapter_abandon_unaffected_scope">此前已归档章节，以及本章开始前已有的共享词义、句式状态和计数不受影响。</string>
     <string name="chapter_abandon_confirm">确认放弃</string>

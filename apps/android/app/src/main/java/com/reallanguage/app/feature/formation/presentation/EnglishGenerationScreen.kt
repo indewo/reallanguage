@@ -31,7 +31,7 @@ fun EnglishGenerationScreen(state: EnglishGenerationUiState, onAction: (EnglishG
         poster = com.reallanguage.app.R.drawable.rl_v73_english_poster_r2,
         title = if (state.failed) "英语表达生成失败" else "正在生成英语表达",
         supportingText = if (state.failed) "已保留你的中文内容、重点句和章节。" else "我们正在确保每句表达忠实、自然。",
-        stages = listOf("读取中文语义", "生成自然英语", "检查忠实程度"),
+        stages = listOf("读取中文语义", "生成自然英语", "核对是否符合原意"),
         footerNote = "中文内容、重点句和章节会保留。",
         activeStage = 1,
         failed = state.failed,

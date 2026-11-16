@@ -15,7 +15,7 @@ class ChapterAbandonScreenTest {
     @Test
     fun showsRemovalScopeAndDispatchesExplicitConfirmation() {
         val actions = mutableListOf<ChapterAbandonAction>()
-        val state = ChapterAbandonUiState("chapter-2", "delete-chapter-2")
+        val state = ChapterAbandonUiState("chapter-823", "delete-chapter-823", chapterNumber = 2)
 
         composeRule.setContent { RlTheme { ChapterAbandonScreen(state, actions::add) } }
 

@@ -1266,7 +1266,7 @@ fun DevelopmentPreviewScreen(
         }
         PreviewDestination.CHAPTER_ABANDON -> PreviewFrame(returnToCatalog, modifier) {
             ChapterAbandonScreen(
-                state = ChapterAbandonUiState("c2", "preview-delete-c2"),
+                state = ChapterAbandonUiState("c2", "preview-delete-c2", chapterNumber = 2),
                 onAction = {},
             )
         }

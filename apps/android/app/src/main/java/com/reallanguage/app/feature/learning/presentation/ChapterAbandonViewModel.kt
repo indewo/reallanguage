@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.reallanguage.app.feature.learning.domain.ChapterAbandonRepository
 import com.reallanguage.app.feature.learning.domain.ChapterAbandonResult
+import com.reallanguage.app.feature.learning.domain.FixedChapterLoadResult
+import com.reallanguage.app.feature.learning.domain.FixedChapterRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +19,7 @@ class ChapterAbandonViewModel(
     chapterId: String,
     commandId: String,
     private val repository: ChapterAbandonRepository,
+    fixedChapters: FixedChapterRepository? = null,
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow(
         ChapterAbandonUiState(chapterId, commandId),
@@ -24,6 +27,20 @@ class ChapterAbandonViewModel(
     val uiState: StateFlow<ChapterAbandonUiState> = mutableUiState.asStateFlow()
     private val effectChannel = Channel<ChapterAbandonEffect>(Channel.BUFFERED)
     val effects = effectChannel.receiveAsFlow()
+
+    init {
+        if (fixedChapters != null) viewModelScope.launch {
+            val result = try {
+                fixedChapters.load(chapterId)
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (_: Exception) {
+                null
+            }
+            val chapter = (result as? FixedChapterLoadResult.Loaded)?.chapter
+            mutableUiState.update { it.copy(chapterNumber = chapter?.chapterNumber) }
+        }
+    }
 
     fun onAction(action: ChapterAbandonAction) {
         if (mutableUiState.value.deleting || mutableUiState.value.completed) return
