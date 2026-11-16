@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -58,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlColor
@@ -184,8 +184,9 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
                 remaining * (1.1f / 2.8f) - 16.dp >= chapterMinimum &&
                 remaining * (.75f / 2.8f) - 16.dp >= positionMinimum
 
-            Row(Modifier.heightIn(min = 94.dp).height(IntrinsicSize.Min).padding(horizontal = 12.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.width(42.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+            val canKeepButtonBesideDetails = maxWidth >= buttonWidth + 260.dp
+            Row(Modifier.fillMaxWidth().heightIn(min = 94.dp).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.width(42.dp).height(64.dp), contentAlignment = Alignment.Center) {
                     val ribbon = ImageBitmap.imageResource(R.drawable.rl_v73_incomplete_ribbon)
                     val ribbonPainter = remember(ribbon) { BitmapPainter(ribbon, srcOffset = IntOffset((ribbon.width * .17f).toInt(), (ribbon.height * .035f).toInt()), srcSize = IntSize((ribbon.width * .65f).toInt(), (ribbon.height * .93f).toInt())) }
                     Image(ribbonPainter, null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
@@ -198,8 +199,16 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
                         Modifier.weight(1.1f).padding(horizontal = RlSpace.Space8))
                     IncompletePositionSummary(position, Modifier.weight(.75f).padding(horizontal = RlSpace.Space8))
                     IncompleteResumeButton(entry, visual.accent, onAction, Modifier.width(buttonWidth).padding(end = RlSpace.Space8))
+                } else if (canKeepButtonBesideDetails) {
+                    Column(Modifier.weight(1f).padding(horizontal = RlSpace.Space12),
+                        verticalArrangement = Arrangement.spacedBy(RlSpace.Space4)) {
+                        IncompleteSourceSummary(entry, Modifier.fillMaxWidth())
+                        IncompleteChapterSummary(entry, forming, currentStep, visual.accent, Modifier.fillMaxWidth(), showLabel = false)
+                        Text(position, color = RlColor.TextSecondary, style = typography.labelSmall)
+                    }
+                    IncompleteResumeButton(entry, visual.accent, onAction, Modifier.width(buttonWidth))
                 } else {
-                    Column(Modifier.weight(1f).padding(RlSpace.Space12), verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
+                    Column(Modifier.weight(1f).padding(RlSpace.Space12), verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
                         IncompleteSourceSummary(entry, Modifier.fillMaxWidth())
                         IncompleteChapterSummary(entry, forming, currentStep, visual.accent, Modifier.fillMaxWidth())
                         IncompletePositionSummary(position, Modifier.fillMaxWidth())
@@ -216,15 +225,16 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
 private fun IncompleteSourceSummary(entry: IncompleteLearningEntry, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(entry.sourceLabelZh, Modifier.fillMaxWidth(), color = RlColor.Ink,
+            maxLines = 2, overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleSmall.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 20.sp))
         Text(entry.sourceType.label(), color = RlColor.TextSecondary, style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 16.sp))
     }
 }
 
 @Composable
-private fun IncompleteChapterSummary(entry: IncompleteLearningEntry, forming: Boolean, currentStep: Int?, accent: Color, modifier: Modifier) {
+private fun IncompleteChapterSummary(entry: IncompleteLearningEntry, forming: Boolean, currentStep: Int?, accent: Color, modifier: Modifier, showLabel: Boolean = true) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        if (showLabel) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Book, null, tint = RlColor.TextSecondary, modifier = Modifier.width(18.dp))
             Text(if (forming) " 当前步骤" else " 章节", Modifier.weight(1f), color = RlColor.TextSecondary,
                 style = MaterialTheme.typography.labelSmall)

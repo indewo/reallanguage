@@ -42,7 +42,8 @@ fun ChapterAbandonScreen(
     onAction: (ChapterAbandonAction) -> Unit,
 ) {
     LearningArchivePage(Modifier.testTag("chapter-abandon-sheet"), startFraction = .105f) {
-        LearningTwoPane(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), leftWeight = .25f, contentFirstWhenStacked = true, left = { pane ->
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
+        LearningTwoPane(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()), leftWeight = .25f, contentFirstWhenStacked = true, left = { pane ->
             Column(
                 modifier = pane.padding(top = 30.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -76,7 +77,7 @@ fun ChapterAbandonScreen(
                 Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
             // The curled lower-right edge slopes inward before the bottom gutter;
             // keep the button's right outline inside that opaque paper as well.
-            Column(Modifier.fillMaxWidth().padding(start = 27.dp, end = 40.dp, top = 32.dp, bottom = 48.dp),
+            Column(Modifier.fillMaxWidth().padding(start = 27.dp, end = 40.dp, top = 16.dp, bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
                     state.chapterNumber?.let { stringResource(R.string.chapter_abandon_numbered_title, it) }
@@ -115,34 +116,36 @@ fun ChapterAbandonScreen(
                     state.deleteFailed -> Text(stringResource(R.string.chapter_abandon_failed), color = RlColor.Error)
                     state.alreadyArchived -> Text(stringResource(R.string.chapter_abandon_archived), color = RlColor.Error)
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(RlSpace.Space16),
-                ) {
-                    LearningAction(
-                        text = stringResource(R.string.learning_exit_continue),
-                        enabled = !state.deleting,
-                        onClick = { onAction(ChapterAbandonAction.ContinueLearningRequested) },
-                        modifier = Modifier.weight(1f),
-                        primary = true, color = RlColor.Secondary,
-                    )
-                    LearningAction(
-                        text = stringResource(R.string.chapter_abandon_confirm),
-                        onClick = { onAction(ChapterAbandonAction.ConfirmAbandonRequested) },
-                        modifier = Modifier.weight(1f)
-                            .testTag("chapter-abandon-confirm"),
-                        enabled = !state.deleting && !state.alreadyArchived,
-                    )
-                }
         } } })
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(RlSpace.Space16),
+            ) {
+                LearningAction(
+                    text = stringResource(R.string.learning_exit_continue),
+                    enabled = !state.deleting,
+                    onClick = { onAction(ChapterAbandonAction.ContinueLearningRequested) },
+                    modifier = Modifier.weight(1f),
+                    primary = true, color = RlColor.Secondary,
+                )
+                LearningAction(
+                    text = stringResource(R.string.chapter_abandon_confirm),
+                    onClick = { onAction(ChapterAbandonAction.ConfirmAbandonRequested) },
+                    modifier = Modifier.weight(1f)
+                        .testTag("chapter-abandon-confirm"),
+                    enabled = !state.deleting && !state.alreadyArchived,
+                )
+            }
+        }
+
     }
 }
 
 @Composable
 private fun ChapterRemovalRow(number: String, label: String) {
     LearningPaper(
-        modifier = Modifier.fillMaxWidth().heightIn(min = 36.dp),
-        padding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 30.dp),
+        padding = PaddingValues(horizontal = 12.dp, vertical = 3.dp),
         contentSpacing = 0.dp,
     ) {
         Row(

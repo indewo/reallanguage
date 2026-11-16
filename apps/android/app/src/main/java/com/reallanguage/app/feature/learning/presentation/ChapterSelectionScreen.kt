@@ -67,7 +67,7 @@ fun ChapterSelectionScreen(state: ChapterSelectionUiState, onAction: (ChapterSel
                                     Text(chapter.identityZh, Modifier.weight(1f), color = RlColor.Ink,
                                         fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 25.sp)
                                     LearningAction("开始", { onAction(ChapterSelectionAction.ChapterSelected(chapter.chapterId)) },
-                                        Modifier.testTag("chapter-selection-start-${chapter.chapterId}"), primary = true)
+                                        Modifier.width(88.dp).testTag("chapter-selection-start-${chapter.chapterId}"), primary = true)
                                 }
                             }
                         }

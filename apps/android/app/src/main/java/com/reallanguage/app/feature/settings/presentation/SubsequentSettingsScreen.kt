@@ -178,7 +178,7 @@ private fun SubsequentSettingsNavigation(selectedGroup: Int, enabled: Boolean, o
         }
         return@BoxWithConstraints
     }
-    val compact = maxWidth < 140.dp
+    val compact = maxWidth < 172.dp * LocalDensity.current.fontScale.coerceAtMost(1.5f)
     Column(
         modifier = Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"),
         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -202,8 +202,8 @@ private fun SubsequentSettingsNavigation(selectedGroup: Int, enabled: Boolean, o
                     Modifier.padding(start = 15.dp).size(28.dp), tint = if (index == selectedGroup) RlColor.ActionVivid else RlColor.Secondary)
                 Text(
                     text = label,
-                    modifier = Modifier.padding(start = if (compact) 12.dp else if (index == 0) 60.dp else 53.dp,
-                        end = 16.dp, top = 12.dp, bottom = 12.dp),
+                    modifier = Modifier.padding(start = if (compact) 12.dp else 48.dp,
+                        end = 25.dp, top = 12.dp, bottom = 12.dp),
                     color = RlColor.Ink,
                     style = MaterialTheme.typography.titleSmall.copy(fontFamily = EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp),
                 )
