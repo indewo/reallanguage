@@ -61,9 +61,9 @@ fun ChapterSelectionScreen(state: ChapterSelectionUiState, onAction: (ChapterSel
                     }
                     Column(Modifier.fillMaxWidth().testTag("chapter-selection-list"), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                         state.chapters.forEachIndexed { index, chapter ->
-                            LearningPaper(Modifier.fillMaxWidth().heightIn(min = 108.dp), PaddingValues(16.dp)) {
-                                LearningRibbon("第 ${chapter.chapterNumber} 章", color = if (index % 2 == 0) RlColor.Primary else RlColor.Secondary)
+                            LearningPaper(Modifier.fillMaxWidth().heightIn(min = 72.dp), PaddingValues(12.dp)) {
                                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    LearningRibbon("第 ${chapter.chapterNumber} 章", color = if (index % 2 == 0) RlColor.Primary else RlColor.Secondary)
                                     Text(chapter.identityZh, Modifier.weight(1f), color = RlColor.Ink,
                                         fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 25.sp)
                                     LearningAction("开始", { onAction(ChapterSelectionAction.ChapterSelected(chapter.chapterId)) },
@@ -77,7 +77,7 @@ fun ChapterSelectionScreen(state: ChapterSelectionUiState, onAction: (ChapterSel
             LearningAction(
                 stringResource(R.string.chapter_result_later),
                 { onAction(ChapterSelectionAction.LearnLaterRequested) },
-                Modifier.align(Alignment.End).widthIn(min = 168.dp).testTag("chapter-selection-later"),
+                Modifier.align(Alignment.End).width(168.dp).testTag("chapter-selection-later"),
                 enabled = !state.loading,
             )
         }

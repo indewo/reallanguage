@@ -75,11 +75,12 @@ fun TodayReviewScreen(state: TodayReviewUiState, onAction: (TodayReviewAction) -
                     }, right = { pane -> Box(pane) {
                       Image(painterResource(R.drawable.rl_v73_review_dossier), null,
                           Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                      Column(Modifier.fillMaxWidth().padding(start = 39.dp, end = 43.dp, top = 49.dp, bottom = 55.dp),
+                      Column(Modifier.fillMaxWidth().padding(start = 39.dp, end = 43.dp, top = 32.dp, bottom = 24.dp),
                           verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.AutoMirrored.Outlined.MenuBook, null, Modifier.size(35.dp), tint = RlColor.NoteAccent)
                         Text("今天有 ${state.chapters.sumOf { it.focusSentenceCount }} 个重点句需要回顾", color = RlColor.Ink,
-                            fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 31.sp)
+                            fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 25.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         HorizontalDivider(color = RlColor.Border)
                         Text("预计 ${state.chapters.size} 个回顾章节", color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 17.sp)
 

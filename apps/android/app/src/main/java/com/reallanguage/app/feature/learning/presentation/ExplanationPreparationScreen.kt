@@ -86,22 +86,26 @@ data class ExplanationPreparationFailureDisplay(
             LearningTwoPane(leftWeight = .4f, contentFirstWhenStacked = true,
                 left = { pane -> Image(painterResource(R.drawable.rl_v73_learning_preparation_notebook), null,
                     pane.height(paperHeight), contentScale = ContentScale.FillBounds) },
-                right = { pane -> LearningPaper(pane, padding = PaddingValues(20.dp)) {
+                right = { pane -> LearningPaper(pane, padding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
                     failureDisplay.stageLabels.forEachIndexed { index, label ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically,
+                        Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                             LearningSeal(listOf(Icons.Outlined.Check, Icons.Outlined.MenuBook, Icons.Outlined.VolumeUp)[index % 3], RlColor.Secondary)
-                            Text(label, fontFamily = EditorialFont.Serif, fontSize = 19.sp, lineHeight = 26.sp, color = RlColor.Ink)
+                            Text(label, Modifier.weight(1f), fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 22.sp, color = RlColor.Ink)
                         }
                         if (index < failureDisplay.stageLabels.lastIndex) androidx.compose.material3.HorizontalDivider(color = RlColor.Border)
                     }
                     failureDisplay.detail?.let { LearningRibbon(it, Modifier.fillMaxWidth()) }
                 } })
           }
-            Row(Modifier.fillMaxWidth().onSizeChanged { footerHeightPx = it.height }, horizontalArrangement = Arrangement.End) {
-                if (state.failed && failureDisplay.showRetry) LearningAction("重试", { onAction(ExplanationPreparationAction.RetryRequested) }, primary = true)
-                Spacer(Modifier.width(12.dp))
-                LearningAction(failureDisplay.backLabel, { onAction(ExplanationPreparationAction.BackRequested) })
+            Row(Modifier.fillMaxWidth().onSizeChanged { footerHeightPx = it.height },
+                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (state.failed && failureDisplay.showRetry) {
+                    LearningAction("重试", { onAction(ExplanationPreparationAction.RetryRequested) },
+                        Modifier.weight(1f), primary = true)
+                }
+                LearningAction(failureDisplay.backLabel, { onAction(ExplanationPreparationAction.BackRequested) },
+                    Modifier.weight(1f))
             }
         }
     }
