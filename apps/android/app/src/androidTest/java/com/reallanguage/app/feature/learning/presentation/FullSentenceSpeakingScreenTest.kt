@@ -150,7 +150,7 @@ class FullSentenceSpeakingScreenTest {
             )), currentFocusSentenceId = "s1", attemptIndex = 4,
         )
         composeRule.setContent { RlTheme { FullSentenceSpeakingScreen(state) {} } }
-        composeRule.onNodeWithTag("full-sentence-scene").assertTextEquals("场景：火车晚点了。\n我寻求了帮助。")
+        composeRule.onNodeWithTag("full-sentence-scene").assertDoesNotExist()
     }
 
     @Test

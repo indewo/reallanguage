@@ -177,13 +177,6 @@ fun FullSentenceSpeakingScreen(
             if (state.isIndependentRetelling) {
                 if (state.decisionSaveFailed) Text(stringResource(R.string.full_sentence_speaking_decision_save_failed), color = RlColor.Error)
                 if (state.needsNewRecording) Text(stringResource(R.string.full_sentence_speaking_needs_recording), color = RlColor.TextSecondary)
-                Text(
-                    stringResource(R.string.full_sentence_speaking_scene,
-                        state.chapter.sentences.joinToString("\n") { it.textZh }),
-                    modifier = Modifier.testTag("full-sentence-scene"),
-                    color = RlColor.Ink,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 13.sp, lineHeight = 18.sp),
-                )
                 RlKeyboardAwareOutlinedTextField(
                     value = state.transcript,
                     onValueChange = { onAction(FullSentenceSpeakingAction.TranscriptChanged(it)) },
