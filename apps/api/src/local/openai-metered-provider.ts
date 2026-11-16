@@ -291,14 +291,17 @@ export class OpenAiLocalClient implements LocalAiClient {
       );
     const payload = record(await response.json());
     const choices = Array.isArray(payload.choices) ? payload.choices : [];
-    const content = text(record(record(choices[0]).message), "content");
+    const choice = record(choices[0]);
+    const content = text(record(choice.message), "content").trim();
+    if (choice.finish_reason === "length")
+      throw new Error("OpenAI audio assessment was truncated");
+    if (choice.finish_reason === "content_filter")
+      throw new Error("OpenAI audio assessment was filtered");
     if (!content) throw new Error("OpenAI returned no audio assessment");
-    let evidence: Record<string, unknown>;
-    try {
-      evidence = record(JSON.parse(content));
-    } catch {
+    const parsed = parseJsonLoose(content);
+    if (parsed === null)
       throw new Error("OpenAI returned invalid audio assessment JSON");
-    }
+    const evidence = record(parsed);
     if (
       typeof evidence.observedTranscript !== "string" ||
       typeof evidence.language !== "string" ||

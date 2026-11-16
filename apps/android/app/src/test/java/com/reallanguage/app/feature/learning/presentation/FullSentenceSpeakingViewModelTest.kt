@@ -332,7 +332,7 @@ class FullSentenceSpeakingViewModelTest {
 
     @Test
     fun followsTwoBilingualThenReadsTwoEnglishWithoutMasteryDecision() = runTest(dispatcher) {
-        val repository = FakeRepository()
+        val repository = FakeRepository(trainingAction = ReadingFeedbackAction.REPEAT_FOR_CLARITY)
         val viewModel = createViewModel(repository)
         repeat(4) { attempt ->
             val before = viewModel.uiState.value
@@ -481,6 +481,7 @@ class FullSentenceSpeakingViewModelTest {
         private val transcript: String = "recognized transcript",
         var saveResult: SpeakingDecisionSaveResult = SpeakingDecisionSaveResult.Saved,
         val evaluationFails: Boolean = false,
+        private val trainingAction: ReadingFeedbackAction = ReadingFeedbackAction.CONTINUE,
     ) : FullSentenceSpeakingRepository {
         val trainingModes = mutableListOf<SpeakingTrainingMode>()
         var lastTranscript: String? = null
@@ -497,7 +498,7 @@ class FullSentenceSpeakingViewModelTest {
         ): ReadingFeedbackResult {
             trainingModes += mode
             return ReadingFeedbackResult.Ready(
-                ReadingFeedback("内容完整，关键音和节奏清楚。", ReadingFeedbackAction.CONTINUE),
+                ReadingFeedback("请留意关键音和节奏。", trainingAction),
             )
         }
 

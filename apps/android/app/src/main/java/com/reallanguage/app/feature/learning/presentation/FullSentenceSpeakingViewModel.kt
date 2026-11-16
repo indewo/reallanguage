@@ -11,7 +11,6 @@ import com.reallanguage.app.feature.learning.domain.SpeakingEvaluationResult
 import com.reallanguage.app.feature.learning.domain.SpeakingEvaluationCandidate
 import com.reallanguage.app.feature.learning.domain.SpeakingDecisionSaveResult
 import com.reallanguage.app.feature.learning.domain.ReadingFeedbackResult
-import com.reallanguage.app.feature.learning.domain.ReadingFeedbackAction
 import com.reallanguage.app.feature.learning.domain.SpeakingTranscriptionResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -216,7 +215,7 @@ class FullSentenceSpeakingViewModel(
                                 feedbackZh = result.feedback.feedbackZh,
                                 feedbackConfidence = result.feedback.feedbackConfidence,
                                 feedbackDetails = result.feedback.details,
-                                trainingCanContinue = result.feedback.action == ReadingFeedbackAction.CONTINUE,
+                                trainingCanContinue = true,
                                 technicalRetryPending = false,
                                 technicalRetryBlocked = false,
                             )
@@ -548,7 +547,7 @@ class FullSentenceSpeakingViewModel(
                 clean.copy(feedbackZh = recovery.feedback.feedbackZh,
                     feedbackConfidence = recovery.feedback.feedbackConfidence,
                     feedbackDetails = recovery.feedback.details,
-                    trainingCanContinue = recovery.feedback.action == ReadingFeedbackAction.CONTINUE)
+                    trainingCanContinue = true)
             }
             FullSpeakingRecovery.TranscriptionPending -> {
                 require(state.attemptIndex == 4)

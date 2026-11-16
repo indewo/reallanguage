@@ -416,7 +416,7 @@ describe("LocalOpenAiMeteredProvider", () => {
               {
                 message: {
                   content:
-                    '{"observedTranscript":"I can explain it.","language":"en","intelligible":true,"confidence":0.9,"wordIssues":[],"rhythmIssues":[]}',
+                    '```json\n{"observedTranscript":"I can explain it.","language":"en","intelligible":true,"confidence":0.9,"wordIssues":[],"rhythmIssues":[]}\n```',
                 },
               },
             ],
