@@ -95,7 +95,7 @@ fun BirthYearMonthPicker(
             maxItemsInEachRow = if (androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.35f) 1 else 2,
         ) {
             val yearText = parsedValue?.let { "${it.year} 年" }
-                ?: stringResource(R.string.auth_birth_year_month_select)
+                ?: stringResource(R.string.auth_birth_year)
             val monthText = parsedValue?.let {
                 String.format(Locale.ROOT, "%02d 月", it.monthValue)
             } ?: stringResource(R.string.auth_birth_month)

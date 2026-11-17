@@ -58,4 +58,41 @@ describe("ApiExceptionFilter", () => {
       },
     });
   });
+
+  it.each([
+    ["AbortSignal.timeout DOMException", new DOMException("timed out", "TimeoutError")],
+    [
+      "fetch wrapped undici cause",
+      Object.assign(new TypeError("fetch failed"), {
+        cause: Object.assign(new Error("connect timeout"), {
+          code: "UND_ERR_CONNECT_TIMEOUT",
+        }),
+      }),
+    ],
+  ])(
+    "maps %s to a retryable gateway timeout instead of a 500",
+    (_label, failure) => {
+      const status = vi.fn().mockReturnThis();
+      const send = vi.fn();
+      const host = {
+        switchToHttp: () => ({
+          getResponse: () => ({ status, send }),
+          getRequest: () => ({ headers: { "x-request-id": "request-2" } }),
+        }),
+      } as unknown as ArgumentsHost;
+
+      new ApiExceptionFilter().catch(failure, host);
+
+      expect(status).toHaveBeenCalledWith(504);
+      expect(send).toHaveBeenCalledWith({
+        error: {
+          code: "TEMPORARILY_UNAVAILABLE",
+          message: "服务暂时不可用，请稍后重试。",
+          retryable: true,
+          requestId: "request-2",
+          details: {},
+        },
+      });
+    },
+  );
 });

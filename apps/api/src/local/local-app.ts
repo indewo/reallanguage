@@ -15,6 +15,7 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { Kysely, PGliteDialect, sql } from "kysely";
 
 import { createHttpApp } from "../create-app.js";
+import type { ApiErrorLogEntry } from "../presentation/api-exception.filter.js";
 import {
   createProductionApiModule,
   type ProductionDatabase,
@@ -42,6 +43,7 @@ export type LocalAppOptions = Readonly<{
     statusCode: number;
     requestId: string;
   }>) => void;
+  errorLogger?: (entry: ApiErrorLogEntry) => void;
 }>;
 
 export const createLocalApp = async (
@@ -109,6 +111,7 @@ export const createLocalApp = async (
     const app = await createHttpApp(rootModule, {
       allowedOrigins: ["http://127.0.0.1:5173", "http://localhost:5173"],
       ...(options.accessLogger ? { accessLogger: options.accessLogger } : {}),
+      ...(options.errorLogger ? { errorLogger: options.errorLogger } : {}),
     });
     app.enableShutdownHooks();
     return app;

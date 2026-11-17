@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -45,9 +46,9 @@ fun AuthScreen(state: AuthUiState, onAction: (AuthAction) -> Unit, modifier: Mod
         return
     }
     RlPaperBackground(modifier, showCornerCollage = false) {
-        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
             val wide = maxWidth >= 720.dp && LocalDensity.current.fontScale <= 1.35f
-            val sheetHeight = (maxHeight - 16.dp).coerceAtLeast(390.dp)
+            val sheetHeight = (maxHeight - 16.dp).coerceAtLeast(310.dp)
             if (wide) Row(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(8.dp), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 AuthEditorialIntro(Modifier.weight(.32f).height(sheetHeight).testTag("registration-editorial-intro"))
                 AuthPaperForm(state, onAction, Modifier.weight(.68f).heightIn(min = sheetHeight).testTag("registration-paper-sheet"), true)
@@ -73,7 +74,15 @@ private fun AuthPaperForm(state: AuthUiState, onAction: (AuthAction) -> Unit, mo
             Image(painterResource(R.drawable.rl_registration_age_note), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
             Text("＊ 出生年月\n只用于年龄确认", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 12.sp, lineHeight = 21.sp)
         }
-        Column(Modifier.fillMaxWidth().padding(start = if (wide && registration) 58.dp else if (wide) 48.dp else 20.dp, end = if (wide && registration) 161.dp else if (wide) 108.dp else 20.dp, top = if (wide && registration) 24.dp else if (wide) 40.dp else 24.dp, bottom = if (wide && registration) 8.dp else 26.dp), verticalArrangement = Arrangement.spacedBy(if (wide && registration) 0.dp else 8.dp)) {
+        Column(
+            Modifier.fillMaxWidth().padding(
+                start = if (wide) 40.dp else 20.dp,
+                end = if (wide) 80.dp else 20.dp,
+                top = if (wide) 18.dp else 24.dp,
+                bottom = if (wide) 14.dp else 26.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(if (wide) 4.dp else 8.dp),
+        ) {
             if (registration) Box(Modifier.offset(x = if (wide) (-34).dp else 0.dp).widthIn(min = 134.dp).heightIn(min = 30.dp), contentAlignment = Alignment.CenterStart) {
                 Image(painterResource(R.drawable.rl_vocabulary_card_paper_r11), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                 Row(Modifier.padding(start = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -199,14 +208,31 @@ internal fun EditorialRoundedAction(text: String, enabled: Boolean, onClick: () 
 
 @Composable
 private fun AuthEditorialIntro(modifier: Modifier) {
-    BoxWithConstraints(modifier) {
-        Image(painterResource(R.drawable.rl_v73_auth_collage), null, Modifier.align(Alignment.BottomStart).offset(x = (-18).dp).width(maxWidth + 54.dp).height(maxHeight * .68f), contentScale = ContentScale.FillBounds)
-    Column(Modifier.fillMaxWidth().padding(start = 30.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("RealLanguage", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 41.sp)
-        Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(34.dp).height(5.dp), contentScale = ContentScale.FillBounds)
-        Text("把你真正想说的话，\n变成你真正会用的英语。", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 25.sp)
-        Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(162.dp).height(7.dp), contentScale = ContentScale.FillBounds)
-    }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(
+            Modifier.fillMaxWidth().padding(start = 24.dp, end = 8.dp, top = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text(
+                "RealLanguage",
+                modifier = Modifier.fillMaxWidth(),
+                color = RlColor.Ink,
+                fontFamily = EditorialFont.Serif,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                autoSize = TextAutoSize.StepBased(18.sp, 34.sp),
+            )
+            Image(editorialUnderlinePainter(), null, Modifier.width(34.dp).height(5.dp), contentScale = ContentScale.FillBounds)
+            Text("把你真正想说的话，\n变成你真正会用的英语。", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 23.sp)
+            Image(editorialUnderlinePainter(), null, Modifier.width(162.dp).height(7.dp), contentScale = ContentScale.FillBounds)
+        }
+        Image(
+            painterResource(R.drawable.rl_v73_auth_collage),
+            null,
+            Modifier.fillMaxWidth().weight(1f),
+            alignment = Alignment.BottomStart,
+            contentScale = ContentScale.Fit,
+        )
     }
 }
 

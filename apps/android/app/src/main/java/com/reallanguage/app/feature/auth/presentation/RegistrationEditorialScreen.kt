@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -44,11 +45,12 @@ internal fun RegistrationEditorialScreen(state: AuthUiState, onAction: (AuthActi
     RlPaperBackground(modifier, showCornerCollage = false) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding()) {
             val wide = maxWidth >= 720.dp && LocalDensity.current.fontScale <= 1.35f
-            val scale = (maxWidth.value / 1831f).coerceIn(.5f, 1.4f)
+            // Scale the reference artwork to the available width.
+            val scale = (maxWidth.value / 1831f).coerceIn(.34f, 1.4f)
             if (wide) {
                 val viewportHeight = maxHeight
                 Row(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalAlignment = Alignment.Top) {
-                    RegistrationIntro(scale, Modifier.weight(610f).height(viewportHeight.coerceAtLeast(859.dp * scale)).testTag("registration-editorial-intro"))
+                    RegistrationIntro(scale, Modifier.weight(610f).height(viewportHeight.coerceAtLeast(305.dp)).testTag("registration-editorial-intro"))
                     RegistrationForm(state, onAction, scale, true, viewportHeight < 500.dp, viewportHeight < 420.dp,
                         Modifier.weight(1221f).heightIn(min = viewportHeight).testTag("registration-paper-sheet"))
                 }
@@ -69,7 +71,7 @@ private fun RegistrationIntro(scale: Float, modifier: Modifier) {
         Image(registrationPlate(0f, 0f, 610f / 1831f, 1f), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         Column(Modifier.fillMaxWidth().padding(start = 81.dp * scale, top = 50.dp * scale)) {
             Text("RealLanguage", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
-                fontSize = (64 * scale).sp, lineHeight = (92 * scale).sp)
+                maxLines = 1, autoSize = TextAutoSize.StepBased(18.sp, (64 * scale).sp))
             Image(editorialUnderlinePainter(), null, Modifier.padding(top = 9.dp * scale).width(69.dp * scale).height(7.dp * scale), contentScale = ContentScale.FillBounds)
             Spacer(Modifier.height(18.dp * scale))
             Text("把你真正想说的话，\n变成你真正会用的英语。", color = RlColor.Ink, fontFamily = EditorialFont.Serif,
@@ -83,7 +85,8 @@ private fun RegistrationIntro(scale: Float, modifier: Modifier) {
 private fun RegistrationForm(state: AuthUiState, onAction: (AuthAction) -> Unit, scale: Float, wide: Boolean, short: Boolean, constrained: Boolean, modifier: Modifier) {
     val s = scale
     val alignFieldsToReference = short && !constrained
-    val tabScale = s * LocalDensity.current.fontScale.coerceAtLeast(1f)
+    val headerScale = if (constrained) s * .68f else s
+    val tabScale = headerScale * LocalDensity.current.fontScale.coerceAtLeast(1f)
     Box(modifier) {
         if (wide) Image(registrationPlate(610f / 1831f, 0f, 1f, 1f), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         else Image(painterResource(R.drawable.rl_vocabulary_card_paper_r11), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
@@ -91,19 +94,19 @@ private fun RegistrationForm(state: AuthUiState, onAction: (AuthAction) -> Unit,
             Text("＊ 出生年月\n   只用于年龄确认", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = (24 * s).sp, lineHeight = (37 * s).sp)
         }
         Column(Modifier.fillMaxWidth().padding(start = if (wide) 103.dp * s else 20.dp, end = if (wide) 338.dp * s else 20.dp,
-            top = if (constrained) 12.dp else if (wide) 60.dp * s else 24.dp, bottom = if (short) 12.dp else if (wide) 70.dp * s else 24.dp)) {
+            top = if (constrained) 4.dp else if (wide) 60.dp * s else 24.dp, bottom = if (constrained) 4.dp else if (short) 12.dp else if (wide) 70.dp * s else 24.dp)) {
             Box(Modifier.offset(x = if (wide) (-73).dp * s else 0.dp).width(270.dp * tabScale).heightIn(min = 66.dp * tabScale)) {
                 Image(painterResource(R.drawable.rl_registration_tab_v74), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                 Row(Modifier.padding(start = 28.dp * tabScale), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.width(92.dp * tabScale).heightIn(min = 61.dp * tabScale), contentAlignment = Alignment.Center) {
-                        Text("01", color = Color.White, fontFamily = EditorialFont.Serif, fontSize = (38 * s).sp, lineHeight = (50 * s).sp)
+                        Text("01", color = Color.White, fontFamily = EditorialFont.Serif, fontSize = (38 * headerScale).sp, lineHeight = (50 * headerScale).sp)
                     }
-                    Text(" · 注册", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = (31 * s).sp)
+                    Text(" · 注册", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = (31 * headerScale).sp, lineHeight = (42 * headerScale).sp)
                 }
             }
             Spacer(Modifier.height(if (constrained) 2.dp else 17.dp * s))
             Text("创建你的学习档案", Modifier.testTag("registration-heading"), color = RlColor.Ink, fontFamily = EditorialFont.Serif,
-                fontWeight = FontWeight.Bold, fontSize = (60 * s).sp, lineHeight = (78 * s).sp)
+                fontWeight = FontWeight.Bold, fontSize = (60 * headerScale).sp, lineHeight = (78 * headerScale).sp)
             Image(editorialUnderlinePainter(), null, Modifier.width(208.dp * s).height(13.dp * s), contentScale = ContentScale.FillBounds)
             if (wide && !constrained) Spacer(Modifier.height(4.dp * s))
             RegistrationRule()

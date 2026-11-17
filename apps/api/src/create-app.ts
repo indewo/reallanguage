@@ -5,7 +5,10 @@ import {
   FastifyAdapter,
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
-import { ApiExceptionFilter } from "./presentation/api-exception.filter.js";
+import {
+  ApiExceptionFilter,
+  type ApiErrorLogEntry,
+} from "./presentation/api-exception.filter.js";
 import {
   createPostgresDatabase,
   createPostgresPool,
@@ -27,6 +30,7 @@ export const createHttpApp = async (
       statusCode: number;
       requestId: string;
     }>) => void;
+    errorLogger?: (entry: ApiErrorLogEntry) => void;
   }> = {},
 ): Promise<NestFastifyApplication> => {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -35,7 +39,7 @@ export const createHttpApp = async (
     { logger: false },
   );
   app.setGlobalPrefix("api/v1");
-  app.useGlobalFilters(new ApiExceptionFilter());
+  app.useGlobalFilters(new ApiExceptionFilter(options.errorLogger));
   if (options.allowedOrigins?.length) {
     app.enableCors({
       origin: [...options.allowedOrigins],

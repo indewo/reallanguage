@@ -11,8 +11,22 @@ import {
 } from "@reallanguage/contracts";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
+export type ApiErrorLogEntry = Readonly<{
+  method: string;
+  path: string;
+  statusCode: number;
+  requestId: string;
+  errorName: string;
+  errorMessage: string;
+  stack?: string;
+}>;
+
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
+  public constructor(
+    private readonly errorLogger?: (entry: ApiErrorLogEntry) => void,
+  ) {}
+
   public catch(exception: unknown, host: ArgumentsHost): void {
     const http = host.switchToHttp();
     const reply = http.getResponse<FastifyReply>();
@@ -20,11 +34,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const delivery = deliveryError(exception);
     const status =
       delivery?.status ??
-      (isBalanceInsufficient(exception)
-        ? HttpStatus.PAYMENT_REQUIRED
-        : exception instanceof HttpException
-          ? exception.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR);
+      (isTimeoutFailure(exception)
+        ? HttpStatus.GATEWAY_TIMEOUT
+        : isBalanceInsufficient(exception)
+          ? HttpStatus.PAYMENT_REQUIRED
+          : exception instanceof HttpException
+            ? exception.getStatus()
+            : HttpStatus.INTERNAL_SERVER_ERROR);
     const existing =
       exception instanceof HttpException
         ? apiErrorResponseSchema.safeParse(exception.getResponse())
@@ -46,9 +62,43 @@ export class ApiExceptionFilter implements ExceptionFilter {
         ? existing.data
         : errorForStatus(status, requestId);
 
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.errorLogger?.({
+        method: request.method,
+        path: request.url.split("?", 1)[0] ?? request.url,
+        statusCode: status,
+        requestId,
+        ...failureDetail(exception),
+      });
+    }
+
     void reply.status(status).send(body);
   }
 }
+
+const failureDetail = (
+  exception: unknown,
+): Readonly<{ errorName: string; errorMessage: string; stack?: string }> => {
+  if (exception instanceof Error) {
+    return {
+      errorName: exception.name,
+      errorMessage: exception.message,
+      ...(exception.stack ? { stack: exception.stack } : {}),
+    };
+  }
+  if (typeof exception === "object" && exception !== null) {
+    const candidate = exception as { name?: unknown; message?: unknown };
+    return {
+      errorName:
+        typeof candidate.name === "string" ? candidate.name : "UnknownError",
+      errorMessage:
+        typeof candidate.message === "string"
+          ? candidate.message
+          : "no message",
+    };
+  }
+  return { errorName: "UnknownError", errorMessage: String(exception) };
+};
 
 const deliveryError = (error: unknown) => {
   if (
@@ -178,3 +228,39 @@ const isBalanceInsufficient = (
   value !== null &&
   "code" in value &&
   value.code === "AI_BALANCE_INSUFFICIENT";
+
+// AbortSignal.timeout() 抛出的是名为 TimeoutError 的 DOMException，不是
+// HttpException，若不单独识别会落到 500，让调用方误以为服务端有 bug。
+// undici 在连接/首字节/响应体阶段超时则改用 ERR_* 错误码，同样归为超时。
+const timeoutErrorNames = new Set(["TimeoutError"]);
+const timeoutErrorCodes = new Set([
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_HEADERS_TIMEOUT",
+  "UND_ERR_BODY_TIMEOUT",
+  "ETIMEDOUT",
+]);
+
+const isTimeoutFailure = (error: unknown): boolean => {
+  let current: unknown = error;
+  // fetch 会把底层原因挂在 cause 上，最多向下追四层，避免环形引用。
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof current !== "object" || current === null) return false;
+    const candidate = current as {
+      name?: unknown;
+      code?: unknown;
+      cause?: unknown;
+    };
+    if (
+      typeof candidate.name === "string" &&
+      timeoutErrorNames.has(candidate.name)
+    )
+      return true;
+    if (
+      typeof candidate.code === "string" &&
+      timeoutErrorCodes.has(candidate.code)
+    )
+      return true;
+    current = candidate.cause;
+  }
+  return false;
+};

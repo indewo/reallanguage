@@ -19,6 +19,7 @@ android {
         versionCode = 109
         versionName = "1.27.0-trial.20261108.109"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["appLabel"] = "RealLanguage"
     }
 
     buildFeatures {
@@ -44,6 +45,10 @@ android {
     buildTypes {
         getByName("debug") {
             enableUnitTestCoverage = true
+            if (providers.gradleProperty("REAL_LANGUAGE_PUBLIC_PROBE").orNull == "true") {
+                applicationIdSuffix = ".publicprobe"
+                manifestPlaceholders["appLabel"] = "RealLanguage 公网联调"
+            }
         }
     }
 
