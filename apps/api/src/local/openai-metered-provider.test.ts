@@ -406,6 +406,46 @@ describe("LocalOpenAiMeteredProvider", () => {
     });
     expect(result.receipt.modelSource).toBe("openai/gpt-audio-1.5");
   });
+  it("recovers the audio assessment JSON when the model wraps it in prose", async () => {
+    // 音频模型常在 JSON 前后补一句说明。整段直接 parse 会失败，导致
+    // 500 + 该请求被锁成需要对账；这里要求能从正文里抠出配对的对象。
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content:
+                    'Here is the acoustic evidence you asked for:\n{"observedTranscript":"I can explain it.","language":"en","intelligible":true,"confidence":0.9,"wordIssues":[],"rhythmIssues":[]}\nLet me know if you need anything else.',
+                },
+              },
+            ],
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ output_text: JSON.stringify({ decision: "PASS" }) }),
+        ),
+      );
+    const decode = vi.fn().mockResolvedValue("d2F2");
+    const client = new OpenAiLocalClient(
+      "test-key",
+      "test-text-model",
+      fetcher,
+      decode,
+    );
+    await expect(
+      client.generateJson("FULL_SENTENCE_SPEAKING_EVALUATION_V1", {
+        audioBase64: "bTRh",
+        audioMimeType: "audio/mp4",
+        confirmedTranscript: "I can explain it.",
+        targetTextEn: "I can explain it.",
+      }),
+    ).resolves.toBeDefined();
+  });
   it("sends pronunciation evidence as native audio rather than base64 text", async () => {
     const fetcher = vi
       .fn()
@@ -531,6 +571,19 @@ describe("LocalOpenAiMeteredProvider", () => {
     const form = fetcher.mock.calls[0]?.[1]?.body as FormData;
     expect(form.has("language")).toBe(false);
     expect((form.get("file") as File).name).toBe("recording.wav");
+  });
+  it("returns an empty transcript instead of failing the request when no speech is detected", async () => {
+    // 空转写是"没听到内容"，不是服务故障。若抛错，计量层会把该请求永久
+    // 锁成需要对账，用户之后每次重试都收到 409，界面上就是卡住不动。
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response('{"text":"   "}'));
+    await expect(
+      new OpenAiLocalClient("test-key", "test-model", fetcher).transcribe(
+        "YWJj",
+        "audio/mp4",
+      ),
+    ).resolves.toBe("");
   });
   it("does not convert rejected audio requests into a successful empty transcript", async () => {
     const fetcher = vi
