@@ -46,6 +46,12 @@ const openAiTextModel = (): string =>
   process.env.OPENAI_MODEL ?? "gpt-5.4-mini";
 const openAiAudioChatModel = (): string =>
   process.env.OPENAI_AUDIO_CHAT_MODEL ?? "gpt-audio-1.5";
+const audioChatWavInput = (base64: string) => ({
+  data: openAiAudioChatModel().startsWith("qwen")
+    ? `data:audio/wav;base64,${base64}`
+    : base64,
+  format: "wav",
+});
 const openAiTranscribeModel = (): string =>
   process.env.OPENAI_TRANSCRIBE_MODEL ?? "gpt-transcribe";
 const openAiTimedTranscribeModel = (): string =>
@@ -129,7 +135,7 @@ export class OpenAiLocalClient implements LocalAiClient {
               },
               {
                 type: "input_audio",
-                input_audio: { data: decoded, format: "wav" },
+                input_audio: audioChatWavInput(decoded),
               },
             ],
           },
@@ -199,7 +205,7 @@ export class OpenAiLocalClient implements LocalAiClient {
               },
               {
                 type: "input_audio",
-                input_audio: { data: decoded, format: "wav" },
+                input_audio: audioChatWavInput(decoded),
               },
             ],
           },
@@ -358,7 +364,7 @@ export class OpenAiLocalClient implements LocalAiClient {
               },
               {
                 type: "input_audio",
-                input_audio: { data: decoded, format: "wav" },
+                input_audio: audioChatWavInput(decoded),
               },
             ],
           },
