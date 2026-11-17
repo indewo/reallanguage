@@ -403,11 +403,17 @@ export class OpenAiLocalClient implements LocalAiClient {
     const generated = record(
       await this.generateTextJson(task, {
         ...context,
+        ...(task === "READING_FEEDBACK_V1"
+          ? { transcript: evidence.observedTranscript }
+          : {}),
         pronunciationEvidence: evidence,
       }),
     );
     const enoughEnglishEvidence =
-      evidence.language === "en" && evidence.confidence >= 0.6;
+      /^en(?:[-_][a-z]+)*$/iu.test(evidence.language) &&
+      evidence.confidence >= 0.6;
+    if (task === "READING_FEEDBACK_V1")
+      generated.transcript = evidence.observedTranscript;
     if ("pronunciationConfidence" in generated)
       generated.pronunciationConfidence = evidence.confidence;
     if ("pronunciationIntelligible" in generated)

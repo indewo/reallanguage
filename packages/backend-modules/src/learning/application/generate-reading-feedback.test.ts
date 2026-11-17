@@ -72,6 +72,20 @@ describe("GenerateReadingFeedback", () => {
     await expect(
       application.execute({ ...command, audioBase64: "" }),
     ).rejects.toThrow();
-    await expect(application.execute(command)).rejects.toThrow();
+    await expect(application.execute(command)).rejects.toThrow("Invalid reading feedback output");
+  });
+
+  it("normalizes provider item order and omitted optional targets without inventing feedback", async () => {
+    const { targetText: _, ...rhythm } = feedbackItems[1];
+    const result = await new GenerateReadingFeedback({
+      generate: vi.fn().mockResolvedValue({
+        feedbackZh: "注意节奏。",
+        feedbackItems: [feedbackItems[2], rhythm, feedbackItems[0]],
+        transcript: "I felt calm today.",
+        feedbackConfidence: 0.9,
+        action: "CONTINUE",
+      }),
+    }).execute(command);
+    expect(result.feedbackItems).toEqual(feedbackItems);
   });
 });
