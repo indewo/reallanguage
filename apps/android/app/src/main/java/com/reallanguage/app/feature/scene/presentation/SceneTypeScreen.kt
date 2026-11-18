@@ -95,12 +95,8 @@ private fun SceneTypeCard(dialogue: Boolean, selected: Boolean, onClick: () -> U
             Text(if (dialogue) "练习真实来回交流" else "练习完整叙述一段经历", color = RlColor.NoteAccent,
                 modifier = Modifier.testTag(if (dialogue) "scene-type-dialogue-summary" else "scene-type-article-summary"),
                 fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
-            HorizontalDivider(Modifier.fillMaxWidth(.65f).padding(vertical = 1.dp), color = ink.copy(alpha = .4f))
-            Text(if (dialogue) "问候 · 回应 · 追问" else "经过 · 感受 · 结果", color = ink,
-                modifier = Modifier.testTag(if (dialogue) "scene-type-dialogue-keywords" else "scene-type-article-keywords"),
-                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
         }
-        Box(Modifier.align(Alignment.BottomEnd).padding(20.dp).size(36.dp)
+        Box(Modifier.align(Alignment.BottomEnd).padding(end = 36.dp, bottom = 26.dp).size(32.dp)
             .background(if (selected) RlColor.ActionVivid else Color.Transparent, CircleShape)
             .border(2.dp, if (selected) Color.White else RlColor.Secondary, CircleShape), contentAlignment = Alignment.Center) {
             if (selected) Icon(Icons.Outlined.Check, "已选择", tint = Color.White, modifier = Modifier.size(25.dp))

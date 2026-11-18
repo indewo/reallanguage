@@ -197,7 +197,7 @@ private fun VocabularyBookHeader(state: VocabularyBookUiState, onAction: (Vocabu
                 ),
             )
             VerticalDivider(Modifier.height(34.dp), color = RlColor.Primary)
-            Box(Modifier.width(if (compact) 130.dp else 140.dp).height(34.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.width(if (compact) 150.dp else 168.dp).height(34.dp), contentAlignment = Alignment.Center) {
                 Image(
                     vocabularyPaperPainter(), null, Modifier.matchParentSize(),
                     contentScale = ContentScale.FillBounds,

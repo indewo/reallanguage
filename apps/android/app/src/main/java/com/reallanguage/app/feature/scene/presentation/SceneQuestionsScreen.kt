@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.heightIn
@@ -122,16 +123,15 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 Text(state.currentQuestion.questionZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
                     fontSize = 22.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
                 if (state.currentQuestion.options.isNotEmpty()) {
-                    BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    val optionWidth = (maxWidth - 8.dp) / 2
-                    FlowRow(
-                        modifier = Modifier.testTag("scene-questions-options"),
-                        horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8),
+                    Column(
+                        modifier = Modifier.fillMaxWidth().testTag("scene-questions-options"),
                         verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
                     ) {
-                        state.currentQuestion.options.forEach { option ->
+                        state.currentQuestion.options.chunked(2).forEach { options ->
+                          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
+                          options.forEach { option ->
                             val selected = state.answerText == option
-                            Box(Modifier.width(optionWidth).heightIn(min = 48.dp).padding(bottom = 8.dp)
+                            Box(Modifier.weight(1f).heightIn(min = 48.dp).padding(bottom = 8.dp)
                                 .clickable { onAction(SceneQuestionsAction.AnswerChanged(option)) }
                                 .testTag("scene-option-$option")) {
                                 Image(painterResource(if (selected) R.drawable.rl_scene_recent_ticket_sage_v2 else R.drawable.rl_scene_recent_ticket_blue_v2),
@@ -144,8 +144,10 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                                         lineHeight = 22.sp, fontWeight = FontWeight.Medium)
                                 }
                             }
+                          }
+                          if (options.size == 1) Spacer(Modifier.weight(1f))
+                          }
                         }
-                    }
                     }
                 }
                 com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(

@@ -90,6 +90,7 @@ fun ReadSpeakScreen(
                             style = MaterialTheme.typography.titleMedium,
                         )
                         state.feedbackZh
+                            ?.takeUnless { state.completed }
                             ?.takeUnless(String::isReadSpeakNoAudioCompletionCopy)
                             ?.let { Text(it, color = RlColor.TextSecondary) }
                     }

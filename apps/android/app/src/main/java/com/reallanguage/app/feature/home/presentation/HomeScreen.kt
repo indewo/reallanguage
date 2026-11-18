@@ -23,18 +23,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -377,13 +370,6 @@ private fun CoverFace(cover: Cover, poseState: State<CoverPose>, modifier: Modif
                     1f - ease((pose.depth - .12f) / .61f))
             }
         }
-        Image(BitmapPainter(ImageBitmap.imageResource(R.drawable.rl_home_cover_record),
-            srcOffset = IntOffset(0, 0), srcSize = IntSize(130, 116)), null,
-            Modifier.align(Alignment.TopStart).size(36.dp).graphicsLayer {
-                alpha = if (cover == Cover.Record) poseState.value.side else 1f
-            }.clip(GenericShape { size, _ ->
-                moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(0f, size.height); close()
-            }), contentScale = ContentScale.FillBounds)
     }
 }
 

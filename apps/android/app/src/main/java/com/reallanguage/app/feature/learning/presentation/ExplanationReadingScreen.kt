@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontFamily
 import com.reallanguage.app.core.designsystem.EditorialFont
 import androidx.compose.ui.text.font.FontWeight
@@ -84,11 +85,14 @@ fun ExplanationReadingScreen(
                 ?: stringResource(R.string.explanation_reading_title)
             Box(Modifier.fillMaxSize().testTag("explanation_expression_card_content")) {
               Column(
-                  Modifier.fillMaxWidth().padding(bottom = 48.dp),
-                  verticalArrangement = Arrangement.spacedBy(2.dp),
+                  Modifier.fillMaxSize().padding(top = 16.dp, bottom = 58.dp, end = 12.dp),
+                  verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+                  horizontalAlignment = Alignment.CenterHorizontally,
               ) {
                 Text(
                     phrase,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
                     color = RlColor.OnPrimary,
                     style = MaterialTheme.typography.displaySmall.copy(
                         fontFamily = EditorialFont.Serif,
@@ -100,7 +104,8 @@ fun ExplanationReadingScreen(
                 state.selectedExpression?.phonetic?.let {
                     Text(
                         it,
-                        modifier = Modifier.padding(start = 20.dp, top = 2.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
                         color = RlColor.OnPrimary.copy(alpha = .86f),
                         fontSize = 13.sp, lineHeight = 17.sp,
                     )
@@ -111,7 +116,8 @@ fun ExplanationReadingScreen(
                     else null
                 explanationText?.let { Text(
                     it,
-                    modifier = Modifier.padding(start = 40.dp, top = 2.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
                     color = RlColor.OnPrimary.copy(alpha = .86f),
                     style = if (state.selectedExpression == null) {
                         MaterialTheme.typography.bodyMedium
