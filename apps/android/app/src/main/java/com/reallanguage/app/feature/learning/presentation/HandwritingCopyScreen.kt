@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -80,6 +81,7 @@ fun HandwritingCopyScreen(
             Spacer(Modifier.weight(1f))
             Surface(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
+                    .requiredHeightIn(min = 28.dp)
                     .padding(top = RlSpace.Space4, bottom = 2.dp)
                     .testTag("handwriting-attempt-status-container"),
                 color = RlColor.Primary.copy(alpha = .82f),
