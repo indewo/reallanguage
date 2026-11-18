@@ -104,7 +104,7 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
             listOf("基\n础\n句\n式", "功\n能\n句\n式", "过\n渡\n衔\n接", "高\n级\n表\n达").forEach { label ->
                 Box(Modifier.fillMaxWidth().height(pageHeight * .18f), contentAlignment = Alignment.Center) {
                     Text(label, color = RlColor.OnSecondary, fontFamily = EditorialFont.Serif,
-                        fontSize = 10.sp, lineHeight = 13.sp)
+                        fontSize = 9.sp, lineHeight = 11.sp, textAlign = TextAlign.Center)
                 }
             }
         }

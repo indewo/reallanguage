@@ -601,9 +601,7 @@ private fun VocabularyWordCell(
                         contentScale = ContentScale.FillBounds,
                         colorFilter = ColorFilter.tint(RlColor.NoteAccent))
                     Spacer(Modifier.weight(1f))
-                    Text("Words build\na bigger you.", color = RlColor.TextSecondary.copy(alpha = .65f),
-                        fontFamily = FontFamily.Cursive, fontStyle = FontStyle.Italic,
-                        fontSize = 11.sp, lineHeight = 13.sp)
+
                 }
             }
         }

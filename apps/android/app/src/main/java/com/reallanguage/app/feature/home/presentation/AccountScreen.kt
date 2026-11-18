@@ -44,7 +44,7 @@ fun AccountScreen(state: AccountUiState, onAction: (AccountAction) -> Unit) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
             val wide = maxWidth >= 700.dp && LocalDensity.current.fontScale <= 1.35f
             val bookHeight = (maxHeight - 42.dp).coerceAtLeast(300.dp)
-            Column(Modifier.fillMaxSize().padding(horizontal = if (wide) 24.dp else 16.dp, vertical = 8.dp)
+            Column(Modifier.fillMaxSize().padding(top = 54.dp).padding(horizontal = if (wide) 24.dp else 16.dp, vertical = 8.dp)
                 .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (wide) Box(Modifier.fillMaxWidth()) {
                   Row(Modifier.fillMaxWidth().padding(top = 26.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -57,13 +57,14 @@ fun AccountScreen(state: AccountUiState, onAction: (AccountAction) -> Unit) {
                         }
                     }
                   }
-                  AccountPageHeading { onAction(AccountAction.ReturnHomeRequested) }
                 } else {
-                    AccountPageHeading { onAction(AccountAction.ReturnHomeRequested) }
                     AccountPassportArtwork(state.account?.email, Modifier.fillMaxWidth().height(315.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)))
                     AccountLedgerPage(state, onAction, Modifier.fillMaxWidth())
                     TextButton({ onAction(AccountAction.ReturnHomeRequested) }, Modifier.fillMaxWidth().testTag("account-return-home")) { Text("返回首页") }
                 }
+            }
+            Box(Modifier.fillMaxWidth().background(RlColor.PaperWarm).padding(horizontal = 24.dp, vertical = 4.dp)) {
+                AccountPageHeading { onAction(AccountAction.ReturnHomeRequested) }
             }
         }
     }
@@ -136,7 +137,6 @@ private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier
             Text("RealLanguage", color = Color.White, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 28.sp)
             Text("PERSONAL PASSPORT", color = Color.White.copy(alpha = .8f), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 9.sp, lineHeight = 14.sp, letterSpacing = 1.sp)
             Image(painterResource(R.drawable.rl_v73_account_avatar), "账号默认头像插画", Modifier.padding(top = 8.dp).height(bookHeight * .32f).aspectRatio(.8f), contentScale = ContentScale.Fit)
-            Text(email ?: "", Modifier.padding(top = 10.dp), color = Color.White, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
         }
         // These two blank printed labels are part of the cover artwork. Anchor the
         // native text to their measured image regions, not to leftover Column space.
@@ -144,7 +144,7 @@ private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier
             .width(bookWidth * .59f).height(bookHeight * .12f), contentAlignment = Alignment.Center) {
             Text("RealLanguage 学习账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
         }
-        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .385f, y = bookHeight * .794f)
+        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .385f, y = bookHeight * .82f)
             .width(bookWidth * .38f).height(bookHeight * .085f), contentAlignment = Alignment.Center) {
             Text("邮箱已验证", color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
         }

@@ -35,7 +35,7 @@ internal fun SceneEditorialFrame(
             EditorialHeader(title = title, modifier = Modifier.testTag("scene-questions-header"))
             if (stacked) {
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    EditorialSheet(contentPadding = 24.dp, showSpine = true, contentSpacing = 16.dp, content = content)
+                    EditorialSheet(contentPadding = 24.dp, showSpine = true, roundSpineHoles = true, contentSpacing = 16.dp, content = content)
                     SceneEditorialArtwork(supporting, Modifier.fillMaxWidth().height(230.dp))
                 }
                 footer?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), content = it) }
@@ -43,7 +43,7 @@ internal fun SceneEditorialFrame(
                 SceneEditorialArtwork(supporting, Modifier.weight(.7f).fillMaxHeight())
                 Column(Modifier.weight(1.3f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     EditorialSheet(Modifier.fillMaxWidth().weight(1f), contentPadding = 18.dp,
-                        showSpine = true, contentSpacing = 10.dp,
+                        showSpine = true, roundSpineHoles = true, contentSpacing = 10.dp,
                         contentModifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()), content = content)
                     footer?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), content = it) }
                 }

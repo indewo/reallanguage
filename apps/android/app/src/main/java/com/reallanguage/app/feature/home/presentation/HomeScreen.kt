@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -22,9 +23,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -234,7 +244,8 @@ private fun HomeDeck(onAction: (HomeAction) -> Unit, modifier: Modifier) {
                     key(cover) {
                         CoverFace(cover, poses[index], Modifier.testTag(cover.tag)
                             .semantics { selected = index == focused; contentDescription = cover.title }
-                            .clickable(role = Role.Button) { onAction(cover.action) })
+                            .clickable(interactionSource = remember { MutableInteractionSource() },
+                                indication = null, role = Role.Button) { onAction(cover.action) })
                     }
                 }
             }, modifier = Modifier.fillMaxSize().draggable(drag, Orientation.Horizontal,
@@ -296,18 +307,10 @@ private fun TurnArrow(next: Boolean, modifier: Modifier, onClick: () -> Unit) {
 private fun CoverFace(cover: Cover, poseState: State<CoverPose>, modifier: Modifier) {
     val shape = RoundedCornerShape(8.dp)
     val art = painterResource(cover.art)
-    Box(modifier.fillMaxSize().padding(2.dp).shadow(5.dp, shape).background(Color(0xfffcf7f0), shape)) {
+    Box(modifier.fillMaxSize().padding(2.dp)) {
         Image(painterResource(R.drawable.rl_home_task_note_adaptive), null,
-            Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        Canvas(Modifier.align(Alignment.TopStart).size(36.dp).graphicsLayer {
-            alpha = if (cover == Cover.Record) poseState.value.side else 1f
-        }) {
-            val p = Path().apply { moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(0f, size.height); close() }
-            drawPath(p, cover.tint)
-            drawLine(Color.White.copy(alpha = .77f), Offset(0f, size.height * .84f),
-                Offset(size.width * .84f, 0f), .8.dp.toPx(),
-                pathEffect = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 1.5.dp.toPx())))
-        }
+            Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
+            colorFilter = ColorFilter.tint(Color(0xffe6d5b9), BlendMode.Modulate))
         // Measure the illustration and both pieces of type once. They move on the paper
         // without rewrapping or stretching as its front and side silhouettes exchange.
         Layout(content = {
@@ -374,6 +377,13 @@ private fun CoverFace(cover: Cover, poseState: State<CoverPose>, modifier: Modif
                     1f - ease((pose.depth - .12f) / .61f))
             }
         }
+        Image(BitmapPainter(ImageBitmap.imageResource(R.drawable.rl_home_cover_record),
+            srcOffset = IntOffset(0, 0), srcSize = IntSize(130, 116)), null,
+            Modifier.align(Alignment.TopStart).size(36.dp).graphicsLayer {
+                alpha = if (cover == Cover.Record) poseState.value.side else 1f
+            }.clip(GenericShape { size, _ ->
+                moveTo(0f, 0f); lineTo(size.width, 0f); lineTo(0f, size.height); close()
+            }), contentScale = ContentScale.FillBounds)
     }
 }
 
@@ -382,8 +392,9 @@ private fun FooterEntry(label: String, tag: String, art: Int? = null, icon: Imag
                         accent: Color = RlColor.Ink, modifier: Modifier, onClick: () -> Unit) {
     val shape = RoundedCornerShape(8.dp)
     BoxWithConstraints(modifier.fillMaxHeight().padding(vertical = 2.dp)
-        .shadow(2.dp, shape).background(Color(0xfff7ebe0), shape)
-        .testTag(tag).clickable(role = Role.Button, onClick = onClick)) {
+        .background(Color(0xfff7ebe0), shape)
+        .testTag(tag).clickable(interactionSource = remember { MutableInteractionSource() },
+            indication = null, role = Role.Button, onClick = onClick)) {
         Image(painterResource(R.drawable.rl_home_task_note_adaptive), null, Modifier.fillMaxSize(),
             contentScale = ContentScale.FillBounds, alpha = .53f)
         val iconSize = (maxHeight * .58f).coerceIn(21.dp, 38.dp)
