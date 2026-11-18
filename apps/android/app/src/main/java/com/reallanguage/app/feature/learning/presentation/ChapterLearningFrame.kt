@@ -225,7 +225,7 @@ fun ChapterLearningFrame(
 /** A quiet paper-ledger scrollbar appears only when the explanation is taller
  * than its viewport. Short explanations remain completely fixed. */
 @Composable
-private fun LearningOverflowScrollbar(state: ScrollState, modifier: Modifier = Modifier) {
+internal fun LearningOverflowScrollbar(state: ScrollState, modifier: Modifier = Modifier) {
     BoxWithConstraints(
         modifier.width(5.dp).fillMaxHeight().padding(vertical = 5.dp)
             .background(RlColor.Border.copy(alpha = .38f), androidx.compose.foundation.shape.CircleShape)

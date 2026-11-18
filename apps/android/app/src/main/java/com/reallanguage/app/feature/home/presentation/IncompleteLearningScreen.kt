@@ -99,7 +99,9 @@ fun IncompleteLearningScreen(state: IncompleteLearningUiState, onAction: (Incomp
                 state.entries.forEach { entry -> IncompleteLearningRow(entry, onAction) }
             }
         }
-        TextButton(onClick = { onAction(IncompleteLearningAction.ReturnHomeRequested) },
+        Text("从上次停下的位置继续", color = RlColor.TextSecondary, fontSize = 12.sp,
+            modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        OutlinedButton(onClick = { onAction(IncompleteLearningAction.ReturnHomeRequested) },
             modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("incomplete-learning-return-home")) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.incomplete_learning_return), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp)
@@ -162,7 +164,7 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
         val paper = ImageBitmap.imageResource(R.drawable.rl_v73_incomplete_paper)
         val paperPainter = remember(paper) { BitmapPainter(paper, srcOffset = IntOffset(0, (paper.height * .09f).toInt()), srcSize = IntSize(paper.width, (paper.height * .79f).toInt())) }
         Image(paperPainter, null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        BoxWithConstraints {
+        BoxWithConstraints(Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
             val density = LocalDensity.current
             val measurer = rememberTextMeasurer()
             val typography = MaterialTheme.typography

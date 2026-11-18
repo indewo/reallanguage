@@ -102,8 +102,10 @@ fun LearningTargetScreen(
                     AccessibleLearningTargets(state, onAction, chapterNumber)
                 } else {
                     LearningTargetHeader(chapterNumber, onAction, shortScreen = shortScreen)
+                    val targetScroll = rememberScrollState()
+                    Box(Modifier.fillMaxWidth().weight(1f)) {
                     Column(
-                        Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState())
+                        Modifier.fillMaxSize().verticalScroll(targetScroll)
                             .padding(top = if (shortScreen) 2.dp else 5.dp)
                             .padding(start = horizontalContentInset, end = horizontalContentInset),
                         verticalArrangement = Arrangement.spacedBy(if (shortScreen) 6.dp else 10.dp),
@@ -111,6 +113,9 @@ fun LearningTargetScreen(
                         LearningSentencePanel(state, onAction, Modifier.fillMaxWidth().heightIn(min = if (shortScreen) 52.dp else 66.dp))
                         LearningTargetCards(state, onAction, wide = true)
                         AdditionalExpressionSection(state, onAction, wide = true)
+                    }
+                    if (targetScroll.maxValue > 0) com.reallanguage.app.feature.learning.presentation.LearningOverflowScrollbar(
+                        targetScroll, Modifier.align(Alignment.CenterEnd))
                     }
                     LearningTargetFooter(state, onAction)
                 }

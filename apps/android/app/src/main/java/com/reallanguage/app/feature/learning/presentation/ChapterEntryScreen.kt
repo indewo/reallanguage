@@ -77,15 +77,6 @@ fun ChapterEntryScreen(state: ChapterEntryUiState, onAction: (ChapterEntryAction
                             color = RlColor.Primary,
                         )
                     }
-                    BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).testTag("chapter_entry_sentence_space")) {
-                        val rowHeight = ((maxHeight - 18.dp) / chapter.sentences.size.coerceAtLeast(1))
-                            .coerceIn(32.dp, 130.dp)
-                        LearningSentenceLedger(chapter, chapter.sentences.firstOrNull { it.isFocus }?.sentenceId.orEmpty(),
-                            Modifier.fillMaxWidth().align(Alignment.Center)
-                                .verticalScroll(rememberScrollState()).testTag("chapter_entry_sentences"),
-                            preserveHoleAspect = true, uniformColumnGrid = true, compactRows = compactHeight,
-                            overviewRowMinHeight = rowHeight)
-                    }
                     if (!compactHeight) Text(
                         "学习路径",
                         Modifier.align(Alignment.CenterHorizontally),
@@ -123,6 +114,15 @@ fun ChapterEntryScreen(state: ChapterEntryUiState, onAction: (ChapterEntryAction
                                 }
                             }
                         }
+                    }
+                    BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).testTag("chapter_entry_sentence_space")) {
+                        val rowHeight = ((maxHeight - 18.dp) / chapter.sentences.size.coerceAtLeast(1))
+                            .coerceIn(32.dp, 130.dp)
+                        LearningSentenceLedger(chapter, chapter.sentences.firstOrNull { it.isFocus }?.sentenceId.orEmpty(),
+                            Modifier.fillMaxWidth().align(Alignment.Center)
+                                .verticalScroll(rememberScrollState()).testTag("chapter_entry_sentences"),
+                            preserveHoleAspect = true, uniformColumnGrid = true, compactRows = compactHeight,
+                            overviewRowMinHeight = rowHeight)
                     }
                     Row(
                         Modifier.fillMaxWidth().padding(top = if (compactHeight) 0.dp else 2.dp),

@@ -83,10 +83,7 @@ data class ExplanationPreparationFailureDisplay(
             if (state.failed) Text(state.failureMessage, Modifier.align(Alignment.CenterHorizontally), color = RlColor.Error,
                 fontSize = 16.sp, lineHeight = 22.sp)
             }
-            LearningTwoPane(leftWeight = .4f, contentFirstWhenStacked = true,
-                left = { pane -> Image(painterResource(R.drawable.rl_v73_learning_preparation_notebook), null,
-                    pane.height(paperHeight), contentScale = ContentScale.FillBounds) },
-                right = { pane -> LearningPaper(pane, padding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
+            LearningPaper(Modifier.fillMaxWidth(), padding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)) {
                     failureDisplay.stageLabels.forEachIndexed { index, label ->
                         Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(18.dp)) {
@@ -96,7 +93,7 @@ data class ExplanationPreparationFailureDisplay(
                         if (index < failureDisplay.stageLabels.lastIndex) androidx.compose.material3.HorizontalDivider(color = RlColor.Border)
                     }
                     failureDisplay.detail?.let { LearningRibbon(it, Modifier.fillMaxWidth()) }
-                } })
+                }
           }
             Row(Modifier.fillMaxWidth().onSizeChanged { footerHeightPx = it.height },
                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -104,7 +101,7 @@ data class ExplanationPreparationFailureDisplay(
                     LearningAction("重试", { onAction(ExplanationPreparationAction.RetryRequested) },
                         Modifier.weight(1f), primary = true)
                 }
-                LearningAction(failureDisplay.backLabel, { onAction(ExplanationPreparationAction.BackRequested) },
+                if (state.failed) LearningAction(failureDisplay.backLabel, { onAction(ExplanationPreparationAction.BackRequested) },
                     Modifier.weight(1f))
             }
         }

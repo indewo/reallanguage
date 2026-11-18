@@ -184,7 +184,8 @@ private fun FinalFixHeader(
                     fontSize = if (wide) 28.sp else 24.sp,
                 ),
             )
-            Box(Modifier.padding(top = 2.dp).width(112.dp).height(1.dp).background(RlColor.ActionVivid))
+            Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null,
+                Modifier.padding(top = 2.dp).width(112.dp).height(5.dp), contentScale = ContentScale.FillBounds)
         }
         if (!wide) FormationChapterBadge(
             text = if (chapterCount == 1) "第 1 章" else "共 $chapterCount 章",

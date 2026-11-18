@@ -104,7 +104,6 @@ internal fun IncompleteLearningFrame(
                 Text("未完成学习", color = RlColor.Ink,
                     style = MaterialTheme.typography.titleLarge.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
                         fontWeight = FontWeight.Bold, fontSize = 23.sp, lineHeight = 26.sp))
-                Text("从上次停下的位置继续", color = RlColor.TextSecondary, style = MaterialTheme.typography.bodySmall)
                 Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null,
                     Modifier.width(underlineWidth).height(underlineWidth * (385f / 2062f)), contentScale = ContentScale.Fit)
             }
