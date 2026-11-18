@@ -50,6 +50,7 @@ fun TargetSelfAssessmentControls(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.End)) {
                 target.abilities.forEach { ability ->
                     val assessed = ability in target.assessedAbilities
+                    if (assessed) return@forEach
                     val label = when (ability) {
                         SelfAssessmentAbility.MEANING_WRITING -> if (assessed) "暂定已会" else "会了"
                         SelfAssessmentAbility.PATTERN_WRITING -> if (assessed) "会写：暂定已会" else "我会写"
@@ -71,6 +72,7 @@ fun TargetSelfAssessmentControls(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 target.abilities.forEach { ability ->
                     val assessed = ability in target.assessedAbilities
+                    if (assessed) return@forEach
                     val label = when (ability) {
                         SelfAssessmentAbility.MEANING_WRITING -> if (assessed) "暂定已会" else "会了"
                         SelfAssessmentAbility.PATTERN_WRITING -> if (assessed) "会写：暂定已会" else "我会写"

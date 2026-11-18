@@ -61,5 +61,5 @@ private fun FormationRecoveryPhase.labelZh() = when (this) {
     FormationRecoveryPhase.ENGLISH_CONFIRMATION -> "确认英文表达"
     FormationRecoveryPhase.LEARNING_TARGET_LOADING -> "生成学习目标"
     FormationRecoveryPhase.LEARNING_TARGET_SELECTION -> "选择学习目标"
-    FormationRecoveryPhase.FINAL_FIX -> "确认并固定"
+    FormationRecoveryPhase.FINAL_FIX -> "确认学习目标"
 }

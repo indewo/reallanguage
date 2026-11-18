@@ -467,7 +467,6 @@ private fun AdditionalExpressionSection(state: LearningTargetUiState, onAction: 
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("其他可添加词或词组", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Spacer(Modifier.weight(1f))
-            Text("多选 · 点选后自动加入并显示 ✓", color = RlColor.Secondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp)
         }
         expressions.chunked(if (wide) 2 else 1).forEach { group ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

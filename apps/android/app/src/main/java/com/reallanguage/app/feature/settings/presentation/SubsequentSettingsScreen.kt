@@ -294,14 +294,10 @@ private fun ReminderPreferences(
     val label = stringResource(R.string.settings_daily_reminder)
     val timeLabel = stringResource(R.string.settings_reminder_time)
     val time = String.format(Locale.ROOT, "%02d:%02d", draft.time.hour, draft.time.minute)
-    var picker by remember { mutableStateOf<TimePickerDialog?>(null) }
-    val currentState by rememberUpdatedState(state)
-    val currentAction by rememberUpdatedState(onAction)
-    DisposableEffect(Unit) { onDispose { picker?.dismiss() } }
-    DisposableEffect(editable) {
-        if (!editable) picker?.dismiss()
-        onDispose { }
-    }
+    var showTimePicker by remember { mutableStateOf(false) }
+    if (showTimePicker && editable) ReminderWheelTimeDialog(draft.time,
+        onDismiss = { showTimePicker = false },
+        onConfirm = { onAction(SubsequentSettingsAction.ReminderTimeChanged(it)); showTimePicker = false })
     Box(Modifier.fillMaxWidth().testTag("settings-daily-reminder")) {
         Image(painterResource(R.drawable.rl_vocabulary_card_paper_r11), null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
@@ -336,18 +332,7 @@ private fun ReminderPreferences(
                     enabled = editable,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("settings-reminder-time")
                         .semantics { contentDescription = "$timeLabel $time" },
-                    onClick = {
-                        if (picker?.isShowing == true) return@TextButton
-                        picker = TimePickerDialog(context, { _, hour, minute ->
-                            if (!currentState.saving && currentState.error != SubsequentSettingsError.VERSION_CONFLICT && currentState.reminderDraft != null) {
-                                currentAction(SubsequentSettingsAction.ReminderTimeChanged(LocalTime.of(hour, minute)))
-                            }
-                        }, draft.time.hour, draft.time.minute, true).apply {
-                            setTitle(timeLabel)
-                            setOnDismissListener { picker = null }
-                            show()
-                        }
-                    },
+                    onClick = { showTimePicker = true },
                 ) { Text(time, color = RlColor.Secondary, style = MaterialTheme.typography.titleMedium) }
             }
             Text(stringResource(R.string.settings_reminder_frequency), color = RlColor.TextSecondary,

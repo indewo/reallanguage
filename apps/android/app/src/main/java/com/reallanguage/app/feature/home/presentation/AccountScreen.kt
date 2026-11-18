@@ -144,7 +144,7 @@ private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier
             .width(bookWidth * .59f).height(bookHeight * .12f), contentAlignment = Alignment.Center) {
             Text("RealLanguage 学习账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
         }
-        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .385f, y = bookHeight * .82f)
+        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .385f, y = bookHeight * .78f)
             .width(bookWidth * .38f).height(bookHeight * .085f), contentAlignment = Alignment.Center) {
             Text("邮箱已验证", color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
         }

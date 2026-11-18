@@ -68,13 +68,13 @@ fun SceneTypeScreen(state: SceneTypeUiState, onAction: (SceneTypeAction) -> Unit
                 }
                 Row(Modifier.fillMaxWidth().heightIn(min = 46.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    if (!stacked) Spacer(Modifier.weight(1.2f))
                     TextButton(onClick = { onAction(SceneTypeAction.BackRequested) }, Modifier.weight(1f)) {
                         Text(stringResource(R.string.scene_type_back), color = RlColor.Ink)
                     }
                     RlPrimaryButton(stringResource(R.string.scene_type_continue), state.selectedType != null,
                         { onAction(SceneTypeAction.ContinueRequested) }, Modifier.weight(1.1f).testTag("scene-type-continue"),
                         containerColor = RlColor.ActionVivid)
-                    if (!stacked) Spacer(Modifier.weight(1.2f))
                 }
             }
         }
@@ -87,18 +87,18 @@ private fun SceneTypeCard(dialogue: Boolean, selected: Boolean, onClick: () -> U
     BoxWithConstraints(modifier.clickable(onClick = onClick).testTag(if (dialogue) "scene-type-dialogue" else "scene-type-article")) {
         Image(painterResource(if (dialogue) R.drawable.rl_v73_scene_type_dialogue else R.drawable.rl_v73_scene_type_article),
             null, Modifier.matchParentSize().testTag("scene-type-option-illustration"), contentScale = ContentScale.FillBounds)
-        Column(Modifier.fillMaxWidth().padding(start = 28.dp, end = 28.dp, top = maxHeight * .055f),
-            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
+        Column(Modifier.fillMaxWidth().padding(start = 28.dp, end = 28.dp, top = maxHeight * .14f),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(if (dialogue) R.string.scene_type_dialogue else R.string.scene_type_article), color = ink,
                 modifier = Modifier.testTag(if (dialogue) "scene-type-dialogue-title" else "scene-type-article-title"),
                 fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 21.sp, lineHeight = 26.sp)
             Text(if (dialogue) "练习真实来回交流" else "练习完整叙述一段经历", color = RlColor.NoteAccent,
                 modifier = Modifier.testTag(if (dialogue) "scene-type-dialogue-summary" else "scene-type-article-summary"),
-                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 12.sp, lineHeight = 16.sp, textAlign = TextAlign.Center)
+                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
             HorizontalDivider(Modifier.fillMaxWidth(.65f).padding(vertical = 1.dp), color = ink.copy(alpha = .4f))
             Text(if (dialogue) "问候 · 回应 · 追问" else "经过 · 感受 · 结果", color = ink,
                 modifier = Modifier.testTag(if (dialogue) "scene-type-dialogue-keywords" else "scene-type-article-keywords"),
-                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 10.5.sp, lineHeight = 14.sp, textAlign = TextAlign.Center)
+                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
         }
         Box(Modifier.align(Alignment.BottomEnd).padding(20.dp).size(36.dp)
             .background(if (selected) RlColor.ActionVivid else Color.Transparent, CircleShape)

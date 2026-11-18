@@ -72,7 +72,7 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                         else -> R.string.diary_retry
                     },
                 ),
-                enabled = state.error != null || state.answerText.isNotBlank(),
+                enabled = !state.loading && (state.error != null || state.answerText.isNotBlank()),
                 onClick = {
                     onAction(
                         when (state.error) {
@@ -86,9 +86,20 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
             )
         },
     ) {
-        SceneQuestionProgress(state.confirmedAnswers.size)
+        SceneQuestionProgress(if (state.loading && state.history.isNotEmpty()) state.confirmedAnswers.size - 1 else state.confirmedAnswers.size)
         when {
-            state.loading -> Text(stringResource(R.string.scene_questions_loading))
+            state.loading -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                state.history.lastOrNull()?.let { previous ->
+                    Text(previous.question.questionZh, color = RlColor.Ink,
+                        fontSize = 22.sp, lineHeight = 30.sp)
+                    Text(previous.answer.answerZh, color = RlColor.TextSecondary,
+                        fontSize = 16.sp, lineHeight = 24.sp)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), color = RlColor.Secondary, strokeWidth = 2.dp)
+                    Text(stringResource(R.string.scene_questions_loading), color = RlColor.TextSecondary, fontSize = 14.sp)
+                }
+            }
             state.error != null -> {
                 Text(
                     stringResource(
@@ -112,25 +123,25 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                     fontSize = 22.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
                 if (state.currentQuestion.options.isNotEmpty()) {
                     BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    val optionWidth = if (maxWidth >= 400.dp) (maxWidth - 16.dp) / 3 else (maxWidth - 8.dp) / 2
+                    val optionWidth = (maxWidth - 8.dp) / 2
                     FlowRow(
                         modifier = Modifier.testTag("scene-questions-options"),
                         horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8),
+                        verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
                     ) {
                         state.currentQuestion.options.forEach { option ->
                             val selected = state.answerText == option
-                            Box(Modifier.width(optionWidth).heightIn(min = 90.dp).padding(bottom = 8.dp)
+                            Box(Modifier.width(optionWidth).heightIn(min = 48.dp).padding(bottom = 8.dp)
                                 .clickable { onAction(SceneQuestionsAction.AnswerChanged(option)) }
                                 .testTag("scene-option-$option")) {
                                 Image(painterResource(if (selected) R.drawable.rl_scene_recent_ticket_sage_v2 else R.drawable.rl_scene_recent_ticket_blue_v2),
                                     null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                                Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Icon(if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.ChatBubbleOutline,
-                                        if (selected) "已选择" else null, tint = if (selected) RlColor.Secondary else RlColor.Primary,
-                                        modifier = Modifier.size(26.dp))
-                                    Text(option, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 18.sp,
-                                        lineHeight = 26.sp, fontWeight = FontWeight.Bold)
+                                Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    if (selected) Icon(Icons.Outlined.CheckCircle,
+                                        "已选择", tint = RlColor.Secondary, modifier = Modifier.size(20.dp))
+                                    Text(option, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp,
+                                        lineHeight = 22.sp, fontWeight = FontWeight.Medium)
                                 }
                             }
                         }

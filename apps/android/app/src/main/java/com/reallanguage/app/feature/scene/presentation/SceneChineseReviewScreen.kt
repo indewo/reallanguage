@@ -112,11 +112,7 @@ private fun ReviewEditor(
                 "中文场景内容", modifier = Modifier.align(Alignment.CenterHorizontally), color = RlColor.ActionVivid,
                 style = MaterialTheme.typography.titleMedium.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold),
             )
-            Text(
-                stringResource(R.string.scene_review_explanation), color = RlColor.TextSecondary,
-                style = MaterialTheme.typography.bodySmall,
-            )
-            state.units.forEach { unit ->
+state.units.forEach { unit ->
                 AdaptiveReviewTextField(unit, state.reviewing, onAction)
             }
             if (state.issues.isNotEmpty()) {
@@ -141,21 +137,21 @@ private fun ReviewEditor(
                 text = stringResource(R.string.scene_review_return_questions),
                 onClick = { onAction(SceneChineseReviewAction.ReturnToQuestionsRequested) },
                 enabled = !state.reviewing,
-                modifier = Modifier.weight(1f).height(50.dp).testTag("scene-review-return"),
+                modifier = Modifier.weight(1f).height(44.dp).testTag("scene-review-return"),
                 contentPadding = PaddingValues(horizontal = RlSpace.Space4),
             )
             RlSecondaryButton(
                 text = stringResource(R.string.scene_review_regenerate),
                 onClick = { onAction(SceneChineseReviewAction.RegenerateRequested) },
                 enabled = !state.reviewing,
-                modifier = Modifier.weight(1f).height(50.dp).testTag("scene-review-regenerate"),
+                modifier = Modifier.weight(1f).height(44.dp).testTag("scene-review-regenerate"),
                 contentPadding = PaddingValues(horizontal = RlSpace.Space4),
             )
             RlPrimaryButton(
                 text = stringResource(if (state.changedUnitIds.isEmpty()) R.string.scene_review_confirm else R.string.scene_review_ai_review),
                 enabled = !state.reviewing,
                 onClick = { onAction(SceneChineseReviewAction.ConfirmRequested) },
-                modifier = Modifier.weight(1f).height(50.dp).testTag("scene-review-confirm"),
+                modifier = Modifier.weight(1f).height(44.dp).testTag("scene-review-confirm"),
                 containerColor = RlColor.ActionVivid,
                 contentPadding = PaddingValues(horizontal = RlSpace.Space4),
             )

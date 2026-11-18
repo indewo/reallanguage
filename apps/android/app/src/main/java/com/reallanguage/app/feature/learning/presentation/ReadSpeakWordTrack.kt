@@ -103,7 +103,7 @@ internal fun ReadSpeakWordTrack(
         }
     }
     Row(
-        modifier = modifier.heightIn(min = 48.dp)
+        modifier = modifier.heightIn(min = 80.dp)
             .onSizeChanged { viewportWidth = it.width }
             .onGloballyPositioned { coordinates ->
                 val clipped = coordinates.findRootCoordinates()
@@ -131,6 +131,7 @@ internal fun ReadSpeakWordTrack(
                     },
                 )
             }
+            .padding(bottom = 28.dp)
             .horizontalScroll(scroll, enabled = false),
         horizontalArrangement = Arrangement.spacedBy(with(density) { 2.5.sp.toDp() }),
     ) {

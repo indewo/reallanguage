@@ -157,14 +157,14 @@
     <string name="learning_target_generation_failed">本次学习项生成未完成，请重试。</string>
     <string name="learning_targets_continue">继续</string>
     <string name="dev_preview_learning_targets">确认学习目标</string>
-    <string name="final_fix_title">确认并固定</string>
+    <string name="final_fix_title">确认学习目标</string>
     <string name="final_fix_explanation">确认后将锁定中文、英文、重点句和所选学习目标，并直接进入第 1 章。</string>
     <string name="final_fix_selected_targets">将要固定的学习目标</string>
     <string name="final_fix_sentence_learning_only">未选择词义或句式目标，仍会保留完整句子学习。</string>
-    <string name="final_fix_confirm">确认并固定</string>
+    <string name="final_fix_confirm">确认学习目标</string>
     <string name="final_fix_submitting">正在固定……</string>
     <string name="final_fix_failed">未能完整固定，本次没有生成任何正式章节，请重试。</string>
-    <string name="dev_preview_final_fix">确认并固定</string>
+    <string name="dev_preview_final_fix">确认学习目标</string>
     <string name="learning_chapter_number">第 %1$d 章</string>
     <string name="learning_current_module">当前学习模块</string>
     <string name="dev_preview_chapter_learning">当前章节学习框架</string>

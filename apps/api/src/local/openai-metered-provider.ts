@@ -455,27 +455,38 @@ export class OpenAiLocalClient implements LocalAiClient {
     if (!extension) throw new Error("Unsupported transcription audio format");
     const model = openAiTranscribeModel();
     if (model === "qwen3-asr-flash" || model.startsWith("qwen3-asr-flash-")) {
-      const response = await this.fetcher(`${openAiBaseUrl()}/chat/completions`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json",
+      const response = await this.fetcher(
+        `${openAiBaseUrl()}/chat/completions`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          signal: AbortSignal.timeout(45_000),
+          body: JSON.stringify({
+            model,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "input_audio",
+                    input_audio: {
+                      data: `data:${audioType};base64,${audioBase64}`,
+                    },
+                  },
+                ],
+              },
+            ],
+            stream: false,
+          }),
         },
-        signal: AbortSignal.timeout(45_000),
-        body: JSON.stringify({
-          model,
-          messages: [{
-            role: "user",
-            content: [{
-              type: "input_audio",
-              input_audio: { data: `data:${audioType};base64,${audioBase64}` },
-            }],
-          }],
-          stream: false,
-        }),
-      });
+      );
       if (!response.ok)
-        throw new Error(`Qwen transcription request failed with status ${response.status}`);
+        throw new Error(
+          `Qwen transcription request failed with status ${response.status}`,
+        );
       const payload = (await response.json()) as {
         choices?: Array<{ message?: { content?: unknown } }>;
       };
@@ -546,6 +557,104 @@ export class OpenAiLocalClient implements LocalAiClient {
       window: (typeof windows)[number],
     ): Promise<RecordingWindowEvidence> => {
       const remaining = remainingMilliseconds();
+      if (openAiTimedTranscribeModel().startsWith("fun-asr-flash")) {
+        const endpoint =
+          process.env.DASHSCOPE_ASR_BASE_URL ??
+          openAiBaseUrl().replace(/\/compatible-mode\/v1$/u, "/api/v1");
+        const response = await this.fetcher(
+          `${endpoint}/services/aigc/multimodal-generation/generation`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${this.apiKey}`,
+              "Content-Type": "application/json",
+              "X-DashScope-SSE": "enable",
+            },
+            signal: AbortSignal.timeout(Math.min(60_000, remaining)),
+            body: JSON.stringify({
+              model: openAiTimedTranscribeModel(),
+              input: {
+                messages: [
+                  {
+                    role: "user",
+                    content: [
+                      {
+                        type: "input_audio",
+                        input_audio: {
+                          data: `data:audio/wav;base64,${window.audioBase64}`,
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              parameters: {
+                format: "wav",
+                ...(languageHint === "zh-CN" ? { language_hints: ["zh"] } : {}),
+              },
+            }),
+          },
+        );
+        if (!response.ok)
+          throw new Error(
+            `Fun-ASR timed transcription failed with status ${response.status}`,
+          );
+        const body = await response.text();
+        const events = body.trim().startsWith("{")
+          ? [body]
+          : body
+              .split(/\r?\n/u)
+              .filter((line) => line.startsWith("data:"))
+              .map((line) => line.slice(5).trim())
+              .filter((line) => line && line !== "[DONE]");
+        const sentences = new Map<number, Record<string, unknown>>();
+        let fullText = "";
+        for (const event of events) {
+          const payload = record(JSON.parse(event));
+          if (payload.code)
+            throw new Error("Fun-ASR returned a transcription error");
+          const output = record(payload.output);
+          const sentence = record(output.sentence);
+          if (
+            sentence.sentence_end === true &&
+            typeof sentence.sentence_id === "number"
+          ) {
+            sentences.set(sentence.sentence_id, sentence);
+            if (typeof output.text === "string") fullText = output.text;
+          }
+        }
+        const words = [...sentences.entries()]
+          .sort((a, b) => a[0] - b[0])
+          .flatMap(([, sentence]) => {
+            if (!Array.isArray(sentence.words))
+              throw new Error("Fun-ASR missing word timestamps");
+            return sentence.words.map((item) => {
+              const word = record(item);
+              if (
+                typeof word.text !== "string" ||
+                typeof word.begin_time !== "number" ||
+                typeof word.end_time !== "number"
+              )
+                throw new Error("Invalid Fun-ASR word evidence");
+              return {
+                word: word.text,
+                start: word.begin_time / 1000,
+                end: word.end_time / 1000,
+              };
+            });
+          });
+        const evidence = validateTimedRecording(
+          {
+            text: fullText,
+            language: languageHint === "zh-CN" ? "zh" : "auto",
+            durationSeconds: window.durationSeconds,
+            words,
+          },
+          Math.min(120, Math.max(1, window.durationSeconds)),
+        );
+        remainingMilliseconds();
+        return { window, evidence };
+      }
       const form = new FormData();
       form.append("model", openAiTimedTranscribeModel());
       form.append("response_format", "verbose_json");
@@ -1325,7 +1434,7 @@ const taskInstructions = (task: string): string => {
     return `${common} Recommend at most four differentiated scene topics based only on supplied sources. Every sourceRefs entry must be a supplied sourceId and differentiationKey must be unique. Return {"recommendations":[{"recommendationId":"...","shortTopicZh":"...","whyRelevantZh":"...","sourceRefs":["..."],"differentiationKey":"..."}]}.`;
   }
   if (task === "SCENE_NEXT_QUESTION_V1") {
-    return `${common} Ask between minimumQuestions and maximumQuestions concise Chinese questions, exactly one at a time. Before minimumQuestions confirmed answers, use ASK for the most useful new fact. Starting when stepIndex reaches minimumQuestions, reassess after every answer and return GENERATE immediately once the best one concrete scene moment, or at most two closely connected moments, can support at least minimumOutputUnits realistic, coherent and non-repetitive dialogue or article units. maximumQuestions is a ceiling, never a target. Do not require a complete account of the whole experience and do not wait for every possible detail. Facts outside the selected concrete moment, such as an exact venue name, every later arrangement, or other side details, are non-blocking unless they are essential to make that chosen moment coherent; list such gaps in missingNonBlockingFacts rather than asking about them. Select the strongest coherent subset of confirmed facts instead of forcing every answer into the draft. For a RECOMMENDATION, only shortTopicZh is available and allowed: never infer or request hidden history. A DIRECT_DESCRIPTION is the user's first fact; a TEMPLATE supplies only its stated scope. Ask only for a missing material fact that moves the chosen real moment forward, such as roles, setting, specific event, intended meaning, counterpart response, audience or purpose. Never paraphrase the user's wording into a question, repeat an already asked question, ask synonymous circular confirmations, or treat repeated, irrelevant or unintelligible answers as new facts. For an unclear-hearing scene, ask what was missed, where it happened, or whether repetition is needed instead of repeatedly asking whether hearing is possible. Use ASK with a unique semantic questionId and optional string options. Use GENERATE only after minimumQuestions confirmed answers and when the selected moment supports at least minimumOutputUnits useful units, preserving confirmed facts without invention. When stepIndex equals maximumQuestions, return GENERATE if any coherent confirmed moment is usable; return INSUFFICIENT_INFORMATION only if even the strongest confirmed moment cannot support minimumOutputUnits units. Never ask an eleventh question or fabricate content. Return exactly one of {"action":"ASK","questionId":"...","questionZh":"...","options":[]}, {"action":"GENERATE","collectedFacts":["..."],"missingNonBlockingFacts":[]}, or {"action":"INSUFFICIENT_INFORMATION"}.`;
+    return `${common} Ask between minimumQuestions and maximumQuestions concise Chinese questions, exactly one at a time. Before minimumQuestions confirmed answers, use ASK for the most useful new fact. Starting when stepIndex reaches minimumQuestions, reassess after every answer and return GENERATE immediately once the best one concrete scene moment, or at most two closely connected moments, can support at least minimumOutputUnits realistic, coherent and non-repetitive dialogue or article units. maximumQuestions is a ceiling, never a target. Do not require a complete account of the whole experience and do not wait for every possible detail. Facts outside the selected concrete moment, such as an exact venue name, every later arrangement, or other side details, are non-blocking unless they are essential to make that chosen moment coherent; list such gaps in missingNonBlockingFacts rather than asking about them. Select the strongest coherent subset of confirmed facts instead of forcing every answer into the draft. For a RECOMMENDATION, only shortTopicZh is available and allowed: never infer or request hidden history. A DIRECT_DESCRIPTION is the user's first fact; a TEMPLATE supplies only its stated scope. Ask only for a missing material fact that moves the chosen real moment forward, such as roles, setting, specific event, intended meaning, counterpart response, audience or purpose. Never paraphrase the user's wording into a question, repeat an already asked question, ask synonymous circular confirmations, or treat repeated, irrelevant or unintelligible answers as new facts. For an unclear-hearing scene, ask what was missed, where it happened, or whether repetition is needed instead of repeatedly asking whether hearing is possible. Use ASK with a unique semantic questionId. For roles, places, purposes and other bounded questions, supply 3 to 5 short, distinct Chinese options in options for one-tap answering. Put example answers in options instead of embedding them after 例如 in questionZh. Keep questionZh to one brief question. Use empty options only when a specific personal detail genuinely requires free text. Options are suggestions, never confirmed facts; the user can always type a different answer. Use GENERATE only after minimumQuestions confirmed answers and when the selected moment supports at least minimumOutputUnits useful units, preserving confirmed facts without invention. When stepIndex equals maximumQuestions, return GENERATE if any coherent confirmed moment is usable; return INSUFFICIENT_INFORMATION only if even the strongest confirmed moment cannot support minimumOutputUnits units. Never ask an eleventh question or fabricate content. Return exactly one of {"action":"ASK","questionId":"...","questionZh":"...","options":[]}, {"action":"GENERATE","collectedFacts":["..."],"missingNonBlockingFacts":[]}, or {"action":"INSUFFICIENT_INFORMATION"}.`;
   }
   if (task === "SCENE_DIALOGUE_TURN_V1") {
     return `${common} Generate a short, realistic Chinese dialogue using only confirmed facts in session. Do not summarize the whole experience or explain what happened. Select one concrete interaction moment from the supplied scene that can naturally expose useful English vocabulary at settings.basicVocabulary and settings.purposeVocabularies, then enact that moment as spoken turns. The settings guide useful learning range, never authorize invented facts or awkward vocabulary stuffing. Each unit is one brief utterance with one communicative intention, in the way people actually speak; never write essay-like narration, headings, speaker names inside textZh, or a compressed report of all facts. Prefer 3 to 6 turns and keep every turn under 48 Chinese characters. Use the smallest number of turns that still forms a coherent real exchange. For a recommendation, its title is the only historical starting point; no prior conversation or source content may be inferred. If previousUnits is present, the user requested regeneration: use meaningfully different natural wording and conversational progression from that version, preserving all confirmed facts and speaker intentions. Changing IDs, whitespace or punctuation alone is not regeneration. Never invent facts for variety. Include 3 to remainingContentBudget coherent, non-repetitive units, both USER and OTHER speakers, unique unitIds, and factReferences containing only exact collectedFacts used by that unit. Return {"draftId":"...","contentType":"DIALOGUE","units":[{"unitId":"...","speaker":"OTHER","textZh":"...","factReferences":[]},{"unitId":"...","speaker":"USER","textZh":"...","factReferences":["..."]}]}.`;
