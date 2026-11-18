@@ -383,6 +383,7 @@ fun ChapterWritingFrame(
     hideCurrentFocusEnglish: Boolean = false,
     workspaceArtworkRes: Int? = null,
     workspaceMinHeight: Dp = 160.dp,
+    focusOnlyContext: Boolean = false,
     centerLeftPanelContent: Boolean = false,
     fitWorkspaceToViewport: Boolean = false,
     onBack: (() -> Unit)? = null,
@@ -417,7 +418,7 @@ fun ChapterWritingFrame(
             LearningSentenceLedger(chapter, currentFocusSentenceId, Modifier.fillMaxWidth().testTag("learning-context-paper")
                 .onSizeChanged { ledgerHeight = with(density) { it.height.toDp() } },
                 showCurrentFocusEnglish = !hideCurrentFocusEnglish, hideAllFocusEnglish = hideAllFocusEnglish,
-                compactRows = true)
+                compactRows = true, focusOnly = focusOnlyContext)
             LearningTwoPane(leftWeight = .18f,
                 left = { pane -> LearningOliveNote(
                     modifier = if (centerLeftPanelContent) pane.height(workspaceHeight) else pane,

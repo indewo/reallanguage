@@ -53,6 +53,8 @@ fun HandwritingCopyScreen(
         stageTitle = stringResource(R.string.handwriting_title),
         onBack = { onAction(HandwritingCopyAction.BackRequested) },
         centerLeftPanelContent = true,
+        focusOnlyContext = true,
+        fitWorkspaceToViewport = true,
         leftPanelContent = {
             Box(
                 modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp)
@@ -66,11 +68,12 @@ fun HandwritingCopyScreen(
                 )
                 Text(
                     "照着当前句\n完整抄写",
-                    modifier = Modifier.padding(start = RlSpace.Space12, top = 14.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = RlColor.Ink,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontSize = 17.sp,
-                        lineHeight = 25.sp,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
                     ),
                 )
             }
