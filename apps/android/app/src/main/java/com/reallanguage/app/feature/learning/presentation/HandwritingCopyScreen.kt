@@ -82,7 +82,7 @@ fun HandwritingCopyScreen(
             Spacer(Modifier.weight(1f))
             Surface(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
-                    .requiredHeightIn(min = 28.dp)
+                    .requiredHeightIn(min = 44.dp)
                     .padding(top = RlSpace.Space4, bottom = 2.dp)
                     .testTag("handwriting-attempt-status-container"),
                 color = RlColor.Primary.copy(alpha = .82f),
@@ -173,7 +173,7 @@ fun HandwritingCopyScreen(
                 OutlinedButton(
                     onClick = { points.clear() },
                     enabled = state.copyInProgress && !state.saving && points.isNotEmpty(),
-                    modifier = Modifier.align(Alignment.TopEnd).testTag("handwriting-clear"),
+                    modifier = Modifier.align(Alignment.TopEnd).padding(end = 84.dp).testTag("handwriting-clear"),
                 ) {
                     Text("清空重写")
                 }
