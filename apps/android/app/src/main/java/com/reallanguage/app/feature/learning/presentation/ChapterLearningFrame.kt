@@ -124,7 +124,8 @@ fun ChapterLearningFrame(
                 val sidebarHeight = if (fixedPageWithModuleOverflow) pane.fillMaxHeight()
                     else pane.heightIn(min = bodyMinHeight)
                 if (leftArtworkRes == null) Column(sidebarHeight, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                  Box(if (leftPanelFooter != null && fixedPageWithModuleOverflow) Modifier.fillMaxWidth().weight(1f) else Modifier.fillMaxWidth()) {
+                  Box(if (fixedPageWithModuleOverflow) Modifier.fillMaxWidth().weight(1f)
+                      else Modifier.fillMaxWidth().heightIn(min = bodyMinHeight)) {
                     Image(painterResource(R.drawable.rl_v73_learning_expression_blue_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                     Column(Modifier.fillMaxSize().padding(
                         start = 24.dp,
@@ -386,6 +387,7 @@ fun ChapterWritingFrame(
     hideAllFocusEnglish: Boolean = false,
     hideCurrentFocusEnglish: Boolean = false,
     workspaceArtworkRes: Int? = null,
+    renderWorkspacePaper: Boolean = true,
     workspaceMinHeight: Dp = 160.dp,
     focusOnlyContext: Boolean = false,
     centerLeftPanelContent: Boolean = false,
@@ -433,7 +435,7 @@ fun ChapterWritingFrame(
                 } },
                 right = { pane -> Column(pane.height(workspaceHeight)) {
                     Box(Modifier.fillMaxWidth().weight(1f)) {
-                        Image(painterResource(R.drawable.rl_ruled_handwriting_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
+                        if (renderWorkspacePaper) Image(painterResource(R.drawable.rl_ruled_handwriting_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                         Column(
                             Modifier.fillMaxSize().padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),

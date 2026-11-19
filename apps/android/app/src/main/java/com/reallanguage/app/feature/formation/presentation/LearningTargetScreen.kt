@@ -231,7 +231,7 @@ private fun HighlightedEnglishSentence(
             if (start < 0) null else Triple(start, start + literal.length, targetAccent(target.type))
         }
     }
-    var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var layout by remember(english, sentenceId) { mutableStateOf<TextLayoutResult?>(null) }
     val text = buildAnnotatedString {
         append(english)
         expressions.forEach { expression ->

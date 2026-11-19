@@ -92,7 +92,7 @@ fun ExplanationReadingScreen(
                 ?: stringResource(R.string.explanation_reading_title)
             Box(Modifier.fillMaxSize().testTag("explanation_expression_card_content")) {
               Column(
-                  Modifier.fillMaxSize().padding(top = 16.dp, bottom = 58.dp, end = 12.dp),
+                  Modifier.fillMaxSize().padding(top = 16.dp, bottom = 30.dp, end = 12.dp),
                   verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
                   horizontalAlignment = Alignment.CenterHorizontally,
               ) {

@@ -56,6 +56,7 @@ fun HandwritingCopyScreen(
         centerLeftPanelContent = true,
         focusOnlyContext = true,
         fitWorkspaceToViewport = true,
+        renderWorkspacePaper = false,
         leftPanelContent = {
             Box(
                 modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp)
