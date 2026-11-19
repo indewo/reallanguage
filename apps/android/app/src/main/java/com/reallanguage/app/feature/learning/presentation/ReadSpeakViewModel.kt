@@ -120,8 +120,11 @@ class ReadSpeakViewModel(
         ) return
         mutableUiState.update { it.copy(listening = false, submitting = true) }
         viewModelScope.launch {
-            val result = if (retry) repository.retryFeedback(sentence.sentenceId, signal)
+            val result = try {
+                if (retry) repository.retryFeedback(sentence.sentenceId, signal)
                 else repository.feedback(sentence.sentenceId, signal)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { ReadSpeakFeedbackResult.Failed }
             when (result) {
                 is ReadSpeakFeedbackResult.Ready -> {
                     failedFeedbackSignal = null

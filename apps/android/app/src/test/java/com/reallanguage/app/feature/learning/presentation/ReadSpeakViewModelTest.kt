@@ -273,6 +273,36 @@ class ReadSpeakViewModelTest {
         assertFalse(model.uiState.value.audioPlaying)
     }
 
+    @Test fun thrownFeedbackFailureReleasesSubmissionAndRetriesOriginalSignal() = runTest(dispatcher) {
+        var initialCalls = 0
+        var retryCalls = 0
+        val repository = object : ReadSpeakRepository {
+            override fun hasPendingFeedbackRetry() = initialCalls > 0 && retryCalls == 0
+            override suspend fun feedback(sentenceId: String, completionSignal: ReadSpeakCompletionSignal): ReadSpeakFeedbackResult {
+                initialCalls++
+                throw java.io.IOException("interrupted response")
+            }
+            override suspend fun retryFeedback(sentenceId: String, completionSignal: ReadSpeakCompletionSignal): ReadSpeakFeedbackResult {
+                retryCalls++
+                assertEquals(ReadSpeakCompletionSignal.RECOGNITION_COMPLETE, completionSignal)
+                return ReadSpeakFeedbackResult.Ready("保留的原请求结果")
+            }
+        }
+        val model = createViewModel(repository)
+        advanceUntilIdle()
+        model.onAction(ReadSpeakAction.StartRequested)
+        model.onAction(ReadSpeakAction.RecognitionCompleted)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.pendingFeedbackRetry)
+        assertFalse(model.uiState.value.completed)
+        model.onAction(ReadSpeakAction.RetryRequested)
+        advanceUntilIdle()
+        assertEquals(1, initialCalls)
+        assertEquals(1, retryCalls)
+        assertTrue(model.uiState.value.completed)
+    }
+
     private fun createViewModel(
         repository: ReadSpeakRepository = ReadSpeakRepository { _, _ ->
             ReadSpeakFeedbackResult.Ready("内容完整。")
