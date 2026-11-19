@@ -81,3 +81,6 @@ ScreenshotOcr.readOne目前将整图所有textBlocks的lines按top/left排序拼
 UI无selectedExpression时仍显示expressions.first的词组，但此前中文只从selectedExpression读取。SelectableExpression新增可选lockedMeaningZh，提供器仅在原句start/end完全相同、唯一的已确认WORD/FIXED_EXPRESSION目标上带入原explanationZh，默认蓝卡可显示该已确认意思，不调用新AI且不借用重复词其他位置。词语身份验证仅比较原有ID/显示/位置，新显示元数据不改变旧恢复数据的身份。构建、HttpExplanationReadingProvider及ExplanationReadingViewModel测试通过。尚待真机新入口及历史恢复验证；旧恢复对象没带此字段时仍不凭空补造，不关闭所有缺释义报告。
 
 默认词义补充回归：追加断言确认目标calm保留原含空白中文词义，未选today不获得词义，原请求数量仍为1；LockedExplanationProviderTest与ExistingExplanationDeliveryRecoveryTest通过。该验证是提供器/缓存替身测试，不等于真机保存恢复完成。
+
+### 最新包真实复验结果
+从首页未完成学习恢复到第4步，次数第4次/至少2次两行完整，清空按钮bounds[2154,515][2378,596]已与钢笔分离；实际再次画线并清空，截图handwriting-final-check.png确认笔迹消失、按钮禁用、计数仍第4次。未点我已写完。返回读＋说→基础讲解，原R&D teams/研发团队及用法例句仍恢复。点我理解了切到下一重点句，sharing progress updates默认蓝卡现在真实显示分享进度更新（英文y534..640、中文y661..736），无须再点击词语，修复前同页中文缺失；截图default-locked-meaning-live.png。右侧原历史整句六级冗文仍存在，因此仅默认词义、恢复的原表达和手写显示/清空本范围通过，不关闭历史讲解质量及整个章节验收。
