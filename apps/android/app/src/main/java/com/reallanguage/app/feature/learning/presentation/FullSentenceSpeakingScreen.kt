@@ -256,7 +256,7 @@ fun FullSentenceSpeakingScreen(
                 )
             }
             if (state.finalDecision == SpeakingEvaluationDecision.FAIL) {
-                TextButton(
+                OutlinedButton(
                     onClick = { onAction(FullSentenceSpeakingAction.StopPractisingRequested) },
                 ) { Text(stringResource(R.string.full_sentence_speaking_stop)) }
             }
@@ -291,7 +291,7 @@ private fun AiReadingFeedback(
                     tint = RlColor.Primary,
                 )
                 Text(
-                    "AI 朗读反馈",
+                    "朗读反馈",
                     color = RlColor.Ink,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
@@ -339,7 +339,7 @@ private fun AiReadingFeedback(
                             )
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                 detail.targetText?.let { target ->
                                     Text(
                                         "“$target”  ",
@@ -365,6 +365,7 @@ private fun AiReadingFeedback(
                         }
                         Text(
                             detail.evidence.label(),
+                            modifier = Modifier.width(52.dp),
                             color = RlColor.TextSecondary,
                             fontSize = 9.sp,
                             lineHeight = 13.sp,

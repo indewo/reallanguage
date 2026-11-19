@@ -142,7 +142,6 @@ private fun LearningTargetHeader(
             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("选择学习目标", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = if (shortScreen) 24.sp else 26.sp, lineHeight = if (shortScreen) 30.sp else 34.sp, letterSpacing = 3.sp)
                 Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(182.dp).height(if (shortScreen) 5.dp else 7.dp), contentScale = ContentScale.FillBounds)
-                Text("句子会继续学习，下面的词义与句式可以按需选择。", color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = if (shortScreen) 12.sp else 13.sp, lineHeight = if (shortScreen) 17.sp else 20.sp)
             }
         }
         return
@@ -165,7 +164,6 @@ private fun LearningTargetHeader(
         }
         FormationChapterBadge("第 $chapterNumber 章", compact = true)
         }
-        Text("句子会继续学习，下面的词义与句式可以按需选择。", Modifier.align(Alignment.CenterHorizontally).padding(top = 3.dp, bottom = 5.dp), color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 20.sp)
     }
 }
 

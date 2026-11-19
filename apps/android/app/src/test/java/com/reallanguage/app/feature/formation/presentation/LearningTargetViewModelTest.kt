@@ -61,6 +61,19 @@ class LearningTargetViewModelTest {
         assertEquals(setOf("t1", "t2"), state.selectedTargetIds)
     }
 
+    @Test fun manualFallbackExcludesWholeQuestionButKeepsItsWordsAndCuratedPattern() {
+        val sentence = EnglishSentenceDraft("u1", "你想点什么？", true,
+            listOf(EnglishCandidate("e1", "What would you like to order?")))
+        val pattern = LearningTarget("pattern", "u1", "What would you like to + verb", "询问意愿",
+            LearningTargetType.PATTERN, structureParts = listOf("What would you like to", "verb"))
+        val state = LearningTargetUiState(listOf(EnglishChapterDraft("c1", listOf(sentence))),
+            mapOf("u1" to "e1"), listOf(pattern), setOf("pattern"), listOf(
+                QueryableExpression("whole", "u1", " what would you like to order? "),
+                QueryableExpression("word", "u1", "order")))
+        assertEquals(listOf("order"), state.currentExpressions.map { it.display })
+        assertEquals(listOf(pattern), state.currentTargets)
+    }
+
     @Test fun manualFallbackNeverRepeatsAiCuratedTargetsEvenWhenTheirCardsAreDeselected() {
         val curated = LearningTarget(
             "curated", "u1", "more clearly", "更清楚地", LearningTargetType.FIXED_EXPRESSION,

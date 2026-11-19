@@ -84,7 +84,11 @@ fun SceneTypeScreen(state: SceneTypeUiState, onAction: (SceneTypeAction) -> Unit
 @Composable
 private fun SceneTypeCard(dialogue: Boolean, selected: Boolean, onClick: () -> Unit, modifier: Modifier) {
     val ink = if (dialogue) Color.White else RlColor.Secondary
-    BoxWithConstraints(modifier.clickable(onClick = onClick).testTag(if (dialogue) "scene-type-dialogue" else "scene-type-article")) {
+    BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
+      val artworkRatio = if (dialogue) 1462f / 1076f else 1463f / 1075f
+      val artworkWidth = minOf(maxWidth, maxHeight * artworkRatio)
+      BoxWithConstraints(Modifier.width(artworkWidth).height(artworkWidth / artworkRatio)
+          .clickable(onClick = onClick).testTag(if (dialogue) "scene-type-dialogue" else "scene-type-article")) {
         Image(painterResource(if (dialogue) R.drawable.rl_v73_scene_type_dialogue else R.drawable.rl_v73_scene_type_article),
             null, Modifier.matchParentSize().testTag("scene-type-option-illustration"), contentScale = ContentScale.FillBounds)
         Column(Modifier.fillMaxWidth().padding(start = 28.dp, end = 28.dp, top = maxHeight * .14f),
@@ -101,5 +105,6 @@ private fun SceneTypeCard(dialogue: Boolean, selected: Boolean, onClick: () -> U
             .border(2.dp, if (selected) Color.White else RlColor.Secondary, CircleShape), contentAlignment = Alignment.Center) {
             if (selected) Icon(Icons.Outlined.Check, "已选择", tint = Color.White, modifier = Modifier.size(25.dp))
         }
+      }
     }
 }

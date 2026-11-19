@@ -25,9 +25,16 @@ data class LearningTargetUiState(
      * fallback for expressions the AI did not curate, so the same expression must
      * never be offered in both places (even after the upper card is deselected).
      */
-    val currentExpressions get() = queryableExpressions.filter { expression ->
-        expression.unitId == currentSentence?.unitId && currentTargets.none { target ->
-            target.represents(expression)
+    val currentExpressions get(): List<QueryableExpression> {
+        val sentence = currentSentence ?: return emptyList()
+        val sentenceKey = sentence.candidates.firstOrNull {
+            it.candidateId == selectedCandidateIds[sentence.unitId]
+        }?.textEn?.choiceKey()
+        return queryableExpressions.filter { expression ->
+            expression.unitId == sentence.unitId &&
+                expression.display.choiceKey() != sentenceKey && currentTargets.none { target ->
+                target.represents(expression)
+            }
         }
     }
 }

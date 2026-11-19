@@ -89,7 +89,8 @@ fun HandwritingCopyScreen(
                 shape = RlShape.Small,
             ) {
                 Text(
-                    "第 ${if (state.copyInProgress) state.confirmedCopyCount + 1 else state.confirmedCopyCount} 次 / 共 2 次",
+                    if (state.copyInProgress) "第 ${state.confirmedCopyCount + 1} 次 · 至少 2 次"
+                    else "已完成 ${state.confirmedCopyCount} 次 · 至少 2 次",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         .testTag("handwriting-attempt-status"),
                     color = RlColor.OnPrimary,
@@ -116,6 +117,13 @@ fun HandwritingCopyScreen(
             }
             key(state.canvasRevision) {
                 val points = remember { mutableStateListOf<Offset?>() }
+                OutlinedButton(
+                    onClick = { points.clear() },
+                    enabled = state.copyInProgress && !state.saving && points.isNotEmpty(),
+                    modifier = Modifier.align(Alignment.End).testTag("handwriting-clear"),
+                ) {
+                    Text("清空重写")
+                }
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f)
                         .clipToBounds()

@@ -12,6 +12,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
@@ -52,13 +53,13 @@ internal fun SceneSummaryPoster(topic: String, type: String, detail: String?, mo
         } else {
             Image(painterResource(R.drawable.rl_v73_scene_generation_poster), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
             Text(topic, Modifier.offset(x = width * .19f, y = height * .105f).width(width * .49f),
-                color = RlColor.OnPrimary, style = topicStyle)
+                color = RlColor.OnPrimary, style = topicStyle, textAlign = TextAlign.Center)
             Text(type, Modifier.offset(x = width * .20f, y = height * .195f).width(width * .24f),
-                color = RlColor.OnPrimary, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp)
+                color = RlColor.OnPrimary, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
             Text("形式 · $type", Modifier.offset(x = width * .20f, y = height * .655f).width(width * .48f),
-                color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 25.sp)
+                color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Center)
             Text(detailText, Modifier.offset(x = width * .19f, y = height * .79f).width(width * .52f),
-                color = RlColor.Ink, style = detailStyle)
+                color = RlColor.Ink, style = detailStyle, textAlign = TextAlign.Center)
         }
     }
 }

@@ -131,16 +131,16 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                           Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
                           options.forEach { option ->
                             val selected = state.answerText == option
-                            Box(Modifier.weight(1f).heightIn(min = 48.dp).padding(bottom = 8.dp)
+                            BoxWithConstraints(Modifier.weight(1f).heightIn(min = 48.dp).padding(bottom = 8.dp)
                                 .clickable { onAction(SceneQuestionsAction.AnswerChanged(option)) }
                                 .testTag("scene-option-$option")) {
                                 Image(painterResource(if (selected) R.drawable.rl_scene_recent_ticket_sage_v2 else R.drawable.rl_scene_recent_ticket_blue_v2),
                                     null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                                Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
+                                Row(Modifier.fillMaxWidth().padding(start = maxWidth * .16f, end = maxWidth * .16f, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     if (selected) Icon(Icons.Outlined.CheckCircle,
                                         "已选择", tint = RlColor.Secondary, modifier = Modifier.size(20.dp))
-                                    Text(option, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp,
+                                    Text(option, modifier = Modifier.weight(1f), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp,
                                         lineHeight = 22.sp, fontWeight = FontWeight.Medium)
                                 }
                             }

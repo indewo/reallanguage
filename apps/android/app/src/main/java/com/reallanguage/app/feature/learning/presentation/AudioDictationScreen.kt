@@ -167,27 +167,7 @@ fun AudioDictationScreen(
                     fontSize = 17.sp,
                 ),
             )
-            Text(
-                "固定标点（点击输入）",
-                color = RlColor.TextSecondary,
-                style = MaterialTheme.typography.labelMedium.copy(fontFamily = EditorialFont.Serif),
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth().testTag("audio-dictation-punctuation"),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                listOf(".", ",", "?", "!", ";", ":", "-", "'").forEachIndexed { index, mark ->
-                    OutlinedButton(
-                        onClick = { onAction(AudioDictationAction.InputChanged(state.input + mark)) },
-                        enabled = !state.submitting && !state.correct,
-                        modifier = Modifier.weight(1f).height(34.dp)
-                            .testTag("audio-dictation-punctuation-$index"),
-                        contentPadding = PaddingValues(0.dp),
-                    ) {
-                        Text(mark, fontFamily = FontFamily.Monospace, fontSize = 16.sp)
-                    }
-                }
-            }
+
         }
     }
 }

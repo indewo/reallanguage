@@ -3901,6 +3901,8 @@ private fun ReviewSpeakingAbilityRoute(
     val state by speaking.uiState.collectAsState()
     val speaker = rememberConnectionAwareSentenceSpeaker()
     var answerPlaybackFailed by remember(speaker, state.attemptIndex) { mutableStateOf(false) }
+    val answerPlaybackScope = androidx.compose.runtime.rememberCoroutineScope()
+    var answerPlaybackJob by remember(speaker) { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val capturePolicy = LocalConnectionPlaybackPolicy.current
     var pendingCapturePermit by remember(repository) { mutableStateOf<(() -> Boolean)?>(null) }
     LaunchedEffect(speaking, capturePolicy.interrupted) {
@@ -3934,12 +3936,17 @@ private fun ReviewSpeakingAbilityRoute(
         when (action) {
             FullSentenceSpeakingAction.AnswerAudioRequested -> {
                 if (state.submitting || state.evaluationReceived || state.technicalRetryPending || state.technicalRetryBlocked) return@FullSentenceSpeakingScreen
-                val started = chapter.sentences.first { it.sentenceId == route.ability.sentenceId }
-                    .let { speaker.start(it.textEn, speechRate = 0.82f) }
-                answerPlaybackFailed = !started
-                if (started) speaking.onAction(action)
+                answerPlaybackJob?.cancel()
+                answerPlaybackFailed = false
+                answerPlaybackJob = answerPlaybackScope.launch {
+                    val played = speaker.play(chapter.sentences.first { it.sentenceId == route.ability.sentenceId }.textEn, speechRate = 0.82f)
+                    answerPlaybackFailed = !played
+                    if (played) speaking.onAction(action)
+                }
             }
             FullSentenceSpeakingAction.StartRequested -> {
+                answerPlaybackJob?.cancel()
+                speaker.stop()
                 val permit = graph.connectionGate.interactionPermit() ?: return@FullSentenceSpeakingScreen
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                     if (permit()) speaking.onAction(action)
@@ -4421,6 +4428,8 @@ private fun FullSentenceSpeakingRoute(
     )
     val state by speaking.uiState.collectAsState()
     var answerPlaybackFailed by remember(repository, state.attemptIndex) { mutableStateOf(false) }
+    val answerPlaybackScope = androidx.compose.runtime.rememberCoroutineScope()
+    var answerPlaybackJob by remember(repository) { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val capturePolicy = LocalConnectionPlaybackPolicy.current
     var pendingCapturePermit by remember(repository) { mutableStateOf<(() -> Boolean)?>(null) }
     LaunchedEffect(speaking, capturePolicy.interrupted) {
@@ -4464,12 +4473,18 @@ private fun FullSentenceSpeakingRoute(
         when (action) {
             FullSentenceSpeakingAction.AnswerAudioRequested -> {
                 if (!state.submitting && !state.evaluationReceived && !state.technicalRetryPending && !state.technicalRetryBlocked) {
-                    val started = speaker.start(sentenceText)
-                    answerPlaybackFailed = !started
-                    if (started) speaking.onAction(action)
+                    answerPlaybackJob?.cancel()
+                    answerPlaybackFailed = false
+                    answerPlaybackJob = answerPlaybackScope.launch {
+                        val played = speaker.play(sentenceText)
+                        answerPlaybackFailed = !played
+                        if (played) speaking.onAction(action)
+                    }
                 }
             }
             FullSentenceSpeakingAction.StartRequested -> {
+                answerPlaybackJob?.cancel()
+                speaker.stop()
                 val permit = graph.connectionGate.interactionPermit() ?: return@FullSentenceSpeakingScreen
                 if (
                     ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==

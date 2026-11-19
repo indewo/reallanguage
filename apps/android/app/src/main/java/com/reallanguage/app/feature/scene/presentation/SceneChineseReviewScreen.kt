@@ -74,7 +74,7 @@ fun SceneChineseReviewScreen(
 @Composable
 private fun ReviewHeader(onBack: () -> Unit, modifier: Modifier = Modifier) {
     EditorialHeader(stringResource(R.string.scene_review_title), modifier,
-        subtitle = "固定前还可以修改", onBack = onBack)
+        subtitle = "确认前还可以修改", onBack = onBack)
 }
 
 @Composable

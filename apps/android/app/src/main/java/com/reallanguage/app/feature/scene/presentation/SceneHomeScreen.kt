@@ -357,11 +357,10 @@ private fun SceneChoicesColumn(
     Column(modifier) {
         if (state.showRecentSection) {
             RecommendationPanel(state, onAction, Modifier.fillMaxWidth().weight(.46f), narrow, largeText)
-        } else {
-            Spacer(Modifier.fillMaxWidth().weight(.46f))
         }
         Spacer(Modifier.height(4.dp))
         TemplatePanel(state.templates, onAction, Modifier.fillMaxWidth().weight(.54f), narrow, largeText)
+        if (!state.showRecentSection) Spacer(Modifier.fillMaxWidth().weight(.46f))
     }
 }
 

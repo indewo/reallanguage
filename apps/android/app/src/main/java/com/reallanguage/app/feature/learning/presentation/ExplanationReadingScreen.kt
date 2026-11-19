@@ -92,7 +92,7 @@ fun ExplanationReadingScreen(
                 ?: stringResource(R.string.explanation_reading_title)
             Box(Modifier.fillMaxSize().testTag("explanation_expression_card_content")) {
               Column(
-                  Modifier.fillMaxSize().padding(top = 16.dp, bottom = 30.dp, end = 12.dp),
+                  Modifier.fillMaxSize().padding(top = 4.dp, bottom = 8.dp, end = 12.dp),
                   verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
                   horizontalAlignment = Alignment.CenterHorizontally,
               ) {
@@ -108,15 +108,6 @@ fun ExplanationReadingScreen(
                         lineHeight = 25.sp,
                     ),
                 )
-                state.selectedExpression?.phonetic?.let {
-                    Text(
-                        it,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        color = RlColor.OnPrimary.copy(alpha = .86f),
-                        fontSize = 13.sp, lineHeight = 17.sp,
-                    )
-                }
                 val explanationText = state.selectedExpression?.contextualMeaningZh ?: state.selectedExpression?.explanationZh
                     ?: if (activeId != null && state.loading) "正在获取当前词语解释…"
                     else if (activeId != null && state.loadingFailed) "当前词语解释暂时不可用，请重新点击该词重试。"
@@ -216,9 +207,8 @@ fun ExplanationReadingScreen(
                 }
                 explanation.expressionHintZh?.let { ExpressionUsageHint(it) }
             }
-            // Keep the first-round explanation readable; an identical paragraph already
-            // shown above needs no second copy, but distinct sentence context must remain.
-            if (state.baseExplanationZh.isNotBlank() && state.baseExplanationZh != state.selectedExpression?.usageZh) {
+            // Selected targets already show their meaning, usage and example above.
+            if (state.selectedExpression == null && state.baseExplanationZh.isNotBlank()) {
                 Text(stringResource(R.string.explanation_reading_title), color = RlColor.Ink,
                     fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Text(state.baseExplanationZh, color = RlColor.Ink,
