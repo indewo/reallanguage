@@ -53,6 +53,7 @@ fun ReadSpeakScreen(
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
+            if (state.audioFailed) Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
             if (state.progressFailed) {
                 Text(
                     stringResource(R.string.full_sentence_speaking_progress_failed),

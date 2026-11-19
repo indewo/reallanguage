@@ -49,6 +49,10 @@ class ReadSpeakViewModel(
     }
 
     fun onAction(action: ReadSpeakAction) {
+        if (action is ReadSpeakAction.PlaybackFinished) {
+            mutableUiState.update { it.copy(audioPlaying = false, audioFailed = !action.successful) }
+            return
+        }
         if (mutableUiState.value.submitting) return
         if (!progressReady) {
             if (action == ReadSpeakAction.BackRequested) viewModelScope.launch { effectChannel.send(ReadSpeakEffect.ReturnToExplanation) }
@@ -58,8 +62,9 @@ class ReadSpeakViewModel(
         when (action) {
             ReadSpeakAction.BackRequested -> send(ReadSpeakEffect.ReturnToExplanation)
             ReadSpeakAction.PlayToggled -> mutableUiState.update {
-                it.copy(audioPlaying = !it.audioPlaying)
+                it.copy(audioPlaying = !it.audioPlaying, audioFailed = false)
             }
+            is ReadSpeakAction.PlaybackFinished -> Unit
             ReadSpeakAction.StartRequested -> start()
             ReadSpeakAction.RetryRequested -> {
                 if (mutableUiState.value.feedbackRetryBlocked) return

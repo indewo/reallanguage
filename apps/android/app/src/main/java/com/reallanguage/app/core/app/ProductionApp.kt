@@ -5091,6 +5091,12 @@ private fun ReadSpeakRoute(
         route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
     }
     val speaker = rememberConnectionAwareSentenceSpeaker(repository)
+    LaunchedEffect(speaker, state.audioPlaying) {
+        if (state.audioPlaying) {
+            val played = speaker.play(sentenceText)
+            readSpeak.onAction(ReadSpeakAction.PlaybackFinished(played))
+        } else speaker.stop()
+    }
     DisposableEffect(speaker, repository) {
         onDispose {
             pendingCaptureAction = null
@@ -5148,7 +5154,7 @@ private fun ReadSpeakRoute(
             if (state.audioPlaying) {
                 speaker.stop()
                 readSpeak.onAction(action)
-            } else if (speaker.start(sentenceText)) {
+            } else {
                 readSpeak.onAction(action)
             }
         } else if (action == ReadSpeakAction.StartRequested || action == ReadSpeakAction.RetryRequested) {

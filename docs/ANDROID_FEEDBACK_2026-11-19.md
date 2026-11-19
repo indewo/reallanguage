@@ -84,3 +84,6 @@ UI无selectedExpression时仍显示expressions.first的词组，但此前中文�
 
 ### 最新包真实复验结果
 从首页未完成学习恢复到第4步，次数第4次/至少2次两行完整，清空按钮bounds[2154,515][2378,596]已与钢笔分离；实际再次画线并清空，截图handwriting-final-check.png确认笔迹消失、按钮禁用、计数仍第4次。未点我已写完。返回读＋说→基础讲解，原R&D teams/研发团队及用法例句仍恢复。点我理解了切到下一重点句，sharing progress updates默认蓝卡现在真实显示分享进度更新（英文y534..640、中文y661..736），无须再点击词语，修复前同页中文缺失；截图default-locked-meaning-live.png。右侧原历史整句六级冗文仍存在，因此仅默认词义、恢复的原表达和手写显示/清空本范围通过，不关闭历史讲解质量及整个章节验收。
+
+### 读＋说播放生命周期补修
+ProductionApp的读＋说此前仍使用同步speaker.start，初始化未完成会无反馈失败，完成也不会自动清除audioPlaying。改为由audioPlaying驱动可取消的speaker.play，等待初始化和onDone，成功/失败均回收播放状态；失败显示原有learning_audio_failed文案，可点播放重试。新增回归验证播放失败重试及成功均不写成朗读完成、不启动收音。构建及ReadSpeakViewModelTest通过，尚待手机实际听音与停止/返回验证。

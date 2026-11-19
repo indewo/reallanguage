@@ -18,6 +18,7 @@ data class ReadSpeakUiState(
     val captureFailed: Boolean = false,
     val completed: Boolean = false,
     val audioPlaying: Boolean = false,
+    val audioFailed: Boolean = false,
     val progressFailed: Boolean = false,
     val pendingFeedbackRetry: Boolean = false,
     val feedbackRetryBlocked: Boolean = false,
@@ -26,6 +27,7 @@ data class ReadSpeakUiState(
 sealed interface ReadSpeakAction {
     data object BackRequested : ReadSpeakAction
     data object PlayToggled : ReadSpeakAction
+    data class PlaybackFinished(val successful: Boolean) : ReadSpeakAction
     data object StartRequested : ReadSpeakAction
     data class WordReached(val wordIndex: Int) : ReadSpeakAction
     data object RecognitionCompleted : ReadSpeakAction

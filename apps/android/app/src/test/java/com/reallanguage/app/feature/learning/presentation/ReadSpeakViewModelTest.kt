@@ -251,6 +251,22 @@ class ReadSpeakViewModelTest {
             assertEquals("请把整句读完整。", viewModel.uiState.value.feedbackZh)
         }
 
+    @Test fun playbackFailureCanRetryWithoutCompletingOrRecordingTheSentence() = runTest(dispatcher) {
+        val model = createViewModel()
+        advanceUntilIdle()
+        model.onAction(ReadSpeakAction.PlayToggled)
+        model.onAction(ReadSpeakAction.PlaybackFinished(false))
+        assertFalse(model.uiState.value.audioPlaying)
+        assertTrue(model.uiState.value.audioFailed)
+        assertFalse(model.uiState.value.completed)
+        assertFalse(model.uiState.value.listening)
+        model.onAction(ReadSpeakAction.PlayToggled)
+        assertFalse(model.uiState.value.audioFailed)
+        model.onAction(ReadSpeakAction.PlaybackFinished(true))
+        assertFalse(model.uiState.value.audioPlaying)
+        assertFalse(model.uiState.value.completed)
+    }
+
     private fun createViewModel(
         repository: ReadSpeakRepository = ReadSpeakRepository { _, _ ->
             ReadSpeakFeedbackResult.Ready("内容完整。")
