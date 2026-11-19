@@ -76,3 +76,6 @@ ScreenshotOcr.readOne目前将整图所有textBlocks的lines按top/left排序拼
 
 ### 场景问答长问题真实滚动
 当前真实第一问有5项，长问题导致底部选项初始可见部分裁切；实际向上滑动纸面后下排完整显示，还露出第五项外部顾问。点击第五项后出现已选择标记，回答框为外部顾问，证明并非无法触达；只验证选择，未提交伪造事实。16%边距在未选/已选下均在纸面内。补充横屏问答纸右侧滚动条及正文避让，提升隐藏内容可发现性；构建通过，滚动条新增视觉待复验。
+
+### 默认词卡缺释义补修
+UI无selectedExpression时仍显示expressions.first的词组，但此前中文只从selectedExpression读取。SelectableExpression新增可选lockedMeaningZh，提供器仅在原句start/end完全相同、唯一的已确认WORD/FIXED_EXPRESSION目标上带入原explanationZh，默认蓝卡可显示该已确认意思，不调用新AI且不借用重复词其他位置。词语身份验证仅比较原有ID/显示/位置，新显示元数据不改变旧恢复数据的身份。构建、HttpExplanationReadingProvider及ExplanationReadingViewModel测试通过。尚待真机新入口及历史恢复验证；旧恢复对象没带此字段时仍不凭空补造，不关闭所有缺释义报告。

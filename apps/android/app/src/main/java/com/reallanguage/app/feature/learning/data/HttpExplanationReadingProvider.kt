@@ -91,7 +91,7 @@ class HttpExplanationReadingProvider(
         return try {
             val context = readLockedContext()
             val authoritative = expressions(context).singleOrNull { it.expressionId == expression.expressionId } ?: return false
-            expression == authoritative && isCurrentOwner() && lockedExplanationMeaningMatches(context, authoritative, explanation)
+            expression.copy(lockedMeaningZh = authoritative.lockedMeaningZh) == authoritative && isCurrentOwner() && lockedExplanationMeaningMatches(context, authoritative, explanation)
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { false }
     }
@@ -210,7 +210,14 @@ class HttpExplanationReadingProvider(
         // Never invent a span for a lemma or a phrase absent from the fixed sentence.
         // Keep the word tokens as well; the UI can resolve an overlapping whole phrase.
         check(isCurrentOwner())
-        ((phrases + lockedPhrases).distinctBy { it.expressionId }.sortedByDescending { it.endOffset - it.startOffset } + words).also {
+        ((phrases + lockedPhrases).distinctBy { it.expressionId }.sortedByDescending { it.endOffset - it.startOffset } + words).map { expression ->
+            val target = context?.targets?.singleOrNull { target ->
+                target.sourceEvidence?.let { evidence ->
+                    evidence.startUtf16 == expression.startOffset && evidence.endUtf16 == expression.endOffset
+                } == true && target.type != LearningTargetType.PATTERN
+            }
+            expression.copy(lockedMeaningZh = target?.explanationZh)
+        }.also {
             resolvedExpressions = it
             resolvedContext = context
         }

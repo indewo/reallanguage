@@ -5,6 +5,7 @@ data class SelectableExpression(
     val display: String,
     val startOffset: Int,
     val endOffset: Int,
+    val lockedMeaningZh: String? = null,
 )
 
 data class NaturalExpressionExample(val textEn: String, val textZh: String)

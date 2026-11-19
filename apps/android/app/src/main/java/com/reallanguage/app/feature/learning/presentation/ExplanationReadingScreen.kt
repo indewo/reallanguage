@@ -109,6 +109,7 @@ fun ExplanationReadingScreen(
                     ),
                 )
                 val explanationText = state.selectedExpression?.contextualMeaningZh ?: state.selectedExpression?.explanationZh
+                    ?: (state.expressions.firstOrNull { it.expressionId == activeId } ?: state.expressions.firstOrNull())?.lockedMeaningZh
                     ?: if (activeId != null && state.loading) "正在获取当前词语解释…"
                     else if (activeId != null && state.loadingFailed) "当前词语解释暂时不可用，请重新点击该词重试。"
                     else null
