@@ -42,9 +42,14 @@ internal fun SceneEditorialFrame(
             } else Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(26.dp)) {
                 SceneEditorialArtwork(supporting, Modifier.weight(.7f).fillMaxHeight())
                 Column(Modifier.weight(1.3f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    EditorialSheet(Modifier.fillMaxWidth().weight(1f), contentPadding = 18.dp,
+                    val paperScroll = rememberScrollState()
+                    Box(Modifier.fillMaxWidth().weight(1f)) {
+                    EditorialSheet(Modifier.fillMaxSize(), contentPadding = 18.dp,
                         showSpine = true, roundSpineHoles = true, contentSpacing = 10.dp,
-                        contentModifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()), content = content)
+                        contentModifier = Modifier.fillMaxSize().padding(end = 8.dp).verticalScroll(paperScroll), content = content)
+                    if (paperScroll.maxValue > 0) com.reallanguage.app.feature.learning.presentation.LearningOverflowScrollbar(
+                        paperScroll, Modifier.align(Alignment.CenterEnd).padding(end = 6.dp))
+                    }
                     footer?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), content = it) }
                 }
             }
