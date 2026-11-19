@@ -115,12 +115,12 @@ fun LearningTargetScreen(
                         AdditionalExpressionSection(state, onAction, wide = true)
                     }
                     if (targetScroll.maxValue > 0) com.reallanguage.app.feature.learning.presentation.LearningOverflowScrollbar(
-                        targetScroll, Modifier.align(Alignment.CenterEnd))
+                        targetScroll, Modifier.align(Alignment.CenterEnd).padding(end = horizontalContentInset + 20.dp))
                     }
                     LearningTargetFooter(state, onAction)
                 }
             }
-            if (wide && !largeText) LearningTargetTabs(Modifier.align(Alignment.CenterEnd).padding(end = 3.dp))
+            if (wide && !largeText) LearningTargetTabs(Modifier.align(Alignment.CenterEnd).padding(end = pageWidth * .045f))
             if (wide && !largeText) FormationFrameChapterBadge("第 $chapterNumber 章", pageWidth, pageHeight)
             }
         }
