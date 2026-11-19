@@ -78,6 +78,13 @@ fun ExplanationReadingScreen(
         compactContextRowsOnShortScreen = true,
         focusOnlyContext = true,
         fixedPageWithModuleOverflow = true,
+        leftPanelFooter = {
+            val activeId = state.activeExpressionId ?: state.selectedExpression?.expressionId
+            val phrase = state.expressions.firstOrNull { it.expressionId == activeId }?.display
+                ?: state.expressions.firstOrNull()?.display
+                ?: stringResource(R.string.explanation_reading_title)
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { targetAssessment(phrase) }
+        },
         leftPanelContent = {
             val activeId = state.activeExpressionId ?: state.selectedExpression?.expressionId
             val phrase = state.expressions.firstOrNull { it.expressionId == activeId }?.display
@@ -126,9 +133,6 @@ fun ExplanationReadingScreen(
                     },
                 ) }
               }
-              Box(
-                  Modifier.align(Alignment.BottomEnd).testTag("explanation_assessment_corner"),
-              ) { targetAssessment(phrase) }
             }
         },
         interactiveEnglishContent = { sentence, modifier ->

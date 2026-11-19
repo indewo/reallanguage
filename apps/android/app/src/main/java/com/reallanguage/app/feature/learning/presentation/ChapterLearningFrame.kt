@@ -77,6 +77,7 @@ fun ChapterLearningFrame(
     fingerReadingFocusStyle: Boolean = false,
     preserveLedgerHoleAspect: Boolean = false,
     leftPanelContent: (@Composable ColumnScope.() -> Unit)? = null,
+    leftPanelFooter: (@Composable () -> Unit)? = null,
     leftArtworkSupplement: (@Composable ColumnScope.() -> Unit)? = null,
     interactiveEnglishContent: (@Composable (FixedLearningSentence, Modifier) -> Unit)? = null,
     footer: (@Composable RowScope.() -> Unit)? = null,
@@ -122,7 +123,8 @@ fun ChapterLearningFrame(
             val sidebar: @Composable (Modifier) -> Unit = { pane ->
                 val sidebarHeight = if (fixedPageWithModuleOverflow) pane.fillMaxHeight()
                     else pane.heightIn(min = bodyMinHeight)
-                if (leftArtworkRes == null) Box(sidebarHeight) {
+                if (leftArtworkRes == null) Column(sidebarHeight, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                  Box(if (leftPanelFooter != null && fixedPageWithModuleOverflow) Modifier.fillMaxWidth().weight(1f) else Modifier.fillMaxWidth()) {
                     Image(painterResource(R.drawable.rl_v73_learning_expression_blue_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                     Column(Modifier.fillMaxSize().padding(
                         start = 24.dp,
@@ -137,6 +139,8 @@ fun ChapterLearningFrame(
                             Text(stageSupporting, color = Color.White.copy(alpha = .88f), fontSize = 15.sp, lineHeight = 22.sp)
                         }
                     }
+                  }
+                  leftPanelFooter?.invoke()
                 } else Column(pane, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     val artwork = if (leftArtworkRes == R.drawable.rl_v73_learning_cassette)
                         BitmapPainter(ImageBitmap.imageResource(leftArtworkRes), srcOffset = IntOffset(30, 235), srcSize = IntSize(1065, 1035))
