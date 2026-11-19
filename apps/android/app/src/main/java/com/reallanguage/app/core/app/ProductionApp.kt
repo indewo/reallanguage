@@ -5094,7 +5094,7 @@ private fun ReadSpeakRoute(
     LaunchedEffect(speaker, state.audioPlaying) {
         if (state.audioPlaying) {
             val played = speaker.play(sentenceText)
-            readSpeak.onAction(ReadSpeakAction.PlaybackFinished(played))
+            if (readSpeak.uiState.value.audioPlaying) readSpeak.onAction(ReadSpeakAction.PlaybackFinished(played))
         } else speaker.stop()
     }
     DisposableEffect(speaker, repository) {
@@ -5152,8 +5152,8 @@ private fun ReadSpeakRoute(
         if (!capturePolicy.isAllowed()) return@ReadSpeakScreen
         if (action == ReadSpeakAction.PlayToggled) {
             if (state.audioPlaying) {
-                speaker.stop()
                 readSpeak.onAction(action)
+                speaker.stop()
             } else {
                 readSpeak.onAction(action)
             }

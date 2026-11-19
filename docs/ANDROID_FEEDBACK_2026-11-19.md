@@ -91,3 +91,8 @@ ProductionApp的读＋说此前仍使用同步speaker.start，初始化未完成
 读＋说播放/收音互斥补修：发现播放按钮原来收音时仍可用，开始收音也不清除播放状态。现在进入开始/重试录音前停止speaker，ViewModel进入listening时清除audioPlaying，收音中播放按钮禁用且ViewModel拒绝PlayToggled。回归验证先播放再收音及收音中点播放均不保持/启动参考播放；构建与ReadSpeakViewModel测试通过。真实录音仍待用户实际输入，不用参考音回放冒充用户音频。
 
 读＋说提交锁定补修：complete中的feedback/retryFeedback此前没有异常边界，异常会留下submitting=true。新增非取消异常转为已有Failed分支，释放提交状态并保留原signal与仓库待重试标记。新增替身回归：初始反馈抛IO异常后未完成、可重试；重试调用retryFeedback并保留RECOGNITION_COMPLETE，初始请求1次、重试1次，无新录音。构建和ReadSpeakViewModel测试通过；真实原音/公网异常恢复仍待验证，不用该测试替代。
+
+### 读＋说最新包真机播放
+覆盖54c9dad后从未完成学习→基础讲解第二句→读＋说，点击播放，UI实际由播放变静音，下一次抓取自动恢复播放，无失败提示，已有完成状态未变。play-state.xml/play-done.xml保留临时目录。连续点播放/静音复现主动停止误报语音播放失败（play-stopped.xml），未判通过。补修先将状态置为停止再调用speaker.stop，异步播放结果只在仍处播放状态时回写；进入收音清除过时播放错误。等待构建与回归结果及真机重新停止复验，听音问题已发用户尚无回复。
+
+本补修构建及ReadSpeakViewModel测试已通过，主动停止真机复验仍待新包。

@@ -95,6 +95,7 @@ class ReadSpeakViewModel(
             it.copy(
                 listening = true,
                 audioPlaying = false,
+                audioFailed = false,
                 captureFailed = false,
                 highlightedWordCount = 0,
                 feedbackZh = null,
