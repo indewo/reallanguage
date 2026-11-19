@@ -98,3 +98,6 @@ ProductionApp的读＋说此前仍使用同步speaker.start，初始化未完成
 本补修构建及ReadSpeakViewModel测试已通过，主动停止真机复验仍待新包。
 
 主动停止真机复验：e7a5af2覆盖后从首页恢复原章节读＋说，点击播放再点击静音，UI回到播放且没有语音失败文案；play-stopped-fixed.xml保留临时目录，原已读完状态不变。该项按钮状态与手动停止误报本范围通过，听到正确内容仍等待用户反馈。
+
+### activity错误词义进一步定位
+只读查询安装包catalog：activity adj.厉害、vt.表演均仅CET_4/CET_6；其余activity的n.活动/活动;活力;能动性正常。act本身存在vt.表演 扮演等记录，不能凭相似推断发生借行。Android数据库构建器逐行写master的word_id/pos/meaning_zh，不在写库阶段重配词头；上游master读取四级/六级单词工作表第2行起B/C/D列。原始来源及总表含source_refs，但资产schema未保留来源定位，只有词/义/池/词形/元数据。已用rg在仓库和桌面按单词/词表/master JSON CSV检索，未找到原8份或总表，无法核对source_ref与源行。此项需取回原始四级/六级词表或含来源明细总表后定位导入错位/源错误；未手工删改词义或sense_id，不影响已学状态。
