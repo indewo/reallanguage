@@ -117,13 +117,6 @@ fun HandwritingCopyScreen(
             }
             key(state.canvasRevision) {
                 val points = remember { mutableStateListOf<Offset?>() }
-                OutlinedButton(
-                    onClick = { points.clear() },
-                    enabled = state.copyInProgress && !state.saving && points.isNotEmpty(),
-                    modifier = Modifier.align(Alignment.End).testTag("handwriting-clear"),
-                ) {
-                    Text("清空重写")
-                }
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f)
                         .clipToBounds()
@@ -177,6 +170,13 @@ fun HandwritingCopyScreen(
                             }
                         }
                     }
+                OutlinedButton(
+                    onClick = { points.clear() },
+                    enabled = state.copyInProgress && !state.saving && points.isNotEmpty(),
+                    modifier = Modifier.align(Alignment.TopEnd).testTag("handwriting-clear"),
+                ) {
+                    Text("清空重写")
+                }
                     Image(
                         painter = painterResource(R.drawable.rl_diary_fountain_pen),
                         contentDescription = null,
