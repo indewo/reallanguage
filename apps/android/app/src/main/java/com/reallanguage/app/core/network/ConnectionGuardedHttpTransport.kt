@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.io.IOException
 
 data class ConnectionOwner(val accountId: String?, val epoch: Long)
-data class ConnectionIncident(val generation: Long, val owner: ConnectionOwner)
+data class ConnectionIncident(val generation: Long, val owner: ConnectionOwner, val authenticationRequired: Boolean = false)
 
 /** Session-bound connectivity boundary. It never retries or replays a business request. */
 class ConnectionGuardedHttpTransport(
@@ -35,7 +35,7 @@ class ConnectionGuardedHttpTransport(
         try {
             return delegate.execute(request).also { response ->
                 if (response.statusCode == 401 && request.headers.keys.any { it.equals("Authorization", ignoreCase = true) }) {
-                    reportFailure(lease)
+                    reportFailure(lease.copy(authenticationRequired = true))
                 }
             }
         } catch (failure: IOException) {
@@ -47,7 +47,7 @@ class ConnectionGuardedHttpTransport(
     @Synchronized private fun reportFailure(lease: ConnectionIncident) {
         if (lease.generation != generation || lease.owner != readOwner()) return
         if (mutableIncident.value == null || mutableIncident.value?.owner != lease.owner) {
-            mutableIncident.value = ConnectionIncident(generation, lease.owner)
+            mutableIncident.value = ConnectionIncident(generation, lease.owner, lease.authenticationRequired)
         }
     }
 

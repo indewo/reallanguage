@@ -95,3 +95,6 @@ mDNS/DNS-SD、公共网络客户端隔离都在应用控制范围之外。当前
 
 若要求换网络后也无需排障，最终方案应是稳定域名的公网 HTTPS API，或完整实现服务
 发现与用户可见的网络诊断；不能继续依赖每次打包写入某个临时 IP。
+
+### 401身份验证与网络故障分型
+当前Windows公网联调环境，Mac专用bash检查器不适用，当前PowerShell未找到bash；公网健康正文实测status=ok/service=api。代码确认带Authorization请求返回401时被统一连接遮罩处理。新增incident身份验证原因，401显示需要验证登录状态及凭证失效/需验证说明；真实IOException仍显示连接不可用。未重放原业务请求，仍由用户显式验证账号后重试。回归验证401仅执行一次请求、后续networkLost不覆盖原认证原因；构建和ConnectionGuardedHttpTransport测试通过。真机新版认证提示尚待覆盖安装验证，不宣称反复中断已修复。

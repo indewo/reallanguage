@@ -67,7 +67,7 @@ internal fun ConnectionRecoveryEntry(
         RlImmersiveDialogWindow()
         // A dim layer alone would expose cached private learning content while offline.
         RlPaperBackground {
-            ConnectionErrorOverlay(state, recovery::onAction, handleSystemBack = false)
+            ConnectionErrorOverlay(state, recovery::onAction, handleSystemBack = false, authenticationRequired = incident.authenticationRequired)
         }
     }
 }

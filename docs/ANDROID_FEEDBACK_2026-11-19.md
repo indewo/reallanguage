@@ -70,3 +70,6 @@ ScreenshotOcr.readOne目前将整图所有textBlocks的lines按top/left排序拼
 
 ### 场景形式真机复验
 从首页AI设定场景→工作沟通实际进入场景形式，查看scene-type-aspect-check.png：两张素材按原1462×1076/1463×1075比例显示，人物和装订未拉宽，标题与说明完整。点击对话后UI已选择标记bounds[992,824][1080,912]，继续按钮可用；点击继续后再次出现连接遮罩，正在手动恢复。因此仅素材比例和选择交互有证据，问答及生成不据此通过。截图存系统临时目录rl-feedback-1118。
+
+### 401身份验证与网络故障分型
+当前Windows公网联调环境，Mac专用bash检查器不适用，当前PowerShell未找到bash；公网健康正文实测status=ok/service=api。代码确认带Authorization请求返回401时被统一连接遮罩处理。新增incident身份验证原因，401显示需要验证登录状态及凭证失效/需验证说明；真实IOException仍显示连接不可用。未重放原业务请求，仍由用户显式验证账号后重试。回归验证401仅执行一次请求、后续networkLost不覆盖原认证原因；构建和ConnectionGuardedHttpTransport测试通过。真机新版认证提示尚待覆盖安装验证，不宣称反复中断已修复。

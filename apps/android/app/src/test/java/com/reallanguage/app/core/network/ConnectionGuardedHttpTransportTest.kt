@@ -12,6 +12,19 @@ class ConnectionGuardedHttpTransportTest {
     private val request = HttpRequest("POST", "/existing-operation", "isolated content")
     private val owner = ConnectionOwner("isolated-account", 1)
 
+    @Test fun unauthorizedAuthenticatedRequestKeepsAuthCauseWithoutReplayingBusiness() = runTest {
+        var calls = 0
+        val gate = ConnectionGuardedHttpTransport(HttpTransport {
+            calls++
+            HttpResponse(401, "")
+        }) { owner }
+        gate.execute(request.copy(headers = mapOf("Authorization" to "Bearer test-only")))
+        assertTrue(checkNotNull(gate.incident.value).authenticationRequired)
+        assertEquals(1, calls)
+        gate.networkLost()
+        assertTrue(checkNotNull(gate.incident.value).authenticationRequired)
+    }
+
     @Test fun anonymousOfflineStartupEpochChangeKeepsTheCoverButMakesExplicitRecoveryPossible() {
         var current = ConnectionOwner(null, 0)
         val gate = ConnectionGuardedHttpTransport(HttpTransport { error("No replay") }) { current }

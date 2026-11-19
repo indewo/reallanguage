@@ -48,6 +48,7 @@ fun ConnectionErrorOverlay(
     state: ConnectionErrorUiState,
     onAction: (ConnectionErrorAction) -> Unit,
     handleSystemBack: Boolean = true,
+    authenticationRequired: Boolean = false,
 ) {
     BackHandler(enabled = handleSystemBack) { onAction(ConnectionErrorAction.ReturnRequested) }
     BoxWithConstraints(
@@ -74,7 +75,7 @@ fun ConnectionErrorOverlay(
                     modifier = Modifier.size(38.dp).align(Alignment.CenterHorizontally),
                 )
                 Text(
-                    text = stringResource(R.string.connection_error_title),
+                    text = if (authenticationRequired) "需要验证登录状态" else stringResource(R.string.connection_error_title),
                     modifier = Modifier.fillMaxWidth(),
                     color = RlColor.Ink,
                     textAlign = TextAlign.Center,
@@ -93,7 +94,7 @@ fun ConnectionErrorOverlay(
                     lineHeight = 18.sp,
                 )
                 Text(
-                    stringResource(R.string.connection_error_no_offline),
+                    if (authenticationRequired) "登录凭证已失效或需要重新验证，请重新连接检查账号。" else stringResource(R.string.connection_error_no_offline),
                     modifier = Modifier.fillMaxWidth(),
                     color = RlColor.TextPrimary,
                     textAlign = TextAlign.Center,
