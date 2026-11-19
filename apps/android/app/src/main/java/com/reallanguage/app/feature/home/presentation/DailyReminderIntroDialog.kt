@@ -131,7 +131,8 @@ internal fun DailyReminderIntroContent(
                 Spacer(Modifier.height(6.dp))
                 Row(Modifier.fillMaxWidth().weight(1f).padding(end = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ReminderCalendar(Modifier.weight(.44f).fillMaxHeight(), compact)
-                    Box(Modifier.weight(.56f).fillMaxHeight().testTag("daily-reminder-main-panel")) {
+                    Column(Modifier.weight(.56f).fillMaxHeight().testTag("daily-reminder-main-panel"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                      Box(Modifier.fillMaxWidth().weight(1f)) {
                         RlPaperPanel(Modifier.fillMaxSize(), contentPadding = 0.dp, contentSpacing = 0.dp,
                             showSpine = false, showTopAccent = false, contentModifier = Modifier.fillMaxSize()) {
                             // A display cutout can reduce the usable height without
@@ -153,6 +154,11 @@ internal fun DailyReminderIntroContent(
                                         fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp)
                                     Spacer(Modifier.height(12.dp))
                                 }
+                            }
+                        }
+                        Icon(Icons.Filled.Bookmark, null, Modifier.align(Alignment.TopEnd).offset(y = (-8).dp)
+                            .padding(end = 16.dp).width(38.dp).height(52.dp), tint = RlColor.Primary)
+                      }
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                                     ReminderChoiceButton(stringResource(if (state.error != null) R.string.diary_retry else R.string.daily_reminder_intro_enable),
                                         { onAction(if (state.error != null) DailyReminderIntroAction.RetryRequested else DailyReminderIntroAction.EnableRequested) },
@@ -172,10 +178,6 @@ internal fun DailyReminderIntroContent(
                                     if (!compact) Box(Modifier.padding(start = 12.dp).width(38.dp).height(.5.dp).background(RlColor.TextSecondary.copy(alpha = .45f)))
                                 }
                                 Spacer(Modifier.height(8.dp))
-                            }
-                        }
-                        Icon(Icons.Filled.Bookmark, null, Modifier.align(Alignment.TopEnd).offset(y = (-8).dp)
-                            .padding(end = 16.dp).width(38.dp).height(52.dp), tint = RlColor.Primary)
                     }
                 }
             }
@@ -185,11 +187,10 @@ internal fun DailyReminderIntroContent(
 
 @Composable
 private fun ReminderCalendar(modifier: Modifier, compact: Boolean) {
-    BoxWithConstraints(modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Image(painterResource(R.drawable.rl_daily_reminder_calendar_collage_v2), null,
-            Modifier.fillMaxWidth().height(maxHeight + 28.dp).offset(y = (-28).dp), contentScale = ContentScale.FillBounds)
-        Box(Modifier.align(Alignment.BottomStart).padding(start = maxWidth * .10f, bottom = 28.dp)
-            .width(maxWidth * .68f).heightIn(min = if (compact) 108.dp else 116.dp)) {
+            Modifier.fillMaxWidth().weight(1f), contentScale = ContentScale.Fit)
+        Box(Modifier.fillMaxWidth(.80f).heightIn(min = if (compact) 108.dp else 116.dp)) {
             Image(painterResource(R.drawable.rl_ruled_handwriting_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
             Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)) {
                 val slogan = stringResource(R.string.daily_reminder_slogan).split('\n', limit = 2)
