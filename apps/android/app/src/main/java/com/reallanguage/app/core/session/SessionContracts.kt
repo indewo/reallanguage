@@ -18,6 +18,7 @@ sealed interface SessionApiResult {
         val accessToken: String,
         val refreshToken: String,
         val settingsCompleted: Boolean,
+        val accessTokenExpiresInSeconds: Long? = null,
     ) : SessionApiResult
 
     data object InvalidOrExpired : SessionApiResult
@@ -46,7 +47,9 @@ internal object ProcessSessionRuntime {
     val value = SessionRuntime()
 }
 
-class SessionRuntime {
+class SessionRuntime(private val elapsedMillis: () -> Long = { System.nanoTime() / 1_000_000 }) {
+    private var accessTokenDeadline: Long? = null
+    @Synchronized fun needsAccessRefresh(): Boolean = accessTokenDeadline?.let { elapsedMillis() >= it - 30_000 } == true
     private var loginIntentGeneration = 0L
     /** Intent is shared across Graphs, but does not itself authenticate or change the current owner. */
     @Synchronized internal fun beginLoginIntent(): Long = ++loginIntentGeneration
@@ -66,10 +69,11 @@ class SessionRuntime {
     var accountId: String? = null
         private set
 
-    @Synchronized fun update(accessToken: String, accountId: String? = null, newSession: Boolean = false) {
+    @Synchronized fun update(accessToken: String, accountId: String? = null, newSession: Boolean = false, expiresInSeconds: Long? = null) {
         val nextAccount = accountId ?: this.accountId
         if (newSession || this.accessToken == null || this.accountId != nextAccount) accountEpoch += 1
         this.accessToken = accessToken
+        accessTokenDeadline = expiresInSeconds?.takeIf { it in 1..31_536_000 }?.let { elapsedMillis() + it * 1_000 }
         if (accountId != null) this.accountId = accountId
         mutableIdentityRevision.value += 1
     }
@@ -77,6 +81,7 @@ class SessionRuntime {
     @Synchronized fun clear() {
         accountEpoch += 1
         accessToken = null
+        accessTokenDeadline = null
         accountId = null
         mutableIdentityRevision.value += 1
     }

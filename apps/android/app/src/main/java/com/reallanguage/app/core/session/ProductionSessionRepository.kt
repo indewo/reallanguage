@@ -22,6 +22,13 @@ class ProductionSessionRepository(
     private val installationIdentity: InstallationIdentity,
     private val localLifecycle: SessionLocalLifecycle = SessionLocalLifecycle.None,
 ) : LoginRepository, AppStartupRepository, SessionLogoutRepository {
+    /** Preflight only: invalid refresh leaves explicit recovery in charge of signing out. */
+    suspend fun refreshBeforeRequest(accountId: String, epoch: Long): Boolean {
+        val identity = requestIdentity()
+        if (identity.runtimeOwner != accountId || identity.runtimeEpoch != epoch || identity.session?.accountId != accountId) return false
+        val result = api.refresh(identity.session.refreshToken, installationIdentity.value())
+        return result is SessionApiResult.Authenticated && result.accountId == accountId && accept(result, identity)
+    }
     suspend fun resolveForConnection(expectedAccountId: String, expectedAccountEpoch: Long): SessionRecoveryResolution {
         val unavailable = SessionRecoveryResolution(AppStartupResult.ConnectionUnavailable)
         val identity = requestIdentity()
@@ -139,7 +146,8 @@ class ProductionSessionRepository(
                     (expected == null || (runtime.accountId == expected.runtimeOwner && runtime.accountEpoch == expected.runtimeEpoch &&
                         runtime.identityRevision.value == expected.runtimeRevision)) &&
                     DeletedAccountLocalAccess.allowsAccount(result.accountId)).also {
-                    if (it) runtime.update(result.accessToken, result.accountId, newSession = loginAttempt != null || expected == null)
+                    if (it) runtime.update(result.accessToken, result.accountId, newSession = loginAttempt != null || expected == null,
+                        expiresInSeconds = result.accessTokenExpiresInSeconds)
                 }
             }
             if (!accepted) {

@@ -499,7 +499,10 @@ class ProductionAppGraph(
     private val balanceRequiredSignal = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val balanceRequiredEvents = balanceRequiredSignal.asSharedFlow()
     private val recoveryTransport = httpTransport
-    internal val connectionGate = com.reallanguage.app.core.network.ConnectionGuardedHttpTransport(httpTransport) {
+    internal val connectionGate: com.reallanguage.app.core.network.ConnectionGuardedHttpTransport = com.reallanguage.app.core.network.ConnectionGuardedHttpTransport(
+        com.reallanguage.app.core.session.SessionPreflightHttpTransport(httpTransport, sessionRuntime) { account, epoch ->
+            sessionRepository.refreshBeforeRequest(account, epoch)
+        }) {
         com.reallanguage.app.core.network.ConnectionOwner(sessionRuntime.accountId, sessionRuntime.accountEpoch)
     }
     internal val connectionSessionRevision get() = sessionRuntime.identityRevision
@@ -519,7 +522,7 @@ class ProductionAppGraph(
                 sessionRuntime.accessToken != null && connectionGate.incident.value == null
         }
     }
-    private val transport = BalanceAwareHttpTransport(
+    private val transport: BalanceAwareHttpTransport = BalanceAwareHttpTransport(
         connectionGate,
     ) { balanceRequiredSignal.tryEmit(Unit) }
     internal suspend fun capturePassages(
@@ -562,7 +565,7 @@ class ProductionAppGraph(
             vocabularyPoolPreference,
         )
     }
-    private val sessionRepository = ProductionSessionRepository(
+    private val sessionRepository: ProductionSessionRepository = ProductionSessionRepository(
         // Login/refresh are the verification path, not replay of the failed business operation.
         api = HttpSessionApi(com.reallanguage.app.core.network.HttpTransport { request ->
             if (request.method == "POST" && request.path in setOf("/api/v1/auth/sessions", "/api/v1/auth/sessions/refresh")) {

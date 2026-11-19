@@ -178,6 +178,7 @@ class JsonSessionWireCodec : SessionWireCodec {
                 accessToken = json.getString("accessToken"),
                 refreshToken = json.getString("refreshToken"),
                 settingsCompleted = json.getBoolean("settingsCompleted"),
+                accessTokenExpiresInSeconds = json.getLong("accessTokenExpiresInSeconds").also { require(it > 0) },
             )
             "INVALID_CREDENTIALS", "INVALID_OR_EXPIRED" -> SessionApiResult.InvalidOrExpired
             else -> error("Unsupported session response")
