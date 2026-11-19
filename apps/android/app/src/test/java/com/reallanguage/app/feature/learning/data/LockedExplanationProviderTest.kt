@@ -24,6 +24,9 @@ class LockedExplanationProviderTest {
         val transport = LockedProviderTransport()
         val result = provider(codec, transport).prepare()
         assertTrue(result is ExplanationPreparationResult.Ready)
+        val expressions = (result as ExplanationPreparationResult.Ready).expressions
+        assertEquals(" 平静的 ", expressions.single { it.display == "calm" }.lockedMeaningZh)
+        assertNull(expressions.single { it.display == "today" }.lockedMeaningZh)
         assertEquals(context.targets, codec.locked)
         assertEquals("entry:1:sentence", codec.command)
         assertEquals(1, transport.calls)
