@@ -175,6 +175,14 @@ fun FullSentenceSpeakingScreen(
         ) {
             if (state.progressFailed) Text(stringResource(R.string.full_sentence_speaking_progress_failed), color = RlColor.Error)
             if (state.isIndependentRetelling) {
+                if (state.transcriptReadyForConfirmation && !state.submitting &&
+                    !state.evaluationReceived && !state.technicalRetryPending && !state.technicalRetryBlocked &&
+                    state.finalDecision == null) {
+                    OutlinedButton(
+                        onClick = { onAction(FullSentenceSpeakingAction.RetryRequested) },
+                        modifier = Modifier.testTag("full-sentence-rerecord"),
+                    ) { Text("重新录音") }
+                }
                 if (state.decisionSaveFailed) Text(stringResource(R.string.full_sentence_speaking_decision_save_failed), color = RlColor.Error)
                 if (state.needsNewRecording) Text(stringResource(R.string.full_sentence_speaking_needs_recording), color = RlColor.TextSecondary)
                 RlKeyboardAwareOutlinedTextField(
