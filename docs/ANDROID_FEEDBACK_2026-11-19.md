@@ -87,3 +87,5 @@ UI无selectedExpression时仍显示expressions.first的词组，但此前中文�
 
 ### 读＋说播放生命周期补修
 ProductionApp的读＋说此前仍使用同步speaker.start，初始化未完成会无反馈失败，完成也不会自动清除audioPlaying。改为由audioPlaying驱动可取消的speaker.play，等待初始化和onDone，成功/失败均回收播放状态；失败显示原有learning_audio_failed文案，可点播放重试。新增回归验证播放失败重试及成功均不写成朗读完成、不启动收音。构建及ReadSpeakViewModelTest通过，尚待手机实际听音与停止/返回验证。
+
+读＋说播放/收音互斥补修：发现播放按钮原来收音时仍可用，开始收音也不清除播放状态。现在进入开始/重试录音前停止speaker，ViewModel进入listening时清除audioPlaying，收音中播放按钮禁用且ViewModel拒绝PlayToggled。回归验证先播放再收音及收音中点播放均不保持/启动参考播放；构建与ReadSpeakViewModel测试通过。真实录音仍待用户实际输入，不用参考音回放冒充用户音频。

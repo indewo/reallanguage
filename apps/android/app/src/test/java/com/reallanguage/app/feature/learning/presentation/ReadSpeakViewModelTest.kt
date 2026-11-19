@@ -265,6 +265,12 @@ class ReadSpeakViewModelTest {
         model.onAction(ReadSpeakAction.PlaybackFinished(true))
         assertFalse(model.uiState.value.audioPlaying)
         assertFalse(model.uiState.value.completed)
+        model.onAction(ReadSpeakAction.PlayToggled)
+        model.onAction(ReadSpeakAction.StartRequested)
+        assertTrue(model.uiState.value.listening)
+        assertFalse(model.uiState.value.audioPlaying)
+        model.onAction(ReadSpeakAction.PlayToggled)
+        assertFalse(model.uiState.value.audioPlaying)
     }
 
     private fun createViewModel(

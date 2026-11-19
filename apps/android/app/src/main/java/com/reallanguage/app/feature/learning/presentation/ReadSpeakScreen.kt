@@ -111,7 +111,7 @@ private fun ReadSpeakControls(state: ReadSpeakUiState, onAction: (ReadSpeakActio
         LearningAction(
             text = stringResource(if (state.audioPlaying) R.string.learning_mute else R.string.read_speak_play),
             onClick = { onAction(ReadSpeakAction.PlayToggled) },
-            enabled = !state.submitting,
+            enabled = !state.submitting && !state.listening,
             modifier = Modifier.weight(.7f).fillMaxHeight(),
         )
         if (state.listening) {

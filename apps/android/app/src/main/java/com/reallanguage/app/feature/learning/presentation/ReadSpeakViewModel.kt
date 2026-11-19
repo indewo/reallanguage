@@ -62,7 +62,7 @@ class ReadSpeakViewModel(
         when (action) {
             ReadSpeakAction.BackRequested -> send(ReadSpeakEffect.ReturnToExplanation)
             ReadSpeakAction.PlayToggled -> mutableUiState.update {
-                it.copy(audioPlaying = !it.audioPlaying, audioFailed = false)
+                if (it.listening) it else it.copy(audioPlaying = !it.audioPlaying, audioFailed = false)
             }
             is ReadSpeakAction.PlaybackFinished -> Unit
             ReadSpeakAction.StartRequested -> start()
@@ -94,6 +94,7 @@ class ReadSpeakViewModel(
         mutableUiState.update {
             it.copy(
                 listening = true,
+                audioPlaying = false,
                 captureFailed = false,
                 highlightedWordCount = 0,
                 feedbackZh = null,

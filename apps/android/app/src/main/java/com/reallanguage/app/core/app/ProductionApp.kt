@@ -5158,6 +5158,7 @@ private fun ReadSpeakRoute(
                 readSpeak.onAction(action)
             }
         } else if (action == ReadSpeakAction.StartRequested || action == ReadSpeakAction.RetryRequested) {
+            speaker.stop()
             if (action == ReadSpeakAction.RetryRequested && repository.hasPendingFeedbackRetry()) {
                 readSpeak.onAction(action)
                 return@ReadSpeakScreen
