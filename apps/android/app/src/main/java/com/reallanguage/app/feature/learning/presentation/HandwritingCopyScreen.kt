@@ -89,13 +89,13 @@ fun HandwritingCopyScreen(
                 shape = RlShape.Small,
             ) {
                 Text(
-                    if (state.copyInProgress) "第 ${state.confirmedCopyCount + 1} 次 · 至少 2 次"
-                    else "已完成 ${state.confirmedCopyCount} 次 · 至少 2 次",
+                    if (state.copyInProgress) "第${state.confirmedCopyCount + 1}次\n至少2次"
+                    else "已完成${state.confirmedCopyCount}次\n至少2次",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                         .testTag("handwriting-attempt-status"),
                     color = RlColor.OnPrimary,
-                    maxLines = 1,
-                    softWrap = false,
+                    maxLines = 2,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp, lineHeight = 14.sp),
                 )
             }
