@@ -66,7 +66,7 @@ fun ScreenshotImportScreen(
     var items by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
     var busy by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
-    var recognized by remember(items) { mutableStateOf<String?>(null) }
+    var recognized by rememberSaveable(items) { mutableStateOf<String?>(null) }
     val selectFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty() && !busy) {
             items = ArrayList((items + uris.map(Uri::toString)).distinct())
@@ -87,8 +87,13 @@ fun ScreenshotImportScreen(
         val ordered = items.map(Uri::parse)
         scope.launch {
             try {
-                val source = recognized ?: ScreenshotOcr.read(resolver, ordered).also { recognized = it }
-                deliver(source)
+                val source = recognized
+                if (source == null) {
+                    recognized = ScreenshotOcr.read(resolver, ordered)
+                } else {
+                    require(source.isNotBlank()) { "请保留需要学习的对话正文。" }
+                    deliver(source.trim())
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -115,7 +120,7 @@ fun ScreenshotImportScreen(
                         fontSize = if (compact) 22.sp else 25.sp, maxLines = 1)
                     Image(editorialUnderlinePainter(), null, Modifier.width(58.dp).height(5.dp), contentScale = ContentScale.FillBounds)
                 }
-                if (items.isNotEmpty()) {
+                if (items.isNotEmpty() && recognized == null) {
                     OutlinedButton(onClick = choose, enabled = !busy, modifier = Modifier.align(Alignment.CenterEnd),
                         border = BorderStroke(1.dp, olive), shape = RoundedCornerShape(7.dp),
                         contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp)) {
@@ -125,7 +130,18 @@ fun ScreenshotImportScreen(
                 }
             }
             HorizontalDivider(color = RlColor.Border.copy(alpha = .75f), thickness = .7.dp)
-            if (items.isEmpty()) {
+            if (recognized != null) {
+                Text("请检查对话正文，可移除姓名、时间、界面符号并修正识别错字。",
+                    color = RlColor.TextSecondary, fontSize = 14.sp,
+                    modifier = Modifier.padding(vertical = 8.dp))
+                com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(
+                    value = recognized.orEmpty(),
+                    onValueChange = { recognized = it; error = null },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth().weight(1f).testTag("screenshot_review_text"),
+                    label = { Text("对话正文") },
+                )
+            } else if (items.isEmpty()) {
                 Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                     OutlinedButton(onClick = choose, border = BorderStroke(1.dp, olive), shape = RoundedCornerShape(9.dp)) {
                         Icon(Icons.Outlined.Add, null, tint = olive)
@@ -138,7 +154,7 @@ fun ScreenshotImportScreen(
             error?.let {
                 Text(it, color = clay, fontSize = 13.sp, modifier = Modifier.align(Alignment.CenterHorizontally))
             }
-            Button(onClick = ::translate, enabled = !busy && items.isNotEmpty(),
+            Button(onClick = ::translate, enabled = !busy && items.isNotEmpty() && recognized?.isBlank() != true,
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = if (compact) 4.dp else 8.dp)
                     .width(buttonWidth).height(if (compact) 39.dp else 46.dp)
                     .testTag("screenshot_import_submit"),
@@ -150,7 +166,7 @@ fun ScreenshotImportScreen(
                     CircularProgressIndicator(Modifier.size(17.dp), color = Color.White, strokeWidth = 1.8.dp)
                     Spacer(Modifier.width(8.dp))
                 }
-                Text(if (busy) "正在导入中" else "识别上传截图", fontFamily = EditorialFont.Serif,
+                Text(if (busy) "正在处理" else if (recognized == null) "识别截图" else "确认正文并继续", fontFamily = EditorialFont.Serif,
                     fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
             }
         }
