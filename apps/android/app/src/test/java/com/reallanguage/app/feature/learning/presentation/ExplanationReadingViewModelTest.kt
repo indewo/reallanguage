@@ -388,6 +388,21 @@ class ExplanationReadingViewModelTest {
         assertNull(viewModel.uiState.value.selectedExpression)
     }
 
+    @Test fun hintTransportFailureReleasesControlsAndAllowsLeaving() = runTest(dispatcher) {
+        val viewModel = createViewModel(provider(hint = { throw java.io.IOException("connection interrupted") }))
+        viewModel.onAction(ExplanationReadingAction.ExplanationFinished)
+        viewModel.onAction(ExplanationReadingAction.ReadFinished)
+        advanceUntilIdle()
+        viewModel.onAction(ExplanationReadingAction.ReadFinished)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.loading)
+        assertTrue(viewModel.uiState.value.loadingFailed)
+        val back = async { viewModel.effects.first() }
+        viewModel.onAction(ExplanationReadingAction.BackRequested)
+        advanceUntilIdle()
+        assertEquals(ExplanationReadingEffect.ReturnToChapterEntry, back.await())
+    }
+
     private fun createViewModel(
         provider: ExplanationReadingProvider = provider(),
         progressStore: com.reallanguage.app.feature.learning.domain.LearningProgressStore? = null,

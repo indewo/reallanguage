@@ -138,11 +138,12 @@ class ExplanationReadingViewModel(
         val current = mutableUiState.value
         val round = current.pendingHintRound ?: return
         when (
-            val result = provider.incrementalHint(
+            val result = try { provider.incrementalHint(
                 current.currentFocusSentenceId,
                 round,
                 current.baseExplanationZh,
-            )
+            ) } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { ExplanationContentResult.Failed }
         ) {
             is ExplanationContentResult.Ready -> commit(
                 current.copy(
