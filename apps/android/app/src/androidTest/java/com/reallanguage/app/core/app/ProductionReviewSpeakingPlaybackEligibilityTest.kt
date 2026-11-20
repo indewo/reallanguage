@@ -191,6 +191,9 @@ class ProductionReviewSpeakingPlaybackEligibilityTest {
             compose.onNodeWithTag("review-result-summary").assertDoesNotExist()
             assertEquals("A helped attempt remains in this review until the existing explicit decision to continue", before, awaitIo { rows() })
         } else {
+            waitTag("full-sentence-evaluation-passed")
+            compose.onNodeWithTag("review-result-summary").assertDoesNotExist()
+            tap(R.string.full_sentence_speaking_continue)
             waitTag("review-result-summary")
             assertEquals(1, fixture.count("review_chapter_results"))
             assertEquals(1, fixture.count("review_session_settlements"))

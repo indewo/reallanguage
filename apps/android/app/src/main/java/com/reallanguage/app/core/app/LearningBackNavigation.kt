@@ -1,5 +1,17 @@
 package com.reallanguage.app.core.app
 
+import com.reallanguage.app.feature.learning.domain.LockedWritingTarget
+import com.reallanguage.app.feature.learning.domain.WritingTargetType
+
+/** LR-07 may not exist. Use the fixed chapter targets, never an empty placeholder module. */
+internal fun writingPreviousRoute(route: HomeDiaryRoute.CompleteWriting, targets: List<LockedWritingTarget>): HomeDiaryRoute {
+    val focuses = route.chapter.sentences.filter { it.isFocus }
+    val patternSentenceIds = targets.filter { it.type == WritingTargetType.PATTERN }.map { it.sentenceId }.toSet()
+    val lastPattern = focuses.lastOrNull { it.sentenceId in patternSentenceIds }
+    return if (lastPattern != null) HomeDiaryRoute.PatternSpeaking(route.chapter, lastPattern.sentenceId, route.baseExplanationZh, route.expressions)
+    else HomeDiaryRoute.FullSentenceSpeaking(route.chapter, focuses.last().sentenceId, route.baseExplanationZh, route.expressions)
+}
+
 /**
  * The single source of truth for the ordinary chapter-learning back path.
  *

@@ -2433,7 +2433,7 @@ internal fun HomeProductionFlow(
         is HomeDiaryRoute.CompleteWriting -> CompleteWritingRoute(
             graph,
             current,
-            onReturn = { route = requireNotNull(learningPreviousRoute(current, learningRootReturnRoute)) },
+            onReturn = { previous -> route = previous ?: requireNotNull(learningPreviousRoute(current, learningRootReturnRoute)) },
             onSceneResponse = {
                 route = HomeDiaryRoute.SceneResponse(
                     current.chapter, current.focusSentenceId,
@@ -4314,12 +4314,12 @@ private fun SceneResponseRoute(
 private fun CompleteWritingRoute(
     graph: ProductionAppGraph,
     route: HomeDiaryRoute.CompleteWriting,
-    onReturn: () -> Unit,
+    onReturn: (HomeDiaryRoute?) -> Unit,
     onSceneResponse: () -> Unit,
 ) {
     LearningContentLoader(route,
-        load = { graph.loadWritingTargets(route.chapter.chapterId) }, onReturn = onReturn,
-    ) { targets -> CompleteWritingReadyRoute(graph, route, targets, onReturn, onSceneResponse) }
+        load = { graph.loadWritingTargets(route.chapter.chapterId) }, onReturn = { onReturn(null) },
+    ) { targets -> CompleteWritingReadyRoute(graph, route, targets, { onReturn(writingPreviousRoute(route, targets)) }, onSceneResponse) }
 }
 
 @Composable

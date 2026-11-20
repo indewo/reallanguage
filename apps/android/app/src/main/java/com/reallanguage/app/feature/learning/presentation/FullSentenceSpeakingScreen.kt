@@ -117,6 +117,7 @@ fun FullSentenceSpeakingScreen(
                 text = stringResource(
                     when {
                         retryCompletedCheckpoint -> R.string.full_sentence_speaking_retry_save
+                        state.finalDecision == SpeakingEvaluationDecision.PASS -> R.string.full_sentence_speaking_continue
                         state.technicalRetryPending -> R.string.read_speak_retry
                         state.technicalRetryBlocked -> R.string.full_sentence_speaking_new_recording
                         state.evaluationReceived && state.finalDecision == null -> R.string.full_sentence_speaking_retry_save
@@ -140,6 +141,7 @@ fun FullSentenceSpeakingScreen(
                 ),
                 enabled = when {
                     retryCompletedCheckpoint -> !state.submitting
+                    state.finalDecision == SpeakingEvaluationDecision.PASS -> !state.submitting
                     state.transcriptReadyForConfirmation && state.finalDecision == null ->
                         state.transcript.isNotBlank() && !state.submitting
                     state.trainingCanContinue -> true
@@ -151,6 +153,7 @@ fun FullSentenceSpeakingScreen(
                     onAction(
                         when {
                             retryCompletedCheckpoint -> FullSentenceSpeakingAction.RetryRequested
+                            state.finalDecision == SpeakingEvaluationDecision.PASS -> FullSentenceSpeakingAction.ContinueAfterEvaluation
                             state.technicalRetryPending -> FullSentenceSpeakingAction.RetryRequested
                             state.transcriptReadyForConfirmation && state.finalDecision == null ->
                                 FullSentenceSpeakingAction.ConfirmTranscriptRequested
@@ -244,6 +247,9 @@ fun FullSentenceSpeakingScreen(
                 )
             }
             state.feedbackZh?.let { feedback ->
+                if (state.finalDecision == SpeakingEvaluationDecision.PASS) {
+                    Text("独立复述通过", color = RlColor.ActionVivid, modifier = Modifier.testTag("full-sentence-evaluation-passed"))
+                }
                 if (state.trainingMode != null) {
                     AiReadingFeedback(
                         summary = feedback,

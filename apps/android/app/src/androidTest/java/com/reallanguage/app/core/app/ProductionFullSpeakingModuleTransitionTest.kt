@@ -200,6 +200,9 @@ class ProductionFullSpeakingModuleTransitionTest {
                 assertEquals(5, captureFinishes.get())
             }
             assertFalse("Evaluated audio is temporary, not a permanent recording", synchronized(attemptFiles) { attemptFiles.any(File::exists) })
+            waitTag("full-sentence-evaluation-passed")
+            compose.onNodeWithTag("learning-focus-${focus.id}").assertExists()
+            click(R.string.full_sentence_speaking_continue)
         }
 
         assertPatternFirstPage()

@@ -7,6 +7,21 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LearningBackNavigationTest {
+    @Test fun writingBackSkipsAbsentPatternsAndUsesTheLastActualChapterModule() {
+        val chapter = FixedLearningChapter("chapter", 1, listOf(
+            FixedLearningSentence("first", "First.", "一。", true),
+            FixedLearningSentence("second", "Second.", "二。", true),
+        ))
+        val route = HomeDiaryRoute.CompleteWriting(chapter, "first", "explanation", emptyList())
+        val noPatterns = writingPreviousRoute(route, emptyList()) as HomeDiaryRoute.FullSentenceSpeaking
+        assertEquals("second", noPatterns.focusSentenceId)
+        val target = com.reallanguage.app.feature.learning.domain.LockedWritingTarget("target", "first",
+            com.reallanguage.app.feature.learning.domain.WritingTargetType.PATTERN, listOf("First"))
+        val withPattern = writingPreviousRoute(route, listOf(target)) as HomeDiaryRoute.PatternSpeaking
+        assertEquals("first", withPattern.focusSentenceId)
+        val meaning = target.copy(type = com.reallanguage.app.feature.learning.domain.WritingTargetType.MEANING)
+        assertTrue(writingPreviousRoute(route, listOf(meaning)) is HomeDiaryRoute.FullSentenceSpeaking)
+    }
     private val chapter = FixedLearningChapter(
         chapterId = "chapter-1",
         chapterNumber = 1,

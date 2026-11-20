@@ -50,6 +50,7 @@ sealed interface FullSentenceSpeakingAction {
     data class TranscriptChanged(val value: String) : FullSentenceSpeakingAction
     data object ConfirmTranscriptRequested : FullSentenceSpeakingAction
     data object ContinueTrainingRequested : FullSentenceSpeakingAction
+    data object ContinueAfterEvaluation : FullSentenceSpeakingAction
     data object RetryRequested : FullSentenceSpeakingAction
     data object StopPractisingRequested : FullSentenceSpeakingAction
 }

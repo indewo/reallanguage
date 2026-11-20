@@ -325,7 +325,10 @@ class FullSentenceSpeakingViewModelTest {
         assertEquals("PASS", progress.payload?.get("finalDecision"))
         assertEquals(SpeakingEvaluationDecision.PASS, vm.uiState.value.finalDecision)
         assertFalse(vm.uiState.value.progressFailed)
-        assertTrue("Retry must deliver the already saved completion", next.isCompleted)
+        assertFalse("Saving must keep the result visible", next.isCompleted)
+        vm.onAction(FullSentenceSpeakingAction.ContinueAfterEvaluation)
+        advanceUntilIdle()
+        assertTrue("Explicit continue delivers the saved completion", next.isCompleted)
         assertEquals(FullSentenceSpeakingEffect.OpenPatternSpeaking, next.await())
         assertEquals(1, repository.evaluations)
         assertEquals(listOf(SpeakingEvaluationDecision.PASS), repository.savedDecisions)
@@ -360,6 +363,10 @@ class FullSentenceSpeakingViewModelTest {
         progress.rejectFinalDecision = false
         vm.onAction(FullSentenceSpeakingAction.RetryRequested)
         vm.onAction(FullSentenceSpeakingAction.RetryRequested)
+        advanceUntilIdle()
+        assertFalse(next.isCompleted)
+        vm.onAction(FullSentenceSpeakingAction.ContinueAfterEvaluation)
+        vm.onAction(FullSentenceSpeakingAction.ContinueAfterEvaluation)
         advanceUntilIdle()
         assertTrue(next.isCompleted)
         assertEquals(FullSentenceSpeakingEffect.OpenPatternSpeaking, next.await())
@@ -438,7 +445,7 @@ class FullSentenceSpeakingViewModelTest {
     }
 
     @Test
-    fun fifthAttemptUsesEditedTranscriptAndEligiblePassContinues() = runTest(dispatcher) {
+    fun fifthAttemptKeepsEditedTranscriptAndSavedPassVisibleUntilExplicitContinue() = runTest(dispatcher) {
         val repository = FakeRepository()
         val viewModel = atFinalAttempt(repository)
         val effect = async { viewModel.effects.first() }
@@ -452,6 +459,9 @@ class FullSentenceSpeakingViewModelTest {
         assertEquals("edited transcript", repository.lastTranscript)
         assertEquals(listOf(SpeakingEvaluationDecision.PASS), repository.savedDecisions)
         assertEquals(SpeakingEvaluationDecision.PASS, viewModel.uiState.value.finalDecision)
+        assertFalse(effect.isCompleted)
+        viewModel.onAction(FullSentenceSpeakingAction.ContinueAfterEvaluation)
+        advanceUntilIdle()
         assertEquals(FullSentenceSpeakingEffect.OpenPatternSpeaking, effect.await())
     }
 

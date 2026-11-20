@@ -87,6 +87,7 @@ class FullSentenceSpeakingViewModel(
         }
         if (mutableUiState.value.submitting) return
         when (action) {
+            FullSentenceSpeakingAction.ContinueAfterEvaluation -> continueAfterEvaluation()
             FullSentenceSpeakingAction.RegenerateAnswerAudioRequested -> Unit // The route obtains audio before reporting playback.
             FullSentenceSpeakingAction.BackRequested -> send(
                 FullSentenceSpeakingEffect.ReturnToAudioDictation,
@@ -323,7 +324,7 @@ class FullSentenceSpeakingViewModel(
                                 it.copy(submitting = false, feedbackZh = candidate.feedbackZh, finalDecision = decision, decisionSaveFailed = false, captureFailed = false)
                             }
                             if (decision == SpeakingEvaluationDecision.PASS) {
-                                send(FullSentenceSpeakingEffect.OpenPatternSpeaking)
+                                saveProgress()
                             }
                         }
                         SpeakingDecisionSaveResult.Failed -> mutableUiState.update {
@@ -397,9 +398,23 @@ class FullSentenceSpeakingViewModel(
         // never the consumed recording, paid evaluation or successful result write.
         mutableUiState.update { it.copy(submitting = true) }
         viewModelScope.launch {
+            saveProgress()
+            mutableUiState.update { it.copy(submitting = false) }
+            // Saving the result must not dismiss it before the learner reads it.
+        }
+    }
+
+    private var completionNavigationRequested = false
+    private fun continueAfterEvaluation() {
+        val current = mutableUiState.value
+        if (current.finalDecision != SpeakingEvaluationDecision.PASS || current.progressFailed || current.submitting || completionNavigationRequested) return
+        completionNavigationRequested = true
+        mutableUiState.update { it.copy(submitting = true) }
+        viewModelScope.launch {
             val saved = saveProgress()
             mutableUiState.update { it.copy(submitting = false) }
             if (saved) effectChannel.send(FullSentenceSpeakingEffect.OpenPatternSpeaking)
+            else completionNavigationRequested = false
         }
     }
 
@@ -474,7 +489,6 @@ class FullSentenceSpeakingViewModel(
                 progressReady = true
                 lastSavedProgress = saved
                 mutableUiState.value = restored.copy(recording = false, submitting = false, progressFailed = false)
-                if (restored.finalDecision == SpeakingEvaluationDecision.PASS) effectChannel.send(FullSentenceSpeakingEffect.OpenPatternSpeaking)
                 if (progressStore != null && progressObserver == null) {
                     progressObserver = viewModelScope.launch {
                         mutableUiState.map(::encodeProgress).distinctUntilChanged().collect { saveProgress() }
