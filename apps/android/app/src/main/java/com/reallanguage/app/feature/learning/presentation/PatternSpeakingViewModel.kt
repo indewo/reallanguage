@@ -206,7 +206,10 @@ class PatternSpeakingViewModel(
             it.copy(stage = PatternSpeakingStage.LOADING, submitting = true, failureMessageVisible = false)
         }
         viewModelScope.launch {
-            when (val result = repository.generate(pattern)) {
+            val generation = try { repository.generate(pattern) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { PatternPracticeGenerationResult.Failed }
+            when (val result = generation) {
                 is PatternPracticeGenerationResult.Ready -> {
                     val validExamples = result.practiceSet.examples
                         .takeIf { items -> items.size in 1..5 && items.map { it.exampleId }.distinct().size == items.size &&
@@ -249,7 +252,10 @@ class PatternSpeakingViewModel(
         val pattern = current.currentPattern ?: return
         mutableUiState.update { it.copy(recording = false, readingExampleId = null, submitting = true) }
         viewModelScope.launch {
-            when (val result = repository.readingFeedback(pattern.patternId, exampleId)) {
+            val feedback = try { repository.readingFeedback(pattern.patternId, exampleId) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { PatternPracticeFeedbackResult.Failed }
+            when (val result = feedback) {
                 is PatternPracticeFeedbackResult.Ready -> mutableUiState.update {
                     it.copy(
                         submitting = false,
@@ -293,10 +299,11 @@ class PatternSpeakingViewModel(
         mutableUiState.update { it.copy(recording = false, submitting = true) }
         viewModelScope.launch {
             when (
-                val result = repository.responseFeedback(
+                val result = try { repository.responseFeedback(
                     pattern.patternId,
                     example.exampleId,
-                )
+                ) } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { PatternPracticeFeedbackResult.Failed }
             ) {
                 is PatternPracticeFeedbackResult.Ready -> mutableUiState.update {
                     it.copy(

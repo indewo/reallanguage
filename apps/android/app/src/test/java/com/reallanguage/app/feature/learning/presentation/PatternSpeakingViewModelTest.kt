@@ -38,6 +38,50 @@ class PatternSpeakingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun generationExceptionCanBeExplicitlyRetriedWithoutCompletingPattern() = runTest(dispatcher) {
+        val repository = FakeRepository().apply { generationThrows = true }
+        val model = createViewModel(listOf(pattern), repository)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.failureMessageVisible)
+        assertTrue(model.uiState.value.examples.isEmpty())
+        assertFalse(model.uiState.value.completed)
+        repository.generationThrows = false
+        model.onAction(PatternSpeakingAction.RetryLoadingRequested)
+        advanceUntilIdle()
+        assertEquals(PatternSpeakingStage.READING, model.uiState.value.stage)
+        assertEquals(examples, model.uiState.value.examples)
+    }
+
+    @Test fun feedbackExceptionsPreservePracticeWithoutMarkingReadingOrResponseComplete() = runTest(dispatcher) {
+        val repository = FakeRepository().apply { readingThrows = true }
+        val model = createViewModel(listOf(pattern), repository)
+        advanceUntilIdle()
+        model.onAction(PatternSpeakingAction.StartReadingRequested("e1"))
+        model.onAction(PatternSpeakingAction.ReadingFinished("e1"))
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.failureMessageVisible)
+        assertTrue(model.uiState.value.completedReadingExampleIds.isEmpty())
+        assertEquals(examples, model.uiState.value.examples)
+        repository.readingThrows = false
+        examples.forEach {
+            model.onAction(PatternSpeakingAction.StartReadingRequested(it.exampleId))
+            model.onAction(PatternSpeakingAction.ReadingFinished(it.exampleId))
+            advanceUntilIdle()
+        }
+        model.onAction(PatternSpeakingAction.StartResponsesRequested)
+        repository.responseThrows = true
+        model.onAction(PatternSpeakingAction.StartResponseRequested)
+        model.onAction(PatternSpeakingAction.FinishResponseRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.failureMessageVisible)
+        assertFalse(model.uiState.value.currentResponseCompleted)
+        assertFalse(model.uiState.value.completed)
+        assertEquals(0, model.uiState.value.responseIndex)
+    }
+
     @Test fun failedLockedPatternReadIsNotTreatedAsNoSelection() = runTest(dispatcher) {
         val repository = FakeRepository()
         val vm = PatternSpeakingViewModel(chapter, "s1", null, repository, reloadLockedPatterns = { listOf(pattern) })
@@ -844,6 +888,9 @@ class PatternSpeakingViewModelTest {
         var generationCalls = 0
         var captureStartCalls = 0
         var captureCancellationCalls = 0
+        var generationThrows = false
+        var readingThrows = false
+        var responseThrows = false
         val generatedPatternIds = mutableListOf<String>()
         val restoredPractices = mutableListOf<PatternPracticeSet>()
 
@@ -858,7 +905,9 @@ class PatternSpeakingViewModelTest {
 
         override suspend fun generate(
             pattern: LockedSpeakingPattern,
-        ): PatternPracticeGenerationResult { generationCalls++; generatedPatternIds.add(pattern.patternId); return when (val current = generation) {
+        ): PatternPracticeGenerationResult { generationCalls++; generatedPatternIds.add(pattern.patternId)
+            if (generationThrows) throw java.io.IOException("interrupted")
+            return when (val current = generation) {
             is PatternPracticeGenerationResult.Ready -> current.copy(
                 practiceSet = current.practiceSet.copy(patternId = pattern.patternId),
             )
@@ -870,6 +919,7 @@ class PatternSpeakingViewModelTest {
             patternId: String,
             exampleId: String,
         ): PatternPracticeFeedbackResult {
+            if (readingThrows) throw java.io.IOException("interrupted")
             if (readingResult is PatternPracticeFeedbackResult.Ready) {
                 successfulReadingCalls += 1
             }
@@ -881,6 +931,7 @@ class PatternSpeakingViewModelTest {
             exampleId: String,
         ): PatternPracticeFeedbackResult {
             responseCalls++
+            if (responseThrows) throw java.io.IOException("interrupted")
             lastTranscript = "I used to walk to school"
             return responseResult
         }
