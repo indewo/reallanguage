@@ -324,6 +324,8 @@ import com.reallanguage.app.feature.learning.data.AndroidMediaRecorderReadSpeakC
 import com.reallanguage.app.feature.learning.data.AndroidReadSpeakRepository
 import com.reallanguage.app.feature.learning.data.AndroidLearningStepStore
 import com.reallanguage.app.feature.learning.data.AndroidSentenceSpeaker
+import com.reallanguage.app.feature.learning.domain.normalizedEnglishTypography
+import com.reallanguage.app.feature.learning.presentation.ExplanationReadingAction
 import com.reallanguage.app.feature.learning.presentation.AudioDictationAction
 import com.reallanguage.app.feature.learning.presentation.ExplanationAudioPlayback
 import com.reallanguage.app.feature.learning.data.AndroidHandwritingCompletionRepository
@@ -529,17 +531,23 @@ class ProductionAppGraph(
         val owner = sessionRuntime.accountId
         val epoch = sessionRuntime.accountEpoch
         fun current() = owner != null && sessionRuntime.accountId == owner && sessionRuntime.accountEpoch == epoch && allowed()
-        val engine = com.reallanguage.app.feature.learning.data.RemoteSentenceSpeechEngine(load = { text ->
+        val retries = applicationContext.getSharedPreferences("sentence_audio_user_retries", android.content.Context.MODE_PRIVATE)
+        val engine = com.reallanguage.app.feature.learning.data.RemoteSentenceSpeechEngine(load = { text, regenerate ->
             check(current())
             val digest = java.security.MessageDigest.getInstance("SHA-256")
                 .digest("$owner:en-US:Cherry:v1:$text".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
-            val body = org.json.JSONObject().put("commandId", "sentence-audio-$digest").put("text", text)
+            val originalCommand = "sentence-audio-$digest"
+            val retry = regenerate || retries.getBoolean(digest, false)
+            val retryDigest = java.security.MessageDigest.getInstance("SHA-256").digest(originalCommand.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+            val body = org.json.JSONObject().put("commandId", if (retry) "sentence-audio-retry-$retryDigest" else originalCommand).put("text", text)
                 .put("language", "en-US").put("speed", 3).put("requireWordTimings", false).put("purpose", "READING")
+            if (retry) body.put("retryOfCommandId", originalCommand)
             val response = transport.execute(com.reallanguage.app.core.network.HttpRequest("POST", "/api/v1/media/sentence-audio", body.toString(),
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && response.statusCode in 200..299)
             val reference = org.json.JSONObject(response.body).getString("audioObjectRef")
             check(Regex("tts_[0-9a-f-]{36}").matches(reference))
+            if (retry) check(retries.edit().putBoolean(digest, true).commit())
             val payload = transport.execute(com.reallanguage.app.core.network.HttpRequest("GET", "/api/v1/media/sentence-audio/$reference/payload", "",
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && payload.statusCode == 200)
@@ -5050,7 +5058,12 @@ private fun ExplanationReadingRoute(
             }
         }
     }
-    ExplanationReadingScreen(state, reading::onAction, targetAssessment = { display ->
+    ExplanationReadingScreen(state, { action ->
+        if (action == ExplanationReadingAction.RegenerateAudioRequested) {
+            val text = state.pronunciationText ?: route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
+            if (state.audioFailed && speaker.requestRegeneration(text.normalizedEnglishTypography())) reading.onAction(action)
+        } else reading.onAction(action)
+    }, targetAssessment = { display ->
         LearningSelfAssessmentEntry(graph, route.chapter.chapterId, route.focusSentenceId, "LR-02",
             display = display, enabled = !state.loading && !state.progressFailed, cardAction = true)
     })

@@ -15,7 +15,7 @@ import java.util.Locale
 
 /** Whole-utterance audio, in memory only. The loader owns account/transport authorization. */
 internal class RemoteSentenceSpeechEngine(
-    private val load: suspend (String) -> ByteArray,
+    private val load: suspend (String, Boolean) -> ByteArray,
     private val allowed: () -> Boolean,
 ) : SentenceSpeechEngine {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -25,18 +25,27 @@ internal class RemoteSentenceSpeechEngine(
     private var completion: ((Boolean) -> Unit)? = null
     private var generation = 0L
     private var closed = false
+    private val regeneration = mutableSetOf<String>()
+    override fun requestRegeneration(text: String): Boolean {
+        if (closed || !allowed() || text.isBlank()) return false
+        regeneration.add(text)
+        return true
+    }
 
     override suspend fun awaitReady() = !closed
 
     override fun start(text: String, rate: Float, locale: Locale, finished: (Boolean) -> Unit): Boolean {
         stop()
+        if (com.reallanguage.app.BuildConfig.DEBUG) android.util.Log.i("RlRemoteSpeech", "start closed=$closed allowed=${allowed()} locale=$locale rate=$rate")
         if (closed || !allowed() || text.isBlank() || locale.language != "en" || !rate.isFinite() || rate !in .5f..2f) return false
         completion = finished
         val lease = generation
         pending = scope.launch {
             var downloaded: ByteArray? = null
             try {
-                downloaded = load(text)
+                val retry = regeneration.remove(text)
+                if (com.reallanguage.app.BuildConfig.DEBUG) android.util.Log.i("RlRemoteSpeech", "load retry=$retry")
+                downloaded = load(text, retry)
                 ensureActive()
                 if (lease != generation) return@launch
                 if (!allowed()) { finish(false); return@launch }
@@ -61,7 +70,10 @@ internal class RemoteSentenceSpeechEngine(
                 active.setOnErrorListener { _, _, _ -> if (lease == generation) finish(false); true }
                 active.prepareAsync()
             } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { if (lease == generation) finish(false) }
+            catch (failure: Exception) {
+                if (com.reallanguage.app.BuildConfig.DEBUG) android.util.Log.w("RlRemoteSpeech", "failed ${failure.javaClass.simpleName}")
+                if (lease == generation) finish(false)
+            }
             finally { downloaded?.fill(0) }
         }
         return true

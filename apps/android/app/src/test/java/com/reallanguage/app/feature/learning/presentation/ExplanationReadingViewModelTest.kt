@@ -58,6 +58,16 @@ class ExplanationReadingViewModelTest {
         reopened.onAction(ExplanationReadingAction.ExplanationFinished)
         assertFalse(reopened.uiState.value.audioPlaying)
         assertEquals(reads, reopened.uiState.value.completedReadCount)
+        reopened.onAction(ExplanationReadingAction.ExampleAudioRequested)
+        advanceUntilIdle()
+        reopened.onAction(ExplanationReadingAction.AudioPlaybackFailed)
+        assertFalse(reopened.uiState.value.audioPlaying)
+        assertEquals(example.textEn, reopened.uiState.value.pronunciationText)
+        reopened.onAction(ExplanationReadingAction.RegenerateAudioRequested)
+        advanceUntilIdle()
+        assertTrue(reopened.uiState.value.audioPlaying)
+        assertEquals(example.textEn, reopened.uiState.value.pronunciationText)
+        assertEquals(reads, reopened.uiState.value.completedReadCount)
     }
 
     @Test fun structuredExpressionFieldsSaveAndRestoreWithoutReplacingTheRoundHint() = runTest(dispatcher) {

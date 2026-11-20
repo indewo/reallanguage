@@ -180,7 +180,11 @@ fun ExplanationReadingScreen(
             modifier = Modifier.testTag("explanation_content"),
             verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
-            if (state.audioFailed) Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
+            if (state.audioFailed) {
+                Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
+                TextButton(onClick = { onAction(ExplanationReadingAction.RegenerateAudioRequested) },
+                    enabled = state.voiceEnabled && !state.loading && !state.progressFailed) { Text("重新生成发音（重新计费）") }
+            }
             if (!state.voiceEnabled) Text("语音已在设置中关闭，可继续阅读文字。", color = RlColor.TextSecondary)
             // Temporary reading hints are not the selected expression's usage or formula.
             state.currentIncrementalHint?.let {

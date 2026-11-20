@@ -206,3 +206,7 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 ### 显式重新生成发音的失败身份授权（未上线）
 复核读＋说代码确认长句使用既定横向指读轨道，不将初始仅显示首段擅自改成普通多行页面；滚动可发现性仍待共同核对。继续旧语音失败恢复：KyselyAiResultDeliveryStore新增只读isFailed，严格账号/task/command/providerAttempt/requestDigest匹配且仅FAILED允许；实际内存PGlite测试验证无记录/处理中/跨账号/改输入/改attempt拒绝，检查后旧claim仍FAILED。未删除、重开旧交付或释放/结算旧费用。
 统一语音契约新增可选retryOfCommandId；MeteredSentenceAudio仅在上面精确授权通过且新command为原command派生的固定重试ID时执行，callType=USER_RETRY且保留retryOf关联；原输入和INITIAL_CALL摘要不符拒绝，同一原请求只有一个固定新重试身份，不随机换ID绕过原状态。生产模块注入只读检查。隔离业务回归、后台模块构建、契约构建及API类型检查通过。该机制为用户显式新尝试，不是旧失败请求已对账；旧预留仍需处理。尚未接手机明确重新生成按钮、未部署或进行真实新尝试，不把新接口逻辑当旧失败恢复通过。
+
+### 手机显式语音重新生成接线与实测阻断
+新增失败时明确重新生成发音（重新计费）入口，路由对确切失败文本标记一次regeneration意图，再发USER_RETRY。新尝试成功返回音频引用后才持久保存账号+文本+音色版本哈希对应的重试关联，后续普通播放仍用同一固定重试ID；不保存正文或凭据。取消/失败前不写成功关联，未知失败仍由后台身份检查拒绝。构建和讲解/连接相关回归通过，补充例句失败再显式请求不计用户朗读完成；首次编译漏Action导入已修正。后台4个运行文件（delivery store、contracts、metered bridge、prod模块）备份部署，健康ok/api。
+覆盖安装后从真实原章节进入基础讲解，点发音真实POST409，UI可见新重生成入口；点击后错误提示消失但未观察到新的POST，不能判成功。后续再次发音也暂未观察到新请求，具体客户端状态/触发原因未定；新增仅start/load/retry布尔及异常类名的debug元数据，不打印正文或凭证，诊断构建通过，尚未覆盖本诊断包。该恢复仍未验收，旧预留对账未完成，不把按钮可点击当恢复成功。

@@ -16,6 +16,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 internal interface SentenceSpeechEngine {
+    fun requestRegeneration(text: String): Boolean = false
     suspend fun awaitReady(): Boolean
     fun start(text: String, rate: Float, locale: Locale, finished: (Boolean) -> Unit): Boolean
     fun stop()
@@ -26,6 +27,7 @@ class AndroidSentenceSpeaker internal constructor(
     private val engine: SentenceSpeechEngine,
     private val isPlaybackAllowed: () -> Boolean = { true },
 ) {
+    fun requestRegeneration(text: String): Boolean = isPlaybackAllowed() && engine.requestRegeneration(text)
     constructor(context: Context, isPlaybackAllowed: () -> Boolean = { true }) :
         this(NativeSentenceSpeechEngine(context.applicationContext), isPlaybackAllowed)
     @Volatile private var request = 0L
