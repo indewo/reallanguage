@@ -192,7 +192,8 @@ fun FullSentenceSpeakingScreen(
                     value = state.transcript,
                     onValueChange = { onAction(FullSentenceSpeakingAction.TranscriptChanged(it)) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
-                    label = { Text(stringResource(R.string.full_sentence_speaking_transcript)) },
+                    label = { Text(stringResource(if (state.evaluationReceived || state.finalDecision != null)
+                        R.string.full_sentence_speaking_transcript_confirmed else R.string.full_sentence_speaking_transcript)) },
                     enabled = !state.submitting && !state.evaluationReceived && !state.technicalRetryPending && !state.technicalRetryBlocked,
                     shape = RlShape.Input,
                     colors = OutlinedTextFieldDefaults.colors(

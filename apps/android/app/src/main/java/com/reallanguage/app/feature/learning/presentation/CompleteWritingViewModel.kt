@@ -57,6 +57,7 @@ class CompleteWritingViewModel(
                     audioPlaying = false,
                     audioSentenceId = null,
                     audioFailed = !action.successful,
+                    failedAudioSentenceId = if (action.successful) null else current.audioSentenceId ?: current.currentFocusSentenceId,
                 ) }
             }
             return
@@ -71,6 +72,11 @@ class CompleteWritingViewModel(
             action != CompleteWritingAction.BackRequested
         ) return
         when (action) {
+            CompleteWritingAction.RegenerateAudioRequested -> if (current.audioFailed) mutableUiState.update {
+                it.copy(audioPlaying = true, audioSentenceId = it.failedAudioSentenceId ?: it.currentFocusSentenceId,
+                    audioRequestId = it.audioRequestId + 1, audioFailed = false, failedAudioSentenceId = null,
+                    helpUsed = it.helpUsed || it.phase != CompleteWritingPhase.AUDIBLE_SINGLE)
+            }
             is CompleteWritingAction.AudioPlaybackFinished -> Unit
             CompleteWritingAction.BackRequested -> send(
                 CompleteWritingEffect.ReturnToPatternSpeaking,

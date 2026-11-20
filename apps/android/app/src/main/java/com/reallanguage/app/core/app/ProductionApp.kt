@@ -373,6 +373,7 @@ import com.reallanguage.app.feature.learning.data.AndroidLearningProgressStore
 import com.reallanguage.app.feature.learning.domain.withSavedExpression
 import com.reallanguage.app.feature.learning.presentation.CompleteWritingEffect
 import com.reallanguage.app.feature.learning.presentation.CompleteWritingScreen
+import com.reallanguage.app.feature.learning.presentation.CompleteWritingAction
 import com.reallanguage.app.feature.learning.presentation.CompleteWritingViewModel
 import com.reallanguage.app.feature.learning.domain.CompleteWritingEvaluator
 import com.reallanguage.app.feature.learning.presentation.SceneResponseAction
@@ -4338,15 +4339,22 @@ private fun CompleteWritingReadyRoute(
         onReturn = onReturn,
         onSceneResponse = onSceneResponse,
     ) { state, onAction ->
-        val speaker = rememberConnectionAwareSentenceSpeaker()
+        val speaker = rememberConnectionAwareSentenceSpeaker(route) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
         DisposableEffect(speaker) { onDispose { speaker.close() } }
         com.reallanguage.app.feature.learning.presentation.CompleteWritingAudioPlayback(
             state = state,
-            play = { text, rate -> speaker.play(text, speechRate = rate) },
+            play = { text, rate -> speaker.play(text.normalizedEnglishTypography(), speechRate = rate) },
             stop = speaker::stop,
             onAction = onAction,
         )
-        CompleteWritingScreen(state, onAction)
+        CompleteWritingScreen(state) { action ->
+            if (action == CompleteWritingAction.RegenerateAudioRequested) {
+                val sentenceId = state.failedAudioSentenceId ?: state.currentFocusSentenceId
+                val text = state.focusSentences.firstOrNull { it.sentenceId == sentenceId }?.textEn?.normalizedEnglishTypography()
+                if (!state.audioFailed || text == null || !speaker.requestRegeneration(text)) return@CompleteWritingScreen
+            }
+            onAction(action)
+        }
     }
 }
 

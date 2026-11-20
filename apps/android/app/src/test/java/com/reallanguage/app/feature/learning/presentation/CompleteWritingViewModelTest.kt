@@ -34,6 +34,28 @@ class CompleteWritingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun finalAudioRegenerationTargetsTheFailedSentenceWithoutLosingAnswersOrSavingMastery() = runTest(dispatcher) {
+        var saves = 0
+        val model = createViewModel(CompleteWritingRepository { _, _ -> saves++; CompleteWritingSaveResult.Saved })
+        moveToFinal(model)
+        model.onAction(CompleteWritingAction.FinalInputChanged("s1", "unfinished first"))
+        model.onAction(CompleteWritingAction.FinalInputChanged("s2", "unfinished second"))
+        model.onAction(CompleteWritingAction.FinalAudioRequested("s2"))
+        val request = model.uiState.value.audioRequestId
+        model.onAction(CompleteWritingAction.AudioPlaybackFinished(request, false))
+        assertEquals("s2", model.uiState.value.failedAudioSentenceId)
+        model.onAction(CompleteWritingAction.RegenerateAudioRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.audioPlaying)
+        assertFalse(model.uiState.value.audioFailed)
+        assertTrue(model.uiState.value.helpUsed)
+        assertEquals("s2", model.uiState.value.audioSentenceId)
+        assertEquals(request + 1, model.uiState.value.audioRequestId)
+        assertEquals(mapOf("s1" to "unfinished first", "s2" to "unfinished second"), model.uiState.value.finalInputs)
+        assertNull(model.uiState.value.finalResult)
+        assertEquals(0, saves)
+    }
+
     @Test fun ambiguousTargetLocationKeepsAnswersAndDoesNotSaveOrAdvance() = runTest(dispatcher) {
         val fixed = FixedLearningSentence("s1", "Run run.", "跑两次。", true)
         var saves = 0

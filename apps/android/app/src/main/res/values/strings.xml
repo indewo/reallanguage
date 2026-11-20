@@ -219,7 +219,8 @@
     <string name="full_sentence_speaking_follow_stage">看中英文，听完整句后跟读。</string>
     <string name="full_sentence_speaking_read_stage">看英文朗读，当前中文已隐藏。</string>
     <string name="full_sentence_speaking_retell_stage">根据中文和场景独立复述，英文已隐藏。</string>
-    <string name="full_sentence_speaking_transcript">实时转写（可修改）</string>
+    <string name="full_sentence_speaking_transcript">识别结果（可修改）</string>
+    <string name="full_sentence_speaking_transcript_confirmed">已确认转写</string>
     <string name="full_sentence_speaking_low_confidence">请核对识别信心较低的片段：%1$s</string>
     <string name="full_sentence_speaking_confirm_transcript">确认转写并判断</string>
     <string name="full_sentence_speaking_play_answer">播放</string>

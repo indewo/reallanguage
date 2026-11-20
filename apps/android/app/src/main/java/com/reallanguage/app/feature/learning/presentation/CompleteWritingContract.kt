@@ -28,6 +28,7 @@ data class CompleteWritingUiState(
     val audioSentenceId: String? = null,
     val audioRequestId: Long = 0,
     val audioFailed: Boolean = false,
+    val failedAudioSentenceId: String? = null,
 ) {
     val focusSentences get() = chapter.sentences.filter { it.isFocus }
     val currentSentence get() = focusSentences.getOrNull(sentenceIndex)
@@ -39,6 +40,7 @@ sealed interface CompleteWritingAction {
     data object BackRequested : CompleteWritingAction
     data object HelpRequested : CompleteWritingAction
     data object AudioToggled : CompleteWritingAction
+    data object RegenerateAudioRequested : CompleteWritingAction
     data class AudioPlaybackFinished(val requestId: Long, val successful: Boolean) : CompleteWritingAction
     data class FinalAudioRequested(val sentenceId: String) : CompleteWritingAction
     data class InputChanged(val value: String) : CompleteWritingAction

@@ -303,6 +303,9 @@ private fun CompleteWritingStatus(
     }
     if (state.audioFailed) {
         Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
+        androidx.compose.material3.TextButton(onClick = { onAction(CompleteWritingAction.RegenerateAudioRequested) }, enabled = !state.saving && state.finalResult == null) {
+            Text("重新生成发音（重新计费）")
+        }
     }
     if (state.evaluationUnavailable) {
         Text(stringResource(R.string.complete_writing_evaluation_unavailable), color = RlColor.Error)
