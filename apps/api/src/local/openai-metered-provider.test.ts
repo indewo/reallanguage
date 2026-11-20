@@ -16,6 +16,24 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("keeps independent ASR words when an audio assessor translates English into Chinese", async () => {
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+        observedTranscript: "我想学习英语。", language: "en", intelligible: true, confidence: 0.99,
+        wordIssues: [], rhythmIssues: [],
+      }) } }] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ output_text: JSON.stringify({ transcript: "我想学习英语。", action: "CONTINUE", feedbackConfidence: 0.99 }) })));
+    const client = new OpenAiLocalClient("test-key", "test-model", fetcher, async () => "d2F2");
+    const result = await client.generateJson("READING_FEEDBACK_V1", {
+      audioBase64: "bTRh", audioMimeType: "audio/mp4", transcript: "I'd like to learn English.", targetTextEn: "I'd like to learn English.",
+    });
+    expect(result).toMatchObject({ transcript: "I'd like to learn English.", action: "REPEAT_FOR_CLARITY", feedbackConfidence: 0 });
+    const generatedRequest = JSON.parse(String(fetcher.mock.calls[1]![1].body));
+    expect(JSON.parse(generatedRequest.input).input.transcript).toBe("I'd like to learn English.");
+    expect(JSON.parse(generatedRequest.input).input.pronunciationEvidence.observedTranscript).toBe("我想学习英语。");
+    expect(generatedRequest.instructions).toContain("not translate or paraphrase the target sentence");
+    expect(generatedRequest.instructions).toContain("not proof of natural fluent rhythm");
+  });
   it("constrains a locked meaning only for its exact occurrence without rewriting whitespace", async () => {
     const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
     const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);
