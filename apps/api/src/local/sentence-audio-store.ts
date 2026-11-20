@@ -18,7 +18,9 @@ export class SentenceAudioStore {
     const cipher = createDecipheriv("aes-256-gcm", this.key, stored.subarray(0, 12));
     cipher.setAAD(Buffer.from(`${ownerKey}:${objectRef}`));
     cipher.setAuthTag(stored.subarray(12, 28));
-    return JSON.parse(Buffer.concat([cipher.update(stored.subarray(28)), cipher.final()]).toString("utf8")) as { expiresAtMs: number; wav: string };
+    const payload = JSON.parse(Buffer.concat([cipher.update(stored.subarray(28)), cipher.final()]).toString("utf8")) as { accountId: string; expiresAtMs: number; wav: string };
+    if (typeof payload.accountId !== "string" || this.ownerKey(payload.accountId) !== ownerKey) throw new Error("Sentence audio owner mismatch");
+    return payload;
   }
   private path(accountId: string, objectRef: string) {
     if (!/^tts_[0-9a-f-]{36}$/u.test(objectRef)) throw new Error("Invalid sentence audio reference");
@@ -34,7 +36,7 @@ export class SentenceAudioStore {
     const iv = randomBytes(12);
     const cipher = createCipheriv("aes-256-gcm", this.key, iv);
     cipher.setAAD(Buffer.from(`${this.ownerKey(accountId)}:${objectRef}`));
-    const payload = Buffer.from(JSON.stringify({ expiresAtMs, wav: bytes.toString("base64") }));
+    const payload = Buffer.from(JSON.stringify({ accountId, expiresAtMs, wav: bytes.toString("base64") }));
     const encrypted = Buffer.concat([cipher.update(payload), cipher.final()]);
     await mkdir(this.folder(accountId), { recursive: true, mode: 0o700 });
     await writeFile(this.path(accountId, objectRef), Buffer.concat([iv, cipher.getAuthTag(), encrypted]), { flag: "wx", mode: 0o600 });
@@ -52,7 +54,7 @@ export class SentenceAudioStore {
     return bytes;
   }
   async deleteAccount(accountId: string) { await rm(this.folder(accountId), { recursive: true, force: true }); }
-  async purgeExpired() {
+  async purgeExpired(isOwnerActive?: (accountId: string) => Promise<boolean>) {
     let owners;
     try { owners = await readdir(this.root, { withFileTypes: true }); }
     catch (error) { if ((error as NodeJS.ErrnoException).code === "ENOENT") return; throw error; }
@@ -64,7 +66,8 @@ export class SentenceAudioStore {
         const path = join(folder, file.name);
         try {
           const payload = this.decode(await readFile(path), owner.name, file.name.slice(0, -4));
-          if (!Number.isFinite(payload.expiresAtMs) || payload.expiresAtMs <= this.now()) await unlink(path);
+          if (!Number.isFinite(payload.expiresAtMs) || payload.expiresAtMs <= this.now() ||
+              (isOwnerActive && !(await isOwnerActive(payload.accountId)))) await unlink(path);
         } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
       }
     }

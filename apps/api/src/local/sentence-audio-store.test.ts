@@ -34,5 +34,9 @@ it("persists encrypted audio across instances, isolates owners and expires witho
     await restored.purgeExpired();
     expect(await restored.get("owner-one", unread.audioObjectRef)).toBeNull();
     expect(await restored.get("owner-two", live.audioObjectRef)).toEqual(wav);
+    await expect(restored.purgeExpired(async () => { throw new Error("database unavailable"); })).rejects.toThrow("database unavailable");
+    expect(await restored.get("owner-two", live.audioObjectRef)).toEqual(wav);
+    await restored.purgeExpired(async accountId => accountId !== "owner-two");
+    expect(await restored.get("owner-two", live.audioObjectRef)).toBeNull();
   } finally { await rm(root, { recursive: true, force: true }); }
 });

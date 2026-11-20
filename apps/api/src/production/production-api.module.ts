@@ -581,7 +581,9 @@ export const createProductionApiModule = (
       const results = await Promise.allSettled([
         purgeExpiredAiResults(database as Kysely<unknown>),
         purgeExpiredSafetyPayloads(database as Kysely<unknown>),
-        ...(providers.sentenceAudio ? [providers.sentenceAudio.store.purgeExpired()] : []),
+        ...(providers.sentenceAudio ? [providers.sentenceAudio.store.purgeExpired(async (accountId) => Boolean(
+          await database.selectFrom("identity.accounts").select("account_id").where("account_id", "=", accountId).executeTakeFirst(),
+        ))] : []),
       ]);
       if (results.some((result) => result.status === "rejected")) {
         throw new Error("TEMPORARY_PAYLOAD_CLEANUP_FAILED");
