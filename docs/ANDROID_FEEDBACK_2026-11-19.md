@@ -149,3 +149,6 @@ PFFM10点professors时显示语音播放失败，日志TextToSpeech stop failed:
 
 ### 用户听音反馈：机械断词（未通过）
 用户实听基础讲解发音反馈机械、逐词往外蹦，语音自然度未通过。代码确认NativeSentenceSpeechEngine每次以完整text调用一次engine.speak，非应用逐词队列。取消无条件排除network voice，按目标口音/质量排序、同质量优先离线；取消英文语速额外乘0.94，保留各教学模式显式语速。debug仅记录音色参数不记录正文。构建及AndroidSentenceSpeakerConnectionTest/SentencePlaybackTest通过，已保留数据覆盖。真实发音触发日志21:16:24：selected=en locale=en quality=300 network=false requestedRate=1.0，available仅en/en/300/network=false。因此此设备没有可直接切换的另一英文音色，选择规则调整不能宣称自然度解决；需继续接入符合既有TTS合同的更自然整句音频来源及真实听音验证。未将系统完成回调当自然度通过，未覆盖用户桌面旧APK。
+
+### 自然整句语音供应商适配（未接入交付）
+代码检索确认目前仅系统TTS，TTS_RENDER_V1虽有规范但没有实际后台实现。按阿里云官方Qwen-TTS非实时API（https://www.alibabacloud.com/help/en/model-studio/qwen-tts-api）新增QwenSentenceSynthesis内部适配器：完整原文一次请求，保留标点/缩写，English语言，固定Cherry候选声线，45秒截止，不自动重放。校验完成状态、有效期、用量及阿里云产物来源；不伪造供应商没给出的时长/词级时间/en-US元数据，不向客户端交付供应商临时URL。5项隔离测试通过，类型检查通过；尚未真实供应商调用、媒体接收/计量/缓存和手机播放器接入，因此自然度及TTS合同均未完成验收。候选声线是否满足美式英语和用户自然度要求须实际听音确认，未假定通过。未部署该适配器，未改动当前用户播放路径。
