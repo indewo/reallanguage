@@ -249,9 +249,15 @@ fun FullSentenceSpeakingScreen(
                         summary = feedback,
                         details = state.feedbackDetails,
                         confidence = state.feedbackConfidence,
+                        transcript = state.feedbackTranscript,
                     )
                 } else {
                     Text(feedback, color = RlColor.Ink)
+                }
+            }
+            if (state.answerPlaybackFailed) {
+                TextButton(onClick = { onAction(FullSentenceSpeakingAction.RegenerateAnswerAudioRequested) }, enabled = !state.submitting && !state.recording) {
+                    Text("重新生成示范发音（重新计费）")
                 }
             }
             if (state.technicalRetryBlocked) {
@@ -277,6 +283,7 @@ private fun AiReadingFeedback(
     summary: String,
     details: List<ReadingFeedbackDetail>,
     confidence: Double?,
+    transcript: String? = null,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth().testTag("full-sentence-ai-feedback"),
@@ -321,6 +328,15 @@ private fun AiReadingFeedback(
                 fontSize = 12.sp,
                 lineHeight = 17.sp,
             )
+            transcript?.let { recognized ->
+                Text(
+                    "本次识别（可能有误）：${recognized.ifBlank { "未识别到文字" }}",
+                    modifier = Modifier.testTag("full-sentence-recognized-text"),
+                    color = RlColor.TextSecondary,
+                    fontSize = 12.sp,
+                    lineHeight = 17.sp,
+                )
+            }
             if (details.isEmpty()) {
                 Text(
                     "旧记录只保留了本轮总评；下一次录音会显示词或短语、节奏和完整度依据。",

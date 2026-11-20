@@ -101,10 +101,10 @@ class EncryptedFullSpeakingRecoveryJournal(
     }
 }
 
-/** Independent RLR6/version 2; decoder remains compatible with version 1 attempts. */
-private object FullSpeakingRecoveryCodec {
+/** Independent RLR6/version 3; versions 1 and 2 remain readable without inventing recognition text. */
+internal object FullSpeakingRecoveryCodec {
     private const val MAGIC = 0x524c5236
-    private const val VERSION = 2
+    private const val VERSION = 3
     private const val MAX_RECORDING_BYTES = 1024
     private const val MAX_BODY_BYTES = 12_000_000
     private const val MAX_PAYLOAD_BYTES = 15_000_000
@@ -138,6 +138,7 @@ private object FullSpeakingRecoveryCodec {
                     output.writeText(detail.suggestionZh)
                     output.writeInt(detail.evidence.code())
                 }
+                output.writeOptionalText(it.transcript)
             }
             output.writeFlag(snapshot.transcription != null)
             snapshot.transcription?.let {
@@ -218,7 +219,7 @@ private object FullSpeakingRecoveryCodec {
                             },
                         )
                     }
-                    ReadingFeedback(feedbackZh, action, confidence, details)
+                    ReadingFeedback(feedbackZh, action, confidence, details, if (version >= 3) input.readOptionalText(MAX_PAYLOAD_BYTES) else null)
                 }
             } else null
             val transcription = if (input.readFlag()) {
@@ -297,6 +298,7 @@ private object FullSpeakingRecoveryCodec {
         snapshot.training?.let {
             size += 4L + 1L + if (it.feedbackConfidence != null) 8L else 0L
             addText(it.feedbackZh)
+            addText(it.transcript)
             size += 4L
             it.details.forEach { detail ->
                 size += 4L + 4L

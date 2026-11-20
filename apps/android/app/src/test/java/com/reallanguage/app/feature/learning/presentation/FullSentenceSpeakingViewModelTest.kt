@@ -59,6 +59,21 @@ class FullSentenceSpeakingViewModelTest {
         assertTrue(repository.savedDecisions.isEmpty())
     }
 
+    @Test fun recognizedTrainingWordsRemainDistinctFromSummaryAndClearForTheNextRound() = runTest(dispatcher) {
+        val repository = FakeRepository(trainingTranscript = "future university life")
+        val model = createViewModel(repository)
+        model.onAction(FullSentenceSpeakingAction.StartRequested)
+        model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+        advanceUntilIdle()
+        assertEquals("future university life", model.uiState.value.feedbackTranscript)
+        assertEquals("请留意关键音和节奏。", model.uiState.value.feedbackZh)
+        model.onAction(FullSentenceSpeakingAction.ContinueTrainingRequested)
+        advanceUntilIdle()
+        assertNull(model.uiState.value.feedbackTranscript)
+        assertEquals(1, model.uiState.value.attemptIndex)
+        assertTrue(repository.savedDecisions.isEmpty())
+    }
+
     @Test fun transcriptionExceptionReleasesControlsWithoutInventingTranscript() = runTest(dispatcher) {
         val repository = FakeRepository(throwTranscription = true)
         val model = atFinalAttempt(repository)
@@ -548,6 +563,7 @@ class FullSentenceSpeakingViewModelTest {
         private val throwTranscription: Boolean = false,
         var throwSave: Boolean = false,
         private val throwEvaluation: Boolean = false,
+        private val trainingTranscript: String? = null,
     ) : FullSentenceSpeakingRepository {
         val trainingModes = mutableListOf<SpeakingTrainingMode>()
         var lastTranscript: String? = null
@@ -565,7 +581,7 @@ class FullSentenceSpeakingViewModelTest {
             trainingModes += mode
             if (throwTraining) throw java.io.IOException("interrupted")
             return ReadingFeedbackResult.Ready(
-                ReadingFeedback("请留意关键音和节奏。", trainingAction),
+                ReadingFeedback("请留意关键音和节奏。", trainingAction, transcript = trainingTranscript),
             )
         }
 

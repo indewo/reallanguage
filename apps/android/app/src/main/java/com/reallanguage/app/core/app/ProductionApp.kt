@@ -3942,7 +3942,7 @@ private fun ReviewSpeakingAbilityRoute(
         factory = viewModelFactory { FullSentenceSpeakingViewModel(chapter, route.ability.sentenceId, repository) },
     )
     val state by speaking.uiState.collectAsState()
-    val speaker = rememberConnectionAwareSentenceSpeaker()
+    val speaker = rememberConnectionAwareSentenceSpeaker(repository) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     var answerPlaybackFailed by remember(speaker, state.attemptIndex) { mutableStateOf(false) }
     val answerPlaybackScope = androidx.compose.runtime.rememberCoroutineScope()
     var answerPlaybackJob by remember(speaker) { mutableStateOf<kotlinx.coroutines.Job?>(null) }
@@ -3977,14 +3977,16 @@ private fun ReviewSpeakingAbilityRoute(
     FullSentenceSpeakingScreen(state.copy(answerPlaybackFailed = answerPlaybackFailed)) { action ->
         if (!capturePolicy.isAllowed()) return@FullSentenceSpeakingScreen
         when (action) {
-            FullSentenceSpeakingAction.AnswerAudioRequested -> {
+            FullSentenceSpeakingAction.AnswerAudioRequested, FullSentenceSpeakingAction.RegenerateAnswerAudioRequested -> {
                 if (state.submitting || state.evaluationReceived || state.technicalRetryPending || state.technicalRetryBlocked) return@FullSentenceSpeakingScreen
+                val text = chapter.sentences.first { it.sentenceId == route.ability.sentenceId }.textEn.normalizedEnglishTypography()
+                if (action == FullSentenceSpeakingAction.RegenerateAnswerAudioRequested && (!answerPlaybackFailed || !speaker.requestRegeneration(text))) return@FullSentenceSpeakingScreen
                 answerPlaybackJob?.cancel()
                 answerPlaybackFailed = false
                 answerPlaybackJob = answerPlaybackScope.launch {
-                    val played = speaker.play(chapter.sentences.first { it.sentenceId == route.ability.sentenceId }.textEn, speechRate = 0.82f)
+                    val played = speaker.play(text, speechRate = 0.82f)
                     answerPlaybackFailed = !played
-                    if (played) speaking.onAction(action)
+                    if (played) speaking.onAction(FullSentenceSpeakingAction.AnswerAudioRequested)
                 }
             }
             FullSentenceSpeakingAction.StartRequested -> {
@@ -4482,9 +4484,9 @@ private fun FullSentenceSpeakingRoute(
         }
     }
     val sentenceText = remember(route.chapter, route.focusSentenceId) {
-        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
+        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn.normalizedEnglishTypography()
     }
-    val speaker = rememberConnectionAwareSentenceSpeaker()
+    val speaker = rememberConnectionAwareSentenceSpeaker(repository) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     DisposableEffect(speaker) {
         onDispose {
             pendingCapturePermit = null
@@ -4514,14 +4516,15 @@ private fun FullSentenceSpeakingRoute(
     FullSentenceSpeakingScreen(state.copy(answerPlaybackFailed = answerPlaybackFailed)) { action ->
         if (!capturePolicy.isAllowed()) return@FullSentenceSpeakingScreen
         when (action) {
-            FullSentenceSpeakingAction.AnswerAudioRequested -> {
+            FullSentenceSpeakingAction.AnswerAudioRequested, FullSentenceSpeakingAction.RegenerateAnswerAudioRequested -> {
                 if (!state.submitting && !state.evaluationReceived && !state.technicalRetryPending && !state.technicalRetryBlocked) {
+                    if (action == FullSentenceSpeakingAction.RegenerateAnswerAudioRequested && (!answerPlaybackFailed || !speaker.requestRegeneration(sentenceText))) return@FullSentenceSpeakingScreen
                     answerPlaybackJob?.cancel()
                     answerPlaybackFailed = false
                     answerPlaybackJob = answerPlaybackScope.launch {
                         val played = speaker.play(sentenceText)
                         answerPlaybackFailed = !played
-                        if (played) speaking.onAction(action)
+                        if (played) speaking.onAction(FullSentenceSpeakingAction.AnswerAudioRequested)
                     }
                 }
             }

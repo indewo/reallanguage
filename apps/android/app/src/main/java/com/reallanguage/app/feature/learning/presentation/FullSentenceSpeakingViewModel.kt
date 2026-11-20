@@ -87,6 +87,7 @@ class FullSentenceSpeakingViewModel(
         }
         if (mutableUiState.value.submitting) return
         when (action) {
+            FullSentenceSpeakingAction.RegenerateAnswerAudioRequested -> Unit // The route obtains audio before reporting playback.
             FullSentenceSpeakingAction.BackRequested -> send(
                 FullSentenceSpeakingEffect.ReturnToAudioDictation,
             )
@@ -125,6 +126,7 @@ class FullSentenceSpeakingViewModel(
                     feedbackZh = null,
                     feedbackConfidence = null,
                     feedbackDetails = emptyList(),
+                    feedbackTranscript = null,
                     finalDecision = null,
                     captureFailed = false,
                     evaluationReceived = false,
@@ -182,7 +184,7 @@ class FullSentenceSpeakingViewModel(
             }
             mutableUiState.update {
                 it.copy(recording = true, captureFailed = false, feedbackZh = null,
-                    feedbackConfidence = null, feedbackDetails = emptyList(), needsNewRecording = false,
+                    feedbackConfidence = null, feedbackDetails = emptyList(), feedbackTranscript = null, needsNewRecording = false,
                     technicalRetryBlocked = false, technicalRetryPending = false,
                     transcript = if (repository.requiresAttemptRecovery) "" else it.transcript,
                     lowConfidenceSegments = if (repository.requiresAttemptRecovery) emptyList() else it.lowConfidenceSegments,
@@ -216,6 +218,7 @@ class FullSentenceSpeakingViewModel(
                                 feedbackZh = result.feedback.feedbackZh,
                                 feedbackConfidence = result.feedback.feedbackConfidence,
                                 feedbackDetails = result.feedback.details,
+                                feedbackTranscript = result.feedback.transcript,
                                 trainingCanContinue = true,
                                 technicalRetryPending = false,
                                 technicalRetryBlocked = false,
@@ -353,6 +356,7 @@ class FullSentenceSpeakingViewModel(
                 feedbackZh = null,
                 feedbackConfidence = null,
                 feedbackDetails = emptyList(),
+                feedbackTranscript = null,
                 trainingCanContinue = false,
                 captureFailed = false,
             )
@@ -539,7 +543,7 @@ class FullSentenceSpeakingViewModel(
         pendingCandidate = null
         val clean = state.copy(recording = false, transcript = "", transcriptReadyForConfirmation = false,
             lowConfidenceSegments = emptyList(), feedbackZh = null, feedbackConfidence = null,
-            feedbackDetails = emptyList(), trainingCanContinue = false,
+            feedbackDetails = emptyList(), feedbackTranscript = null, trainingCanContinue = false,
             finalDecision = null, captureFailed = false, needsNewRecording = false, evaluationReceived = false,
             decisionSaveFailed = false, technicalRetryPending = false, technicalRetryBlocked = false)
         return when (recovery) {
@@ -554,6 +558,7 @@ class FullSentenceSpeakingViewModel(
                 clean.copy(feedbackZh = recovery.feedback.feedbackZh,
                     feedbackConfidence = recovery.feedback.feedbackConfidence,
                     feedbackDetails = recovery.feedback.details,
+                    feedbackTranscript = recovery.feedback.transcript,
                     trainingCanContinue = true)
             }
             FullSpeakingRecovery.TranscriptionPending -> {

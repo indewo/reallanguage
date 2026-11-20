@@ -35,6 +35,7 @@ data class ReadingFeedback(
     val action: ReadingFeedbackAction,
     val feedbackConfidence: Double? = null,
     val details: List<ReadingFeedbackDetail> = emptyList(),
+    val transcript: String? = null,
 )
 
 sealed interface ReadingFeedbackResult {

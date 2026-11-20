@@ -441,6 +441,7 @@ class JsonFullSentenceSpeakingWireCodec : FullSentenceSpeakingWireCodec {
             it.action,
             it.feedbackConfidence,
             it.feedbackItems,
+            it.transcript,
         ))
     }
     override fun transcriptionRequest(chapterId: String, sentenceId: String, audio: CapturedReadSpeakAudio) =

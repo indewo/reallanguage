@@ -400,11 +400,16 @@ export class OpenAiLocalClient implements LocalAiClient {
       !Array.isArray(evidence.rhythmIssues)
     )
       throw new Error("Invalid original audio evidence");
+    const recognized = typeof input.transcript === "string" ? input.transcript : evidence.observedTranscript;
+    const normalizedWords = (value: string) => value.normalize("NFKC").replace(/[’‘]/gu, "'").toLowerCase().replace(/[^a-z0-9']+/gu, " ").trim();
     const generated = record(
       await this.generateTextJson(task, {
         ...context,
         ...(task === "READING_FEEDBACK_V1"
-          ? { transcript: typeof input.transcript === "string" ? input.transcript : evidence.observedTranscript }
+          ? { transcript: recognized, transcriptComparison: {
+              exactWordsMatch: Boolean(normalizedWords(recognized)) && normalizedWords(recognized) === normalizedWords(text(input, "targetTextEn")),
+              acousticTranscriptMatchesAsr: Boolean(normalizedWords(recognized)) && normalizedWords(recognized) === normalizedWords(evidence.observedTranscript),
+            } }
           : {}),
         pronunciationEvidence: evidence,
       }),
@@ -801,7 +806,8 @@ function generationFormat(task: string, input?: unknown) {
       },
     }),
     READING_FEEDBACK_V1: object({
-      feedbackZh: string,
+      feedbackZh: { type: "string", minLength: 1, maxLength: 160, pattern: "朗读|录音|识别|发音|语音",
+        description: "Summarize the observed quality or uncertainty of THIS reading. Not a translation, meaning or paraphrase of targetTextEn. Mention 朗读, 录音, 识别, 发音 or 语音 as the subject." },
       feedbackItems: {
         type: "array",
         minItems: 3,
@@ -1393,6 +1399,8 @@ const taskInstructions = (task: string): string => {
   let common =
     "You are the RealLanguage learning engine. Return one valid json object only. Preserve facts, time, conditions, logic and tone. Do not add facts. Keep Chinese explanations concise and objective.";
   if (task === "READING_FEEDBACK_V1") common += " feedbackZh must describe the learner's observed reading, not translate or paraphrase the target sentence. The supplied transcript is independent ASR evidence; never replace it with pronunciationEvidence.observedTranscript or the target. If these sources disagree about language or spoken words, acknowledge the uncertainty instead of claiming an exact match or fluent delivery. Empty rhythmIssues means no reliable localized rhythm issue, not proof of natural fluent rhythm. A Chinese-only transcript cannot match an English target. Only observations supported by the named evidence may be presented as AUDIO or TRANSCRIPT.";
+  if (task === "READING_FEEDBACK_V1") common += " A recognition substitution is not proof that the learner mispronounced or omitted the target. Describe a transcript mismatch as '识别为…，可能存在识别误差，请核对识别文本', never as an established spoken error. Do not instruct replay of the learner recording: that playback control is unavailable here. Localize an acoustic pronunciation problem only when pronunciationEvidence.wordIssues explicitly supports that exact issue; observedTranscript alone is transcription evidence, not acoustic proof of a specific mispronunciation. Where independent ASR and acoustic observedTranscript differ, do not assign a targetText to an unsupported localized error.";
+  if (task === "READING_FEEDBACK_V1") common += " transcriptComparison is computed evidence, not a model guess. When exactWordsMatch is true, explicitly state the recognized wording covers the target; do not invent a mismatch or issue a generic recognition warning as if words were missing. When acousticTranscriptMatchesAsr is false, keep that source disagreement separate from target completeness. feedbackZh must start from the observed reading outcome or uncertainty, never the meaning of the English sentence. Do not repeat the full target in feedbackItems; quote only a specific supported fragment, or use targetText:null.";
   if (task === "CONTENT_SAFETY_CHECK_V1") {
     return `${common} Assess the full Chinese input context for privacy or safety risk. Return {"decision":"PASS"} when safe. Otherwise return {"decision":"BLOCK","reasonCode":"...","userReasonZh":"...","riskSpans":[{"startCodePoint":0,"endCodePoint":1,"text":"...","reasonCode":"..."}],"confidence":0.0}. Span indexes count Unicode code points and must exactly match the source.`;
   }

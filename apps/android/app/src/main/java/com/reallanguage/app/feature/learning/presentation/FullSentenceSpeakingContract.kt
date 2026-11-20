@@ -18,6 +18,7 @@ data class FullSentenceSpeakingUiState(
     val feedbackZh: String? = null,
     val feedbackConfidence: Double? = null,
     val feedbackDetails: List<ReadingFeedbackDetail> = emptyList(),
+    val feedbackTranscript: String? = null,
     val trainingCanContinue: Boolean = false,
     val finalDecision: SpeakingEvaluationDecision? = null,
     val captureFailed: Boolean = false,
@@ -43,6 +44,7 @@ data class FullSentenceSpeakingUiState(
 sealed interface FullSentenceSpeakingAction {
     data object BackRequested : FullSentenceSpeakingAction
     data object AnswerAudioRequested : FullSentenceSpeakingAction
+    data object RegenerateAnswerAudioRequested : FullSentenceSpeakingAction
     data object StartRequested : FullSentenceSpeakingAction
     data object FinishedRequested : FullSentenceSpeakingAction
     data class TranscriptChanged(val value: String) : FullSentenceSpeakingAction

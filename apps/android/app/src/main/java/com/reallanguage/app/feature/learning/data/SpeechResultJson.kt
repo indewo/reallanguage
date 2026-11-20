@@ -39,6 +39,7 @@ internal data class ReadingFeedbackWire(
     val feedbackConfidence: Double,
     val feedbackItems: List<ReadingFeedbackDetail>,
     val action: ReadingFeedbackAction,
+    val transcript: String,
 )
 
 internal fun JSONObject.readingFeedbackWire(): ReadingFeedbackWire {
@@ -74,6 +75,7 @@ internal fun JSONObject.readingFeedbackWire(): ReadingFeedbackWire {
         confidence,
         feedbackItems,
         ReadingFeedbackAction.valueOf(speechString("action")),
+        speechString("transcript", allowEmpty = true),
     )
 }
 

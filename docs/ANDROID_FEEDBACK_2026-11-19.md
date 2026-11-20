@@ -230,3 +230,17 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 代码审计另发现真实风险：READING_FEEDBACK先取独立ASR，音频评估后又用其observedTranscript覆盖ASR。修复为内容比较保留独立ASR；音频评估仍独立、不把目标或ASR送作听音答案；声称en但observedTranscript含汉字或无拉丁字母不作为充分英语证据，不能据此允许CONTINUE/高置信发音结论。提示词明确feedbackZh应总结实际朗读，不是翻译原句；两路识别冲突需说明不确定，rhythmIssues空不等于已证明语流自然。新增隔离回归验证音频评估误翻中文时不覆盖ASR、不保留CONTINUE/高置信；提供器56项测试及API构建通过。
 
 部署仅openai-metered-provider.js，原文件备份.local-data/provider.before-reading-transcript-20261120.js，语法检查、active及回环健康ok/api通过，两端SHA256 628cec3b13ef08187cd2ab110256935fcde037de62fca67aa472dc4d0967eb89一致。旧第1次反馈不篡改；已请求用户真实录第2次检查新反馈，此修复尚未真机验收，也不能把代码风险认定为已证明的本次根因。
+
+### 第2至4次真实朗读：区分识别与发音结论、显示识别文本
+
+用户实际第2次录音后，POST reading-feedback200（c922e58a-4def-4bad-9535-db302ec8008b），摘要改为朗读评价，但将future university life断言误说field trip university。用户明确实际读future university life，该定位不能通过验收。继续限制提示：识别替换不证明实际发音错误，文本差异标识识别及可能误差，不冒充原音依据；无可靠节奏问题不等于证明流利。没有把用户反馈直接写成模型纠正结果。
+
+整句会说UI新增只读“本次识别（可能有误）”，数据来自后台原transcript，区别于feedbackZh；domain/wire/VM带此字段，下一轮清除，恢复文件升级RLR6版本3并兼容1/2，旧记录不伪造识别文本。整句会说及统一回顾对应路线接新整句音源、规范化英文标点以复用身份；失败明确重新生成（重新计费），播放成功后才报告答案已播放，不代替录音。回顾真实入口未测。初次编译漏新增action，补齐后构建成功。
+
+首轮40项测试中恢复文件19项有14项失败，未记通过。直接JDK FileChannel.open目录READ/force在Windows抛AccessDeniedException，生产目录fsync不为主机测试放宽。新增独立格式测试3项（并非加密持久化替身）检查v3原文/空/未知、v1/v2不补转录、待处理/终止和尾部损坏拒绝；连同22项VM及2项repository共27项通过。保留原文件测试失败记录；这些检查不能替代全部Linux持久化边界测试。
+
+原证书覆盖后，首页→第6/9步→继续，第2次原反馈正常恢复，证明旧v2实际记录可读。点示范真实POST201/GET200仍tts_4c7c4502-c879-4e10-ad7d-fe17fb0f90df（19cfab21-9392-4120-915f-143661dee8e6），非假录音。用户完成第3次，实际POST200（1c55b40c-322e-41fe-be10-1bc8e0345d6a），新识别文本准确包含future university life；摘要仍错误地翻译原句，识别一致却提示误差，未宣称修好。已实际查看rl-speaking-recognition.png，完整英句可见、细节需滚动、底部按钮可达；私人截图未入库。暂时退出保存、结束进程、重启、首页继续，仍第3次和同一完整识别，证明本次v3真机加密保存/恢复。
+
+再修提供器：传入实际独立ASR与目标规范化逐词比较、音频观察与ASR是否一致两个布尔证据，不修改任一原文；摘要schema补明确定义与主题词约束，提示一致时不伪造缺漏或重复整句，识别替换不直接判发音错误，当前无原录音回放控件不引导点击不存在操作。56项提供器回归及构建通过，单模块再次备份部署，active/回环健康与SHA读回一致，最新SHA256 95acc43c8b44bd599c9e6efe516b345708e5848e88bcf44253a159541a27e4d8。
+
+用户实际第4次录音，POST200（72baffcb-6ac3-4dfd-8598-5febf721bbb4）：摘要为“录音中识别为meaning so，可能存在识别误差…”且说明语音与转写不一致；页面实际ASR也是meaning so，词细节标识识别文本，与mainly so差异未直接断言误读。此次摘要与来源标识改善有实际证据，不扩大为识别准确率/所有发音定位通过。用户正继续第5次独立复述，转录确认、评价及最终保存待测；旧失败费用对账、缓存实际到期恢复及其他反馈仍未关闭。

@@ -70,6 +70,7 @@ class FullSentenceSpeakingRecoveryJournalTest {
                 ReadingFeedbackDetail(ReadingFeedbackAspect.RHYTHM, null, "句末停顿自然。", "继续按意群朗读。", ReadingFeedbackEvidence.AUDIO),
                 ReadingFeedbackDetail(ReadingFeedbackAspect.COMPLETENESS, null, "识别文本覆盖整句。", "继续保持完整。", ReadingFeedbackEvidence.TRANSCRIPT),
             ),
+            "I had a wonderful day.",
         )
         val snapshot = FullSpeakingRecoverySnapshot(
             f.recordingId,

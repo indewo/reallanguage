@@ -33,6 +33,9 @@ describe("LocalOpenAiMeteredProvider", () => {
     expect(JSON.parse(generatedRequest.input).input.pronunciationEvidence.observedTranscript).toBe("我想学习英语。");
     expect(generatedRequest.instructions).toContain("not translate or paraphrase the target sentence");
     expect(generatedRequest.instructions).toContain("not proof of natural fluent rhythm");
+    expect(generatedRequest.instructions).toContain("A recognition substitution is not proof");
+    expect(JSON.parse(generatedRequest.input).input.transcriptComparison).toEqual({ exactWordsMatch: true, acousticTranscriptMatchesAsr: false });
+    expect(generatedRequest.text.format.schema.properties.feedbackZh.pattern).toBe("朗读|录音|识别|发音|语音");
   });
   it("constrains a locked meaning only for its exact occurrence without rewriting whitespace", async () => {
     const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
