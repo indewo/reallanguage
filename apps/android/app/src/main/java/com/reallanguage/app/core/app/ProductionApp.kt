@@ -5132,10 +5132,10 @@ private fun ReadSpeakRoute(
     val sentenceText = remember(route.chapter, route.focusSentenceId) {
         route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
     }
-    val speaker = rememberConnectionAwareSentenceSpeaker(repository)
+    val speaker = rememberConnectionAwareSentenceSpeaker(repository) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     LaunchedEffect(speaker, state.audioPlaying) {
         if (state.audioPlaying) {
-            val played = speaker.play(sentenceText)
+            val played = speaker.play(sentenceText.normalizedEnglishTypography())
             if (readSpeak.uiState.value.audioPlaying) readSpeak.onAction(ReadSpeakAction.PlaybackFinished(played))
         } else speaker.stop()
     }
