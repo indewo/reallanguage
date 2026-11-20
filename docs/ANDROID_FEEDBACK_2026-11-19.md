@@ -173,3 +173,6 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 删号残留音频后台恢复
 核对既有KyselyAccountDeletionStore实际直接DELETE identity.accounts，无持久删除日志。音频加密载荷内保留accountId，并解密后校验其SHA256与AAD目录一致；后台清理逐文件调用数据库确认账号是否仍存在，不存在则清理未到期音频。数据库不可达抛错并保留音频，不把检查错误当删号，不依赖用户登录即可下轮重试。实际临时文件测试覆盖数据库检查失败仍保留、随后账号不存在清理成功，测试和类型检查通过。无真实账号被删除，测试不证明生产删号全流程；后台周期带来的清理延迟、并发进行中的合成及即时清理仍须集成检查。改动尚未部署，语音自然度及手机接入仍未验收。
+
+### 整句语音启动配置与价格核对
+官方模型信息https://help.aliyun.com/en/model-studio/qwen3-tts-flash列价0.8CNY/10000字符，折合80微元/字符，仅作为本次核对依据；实际计价以所用区域及供应商账单为准。新增configuredSentenceAudio并接local-main启动选项，默认不开启；启用必须显式提供独立语音API_KEY、32字节KEY_HEX、DIRECTORY、COST_MICRO_CNY_PER_CHARACTER、MAXIMUM_CHARGE_FEN、RETENTION_MS（统一REAL_LANGUAGE_SENTENCE_AUDIO_前缀，启用为ENABLED=true）。缺项/零价/超长保留期拒绝，不从文本模型凭证/固定成本自动推断。隔离配置检查与类型检查通过。预留上限仍需核对数据库倍率后配置，未把测试中的10分当已核准生产值。本批未写服务器秘密或启用环境，未调用真实供应商；手机音频仍为旧系统TTS，不能宣称自然度改善。

@@ -12,6 +12,7 @@ import {
   LocalMailboxRegistrationEmailSender,
 } from "./local/directmail-registration-email.js";
 import { createLocalApp } from "./local/local-app.js";
+import { configuredSentenceAudio } from "./local/sentence-audio-configuration.js";
 import {
   LocalOpenAiMeteredProvider,
   OpenAiLocalClient,
@@ -69,6 +70,7 @@ const app = await createLocalApp({
     new OpenAiLocalClient(openAiApiKey),
   ),
   developmentCreditFen: 10_000,
+  sentenceAudio: configuredSentenceAudio(projectRoot),
   registrationEmail: {
     sender: identityEmailSender,
     publicApiBaseUrl,
