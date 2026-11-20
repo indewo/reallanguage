@@ -242,7 +242,7 @@ export class OpenAiLocalClient implements LocalAiClient {
           store: false,
           instructions: taskInstructions(task),
           input: JSON.stringify({ format: "json", task, input }),
-          text: { format: generationFormat(task) },
+          text: { format: generationFormat(task, input) },
         }),
       });
       if (response.ok) {
@@ -281,7 +281,7 @@ export class OpenAiLocalClient implements LocalAiClient {
       `${taskInstructions(task)}\n\n` +
       "Return exactly one JSON object that validates against the following JSON Schema. " +
       "Field names are case-sensitive; include every required field and no others.\n" +
-      JSON.stringify(generationFormat(task));
+      JSON.stringify(generationFormat(task, input));
     const request = async (withResponseFormat: boolean) =>
       this.fetcher(`${openAiBaseUrl()}/chat/completions`, {
         method: "POST",
@@ -742,7 +742,29 @@ const audioEvidenceTasks = new Set([
   "SCENE_RESPONSE_EVALUATION_V1",
 ]);
 
-function generationFormat(task: string) {
+function generationFormat(task: string, input?: unknown) {
+  const source = record(input);
+  const expression = record(source.requestedExpression);
+  const start = expression.startUtf16;
+  const end = expression.endUtf16;
+  const meanings = new Set<string>();
+  if (task === "WORD_EXPLANATION_V1" && Number.isInteger(start) && Number.isInteger(end) &&
+      (start as number) >= 0 && (end as number) > (start as number) && Array.isArray(source.lockedTargets)) {
+    const matches = (evidence: unknown) => {
+      const span = record(evidence);
+      return span.startUtf16 === start && span.endUtf16 === end;
+    };
+    for (const raw of source.lockedTargets) {
+      const target = record(raw);
+      if (target.unitId !== source.focusSentenceId) continue;
+      if (["WORD", "FIXED_EXPRESSION"].includes(String(target.type)) && matches(target.sourceEvidence) &&
+          typeof target.explanationZh === "string" && target.explanationZh.trim()) meanings.add(target.explanationZh);
+      if (Array.isArray(target.relatedVocabulary)) for (const item of target.relatedVocabulary) {
+        const related = record(item);
+        if (matches(related.sourceEvidence) && typeof related.senseZh === "string" && related.senseZh.trim()) meanings.add(related.senseZh);
+      }
+    }
+  }
   const string = { type: "string" };
   const strings = { type: "array", items: string };
   const object = (properties: Record<string, unknown>) => ({
@@ -838,7 +860,7 @@ function generationFormat(task: string) {
       kind: { type: "string", enum: ["EXPRESSION"] },
       expressionId: string,
       explanationZh: string,
-      contextualMeaningZh: { type: "string", minLength: 1 },
+      contextualMeaningZh: { type: "string", minLength: 1, ...(meanings.size === 1 ? { enum: [...meanings] } : {}) },
       usageZh: { type: "string", minLength: 1 },
       expressionHintZh: { type: ["string", "null"], minLength: 1 },
       phonetic: { type: ["string", "null"] },

@@ -16,6 +16,20 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("constrains a locked meaning only for its exact occurrence without rewriting whitespace", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+    const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);
+    const input = { focusSentenceId: "s1", requestedExpression: { startUtf16: 5, endUtf16: 16 }, lockedTargets: [
+      { unitId: "s1", type: "WORD", explanationZh: " 交流 ", sourceEvidence: { startUtf16: 5, endUtf16: 16 } },
+      { unitId: "s1", type: "WORD", explanationZh: "传达", sourceEvidence: { startUtf16: 20, endUtf16: 31 } },
+    ] };
+    await client.generateJson("WORD_EXPLANATION_V1", input);
+    const request = JSON.parse(String(fetcher.mock.calls[0]![1].body));
+    expect(request.text.format.schema.properties.contextualMeaningZh.enum).toEqual([" 交流 "]);
+    await client.generateJson("WORD_EXPLANATION_V1", { ...input, requestedExpression: { startUtf16: 0, endUtf16: 4 } });
+    const unmatched = JSON.parse(String(fetcher.mock.calls[1]![1].body));
+    expect(unmatched.text.format.schema.properties.contextualMeaningZh.enum).toBeUndefined();
+  });
   it("requires scene-grounded natural American English instead of text-only literal translation", async () => {
     const fetcher = vi.fn().mockResolvedValue(
       new Response(

@@ -195,3 +195,6 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 用户实听反馈：新mainly音源
 用户对本轮手机实际取得的mainly新音源回复“听到了，明显自然些”。因此该单词已取得声音可听且相较旧系统音源自然度改善的用户证据；不扩大为整句连贯性或全部页面通过。完整原句的旧失败请求仍需对账/恢复，不能换command掩盖；其他页面尚未切换新音源。继续验证完整句、重复播放、停止与跨页取消。
+
+### 已确认词义输出约束补修
+针对communicate真实请求Invalid locked expression meaning output，现有后端拒绝不一致输出的校验保持不变；没有读取到供应商原始错值，不能断言具体换成哪个同义词。提供器generationFormat新增按input当前focusSentenceId和完整start/end匹配的单一canonical意思enum，直接引用已确认原文含空白；重复词另一处不借用，冲突/缺元数据不猜测。Responses结构化schema与兼容Chat内嵌schema均带同一约束，不在响应后手工改AI文本。55项提供器测试及构建通过，新增回归检查准确位置和空白，未匹配不附enum；首次回归mock重复消费Response失败，改每次创建Response后通过。此项未部署、未完成新的真实生成和旧失败请求恢复，不能声明点词错误关闭。整句语音失败的旧对账记录仍保留，未换command重发。
