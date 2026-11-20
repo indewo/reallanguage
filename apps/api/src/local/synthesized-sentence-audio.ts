@@ -5,7 +5,7 @@ const MAX_AUDIO_BYTES = 16 * 1024 * 1024;
 /** Measure the downloaded waveform, never estimate duration from text length. */
 export function measureSentenceWav(bytes: Buffer): number {
   if (bytes.length < 44 || bytes.toString("ascii", 0, 4) !== "RIFF" || bytes.toString("ascii", 8, 12) !== "WAVE" ||
-      bytes.readUInt32LE(4) + 8 !== bytes.length) throw new Error("Invalid synthesized waveform");
+      bytes.readUInt32LE(4) + 8 !== bytes.length) throw new Error(`Invalid synthesized waveform (bytes=${bytes.length}, magic=${bytes.subarray(0, 12).toString("hex")}, declared=${bytes.length >= 8 ? bytes.readUInt32LE(4) : -1})`);
   let byteRate = 0;
   let blockAlign = 0;
   let dataBytes: number | undefined;

@@ -16,10 +16,11 @@ internal val LocalSentenceSpeakerFactory = staticCompositionLocalOf<(Context, ()
 
 /** Existing route still owns close(). A restored connection never triggers another playback. */
 @Composable
-internal fun rememberConnectionAwareSentenceSpeaker(key: Any? = Unit): AndroidSentenceSpeaker {
+internal fun rememberConnectionAwareSentenceSpeaker(key: Any? = Unit,
+    factoryOverride: ((Context, () -> Boolean) -> AndroidSentenceSpeaker)? = null): AndroidSentenceSpeaker {
     val context = LocalContext.current
     val policy = LocalConnectionPlaybackPolicy.current
-    val factory = LocalSentenceSpeakerFactory.current
+    val factory = factoryOverride ?: LocalSentenceSpeakerFactory.current
     val speaker = remember(key) { factory(context, policy.isAllowed) }
     LaunchedEffect(speaker, policy.interrupted) {
         if (policy.interrupted) speaker.stop()

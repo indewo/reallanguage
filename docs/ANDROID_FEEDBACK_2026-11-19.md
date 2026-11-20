@@ -185,3 +185,7 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### Android整句内存播放器与下载工厂
 新增RemoteSentenceSpeechEngine，完整音频通过MediaDataSource内存交MediaPlayer，不留明文临时音频文件；完成/错误/停止均释放并清零字节，取消下载和关闭scope，generation隔离旧异步回调，账号资格再次检查。正常音源生成后按用户请求速度用播放器变速，不逐词生成。ProductionAppGraph新增remoteSentenceSpeaker工厂，走现有连接/余额/会话网络边界POST合成及GET账号载荷，command按账号+原文+音色版本稳定，校验引用/mime/大小及账号epoch。构建通过；尚未把工厂装配到页面CompositionLocal，未覆盖安装或真实播放，当前仅英文支持，中文/其他语言须保留原引擎路径，正式切换前继续接。并发/停止/清理目前是实现检查，不宣称真机验收，费用配置与服务启用尚未完成。
+
+### 新音源启用与手机首次真实点击失败
+服务器更新载荷控制器并语法检查后，保留.env.local.before-sentence-audio秘密备份，启用独立语音环境参数，密钥仅服务器生成/保存不输出不进Git；验证当前配置原供应商域为北京DashScope。显式成本80微元/字符、预留上限10分、临时缓存1小时，按试用seed1倍及600字符上限成本4.8分选择预留余量，不冒充实时数据库倍率读取。公网健康ok/api，载荷未登录401。
+基础讲解通过工厂覆盖实际切换到远程整句音源，其他页未改。Android构建及保留数据覆盖成功；恢复时用户进度已在手写第1次，实际返回读＋说（已读完）再返回基础讲解，没有点完成伪造掌握。点发音真实POST sentence-audio返回500，供应商下载产物未通过measureSentenceWav首层校验（Invalid synthesized waveform）；手机显示语音失败，未通过。服务端计量原失败需对账，不换command自动重试；其他尚未请求的真实表达可单独验证，不冒充失败命令恢复。新增仅字节数/前12字节格式签名/RIFF声明长度诊断，不记录正文、音频内容或签名URL，构建后部署诊断单模块。尚未取得其下一次真实格式数据，不放宽格式校验掩盖失败，语音自然度仍未验收。

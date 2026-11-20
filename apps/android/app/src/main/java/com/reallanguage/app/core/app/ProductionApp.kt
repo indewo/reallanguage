@@ -5035,7 +5035,7 @@ private fun ExplanationReadingRoute(
     )
     val state by reading.uiState.collectAsState()
     val context = LocalContext.current
-    val speaker = rememberConnectionAwareSentenceSpeaker()
+    val speaker = rememberConnectionAwareSentenceSpeaker(route.entryId) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     DisposableEffect(speaker) { onDispose { speaker.close() } }
     ExplanationAudioPlayback(state,
         play = { text, rate, language -> speaker.play(text, rate, java.util.Locale.forLanguageTag(language)) },
