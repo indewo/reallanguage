@@ -36,6 +36,27 @@ class AudioDictationViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun thrownSaveFailureKeepsAnswerAndAllowsExplicitRetry() = runTest(dispatcher) {
+        var calls = 0
+        val model = createViewModel(AudioDictationCompletionRepository {
+            if (++calls == 1) throw java.io.IOException("interrupted")
+            AudioDictationCompletionResult.Saved
+        })
+        model.onAction(AudioDictationAction.InputChanged("I expressed myself clearly."))
+        model.onAction(AudioDictationAction.SubmitRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertFalse(model.uiState.value.correct)
+        assertTrue(model.uiState.value.saveFailed)
+        assertEquals("I expressed myself clearly.", model.uiState.value.input)
+        assertEquals(1, calls)
+        model.onAction(AudioDictationAction.SubmitRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.correct)
+        assertEquals(2, calls)
+        assertFalse(model.uiState.value.saveFailed)
+    }
+
     @Test fun mobileSmartApostropheIsAcceptedAndSavedWithoutRewritingTheInputOrOpeningCorrection() = runTest(dispatcher) {
         val mobileInput = "I’m ready."
         var completions = 0

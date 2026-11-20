@@ -202,10 +202,11 @@ class FullSentenceSpeakingViewModel(
         if (trainingMode != null) {
             viewModelScope.launch {
                 when (
-                    val result = repository.trainingFeedback(
+                    val result = try { repository.trainingFeedback(
                         current.currentFocusSentenceId,
                         trainingMode,
-                    )
+                    ) } catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { ReadingFeedbackResult.Failed }
                 ) {
                     is ReadingFeedbackResult.Ready -> {
                         cancelAutomaticRetry(resetAttempt = true)
@@ -241,7 +242,10 @@ class FullSentenceSpeakingViewModel(
         val current = mutableUiState.value
         mutableUiState.update { it.copy(recording = false, submitting = true, captureFailed = false) }
         viewModelScope.launch {
-            when (val result = repository.transcribeIndependentRetelling(current.currentFocusSentenceId)) {
+            val transcription = try { repository.transcribeIndependentRetelling(current.currentFocusSentenceId) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { SpeakingTranscriptionResult.Failed }
+            when (val result = transcription) {
                 is SpeakingTranscriptionResult.Ready -> {
                     cancelAutomaticRetry(resetAttempt = true)
                     currentCoroutineContext().ensureActive()
@@ -277,11 +281,12 @@ class FullSentenceSpeakingViewModel(
         ) return
         mutableUiState.update { it.copy(submitting = true, captureFailed = false) }
         viewModelScope.launch {
-            val result = pendingCandidate?.let { SpeakingEvaluationResult.Ready(it) } ?: repository.evaluateIndependentRetelling(
+            val result = pendingCandidate?.let { SpeakingEvaluationResult.Ready(it) } ?: try { repository.evaluateIndependentRetelling(
                 current.currentFocusSentenceId,
                 current.transcript.trim(),
                 current.answerAudioPlayed,
-            )
+            ) } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { SpeakingEvaluationResult.Failed }
             when (result) {
                 is SpeakingEvaluationResult.Ready -> {
                     cancelAutomaticRetry(resetAttempt = true)
@@ -306,7 +311,9 @@ class FullSentenceSpeakingViewModel(
                             it.copy(submitting = false, feedbackZh = candidate.feedbackZh, finalDecision = decision)
                         }
                     } else when (
-                        repository.saveIndependentDecision(current.currentFocusSentenceId, decision)
+                        try { repository.saveIndependentDecision(current.currentFocusSentenceId, decision) }
+                        catch (cancelled: CancellationException) { throw cancelled }
+                        catch (_: Exception) { SpeakingDecisionSaveResult.Failed }
                     ) {
                         SpeakingDecisionSaveResult.Saved -> {
                             mutableUiState.update {

@@ -46,6 +46,68 @@ class FullSentenceSpeakingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun trainingExceptionReleasesControlsWithoutAdvancingRound() = runTest(dispatcher) {
+        val repository = FakeRepository(throwTraining = true)
+        val model = FullSentenceSpeakingViewModel(chapter, "s1", repository)
+        model.onAction(FullSentenceSpeakingAction.StartRequested)
+        model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.captureFailed)
+        assertFalse(model.uiState.value.trainingCanContinue)
+        assertEquals(0, model.uiState.value.attemptIndex)
+        assertTrue(repository.savedDecisions.isEmpty())
+    }
+
+    @Test fun transcriptionExceptionReleasesControlsWithoutInventingTranscript() = runTest(dispatcher) {
+        val repository = FakeRepository(throwTranscription = true)
+        val model = atFinalAttempt(repository)
+        model.onAction(FullSentenceSpeakingAction.StartRequested)
+        model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.captureFailed)
+        assertFalse(model.uiState.value.transcriptReadyForConfirmation)
+        assertEquals("", model.uiState.value.transcript)
+        assertEquals(0, repository.evaluations)
+    }
+
+    @Test fun decisionSaveExceptionRetainsCandidateAndRetriesSaveWithoutNewEvaluation() = runTest(dispatcher) {
+        val repository = FakeRepository(throwSave = true)
+        val model = atFinalAttempt(repository)
+        model.onAction(FullSentenceSpeakingAction.StartRequested)
+        model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+        advanceUntilIdle()
+        model.onAction(FullSentenceSpeakingAction.ConfirmTranscriptRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.decisionSaveFailed)
+        assertNull(model.uiState.value.finalDecision)
+        assertEquals("recognized transcript", model.uiState.value.transcript)
+        repository.throwSave = false
+        model.onAction(FullSentenceSpeakingAction.ConfirmTranscriptRequested)
+        advanceUntilIdle()
+        assertEquals(1, repository.evaluations)
+        assertEquals(SpeakingEvaluationDecision.PASS, model.uiState.value.finalDecision)
+    }
+
+    @Test fun evaluationExceptionKeepsRecognizedTextAndDoesNotSavePass() = runTest(dispatcher) {
+        val repository = FakeRepository(throwEvaluation = true)
+        val model = atFinalAttempt(repository)
+        model.onAction(FullSentenceSpeakingAction.StartRequested)
+        model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+        advanceUntilIdle()
+        model.onAction(FullSentenceSpeakingAction.ConfirmTranscriptRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.submitting)
+        assertTrue(model.uiState.value.captureFailed)
+        assertEquals("recognized transcript", model.uiState.value.transcript)
+        assertTrue(model.uiState.value.needsNewRecording)
+        assertNull(model.uiState.value.finalDecision)
+        assertTrue(repository.savedDecisions.isEmpty())
+        assertEquals(1, repository.evaluations)
+    }
+
     @Test
     fun failedEvaluationRequiresNewAudioInsteadOfConfirmingAConsumedRecordingForever() = runTest(dispatcher) {
         val repository = FakeRepository(evaluationFails = true)
@@ -482,6 +544,10 @@ class FullSentenceSpeakingViewModelTest {
         var saveResult: SpeakingDecisionSaveResult = SpeakingDecisionSaveResult.Saved,
         val evaluationFails: Boolean = false,
         private val trainingAction: ReadingFeedbackAction = ReadingFeedbackAction.CONTINUE,
+        private val throwTraining: Boolean = false,
+        private val throwTranscription: Boolean = false,
+        var throwSave: Boolean = false,
+        private val throwEvaluation: Boolean = false,
     ) : FullSentenceSpeakingRepository {
         val trainingModes = mutableListOf<SpeakingTrainingMode>()
         var lastTranscript: String? = null
@@ -497,6 +563,7 @@ class FullSentenceSpeakingViewModelTest {
             mode: SpeakingTrainingMode,
         ): ReadingFeedbackResult {
             trainingModes += mode
+            if (throwTraining) throw java.io.IOException("interrupted")
             return ReadingFeedbackResult.Ready(
                 ReadingFeedback("请留意关键音和节奏。", trainingAction),
             )
@@ -509,21 +576,26 @@ class FullSentenceSpeakingViewModelTest {
         ): SpeakingEvaluationResult {
             evaluations++
             lastTranscript = confirmedTranscript
+            if (throwEvaluation) throw java.io.IOException("interrupted")
             if (evaluationFails) return SpeakingEvaluationResult.Failed
             return SpeakingEvaluationResult.Ready(candidate)
         }
 
         override suspend fun transcribeIndependentRetelling(
             sentenceId: String,
-        ): SpeakingTranscriptionResult = SpeakingTranscriptionResult.Ready(
+        ): SpeakingTranscriptionResult {
+            if (throwTranscription) throw java.io.IOException("interrupted")
+            return SpeakingTranscriptionResult.Ready(
             SpeakingTranscription(transcript, emptyList(), 0.9),
         )
+        }
 
         override suspend fun saveIndependentDecision(
             sentenceId: String,
             decision: SpeakingEvaluationDecision,
         ): SpeakingDecisionSaveResult {
             savedDecisions += decision
+            if (throwSave) throw java.io.IOException("interrupted")
             return saveResult
         }
     }

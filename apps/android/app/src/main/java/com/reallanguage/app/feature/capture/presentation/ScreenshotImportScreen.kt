@@ -1,5 +1,6 @@
 package com.reallanguage.app.feature.capture.presentation
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.activity.compose.BackHandler
@@ -69,6 +70,13 @@ fun ScreenshotImportScreen(
     var recognized by rememberSaveable(items) { mutableStateOf<String?>(null) }
     val selectFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
         if (uris.isNotEmpty() && !busy) {
+            // OpenDocuments grants must survive process recreation along with saved URI strings.
+            uris.forEach { uri ->
+                try { resolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+                catch (_: SecurityException) {
+                    // Some document providers offer only a temporary grant; it is still usable now.
+                }
+            }
             items = ArrayList((items + uris.map(Uri::toString)).distinct())
             error = null
         }

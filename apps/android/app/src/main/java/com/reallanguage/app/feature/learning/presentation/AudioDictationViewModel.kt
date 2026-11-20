@@ -94,12 +94,15 @@ class AudioDictationViewModel(
             mutableUiState.update { it.copy(emptySubmission = true) }
             return
         }
-        mutableUiState.update { it.copy(submitting = true, audioLooping = false) }
+        mutableUiState.update { it.copy(submitting = true, audioLooping = false, saveFailed = false) }
         viewModelScope.launch {
         if (!saveProgress()) { mutableUiState.update { it.copy(submitting = false) }; return@launch }
         when (comparator.compare(expectedSentence, current.input)) {
             FixedWritingResult.Correct -> {
-                    when (completionRepository.complete(current.currentFocusSentenceId)) {
+                    val completion = try { completionRepository.complete(current.currentFocusSentenceId) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { AudioDictationCompletionResult.Failed }
+                    when (completion) {
                         AudioDictationCompletionResult.Saved -> {
                             mutableUiState.update {
                                 it.copy(submitting = false, correct = true)
