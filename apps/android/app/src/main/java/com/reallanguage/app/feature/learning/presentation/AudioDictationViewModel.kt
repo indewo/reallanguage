@@ -64,6 +64,9 @@ class AudioDictationViewModel(
         if (current.correct && action !in setOf(AudioDictationAction.BackRequested, AudioDictationAction.ContinueRequested)) return
         when (action) {
             AudioDictationAction.AudioPlaybackFailed -> Unit
+            AudioDictationAction.RegenerateAudioRequested -> if (current.audioFailed) mutableUiState.update {
+                it.copy(audioLooping = true, audioFailed = false)
+            }
             AudioDictationAction.BackRequested -> send(
                 AudioDictationEffect.ReturnToHandwriting,
             )

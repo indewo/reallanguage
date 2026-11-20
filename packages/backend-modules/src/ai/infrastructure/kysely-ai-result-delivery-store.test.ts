@@ -37,6 +37,30 @@ beforeEach(async () => {
 afterEach(async () => database.destroy());
 
 describe("encrypted temporary AI result delivery", () => {
+  it("permits speech regeneration only after exact completed audio expires, or exact failure, without reopening deliveries", async () => {
+    const speech = { ...identity, task: "TTS_RENDER_V1" };
+    expect(await store().canRegenerateSpeech(speech)).toBe(false);
+    await store().claim(speech);
+    expect(await store().canRegenerateSpeech(speech)).toBe(false);
+    const expiresAtMs = now.getTime() + 3600000;
+    await store().complete(speech, { output: { audioObjectRef: "tts-private", expiresAtMs }, receipt: {} });
+    expect(await store().canRegenerateSpeech(speech)).toBe(false);
+    now = new Date(expiresAtMs);
+    expect(await store().canRegenerateSpeech(speech)).toBe(true);
+    expect(await store().canRegenerateSpeech({ ...speech, accountId: otherAccountId })).toBe(false);
+    expect(await store().canRegenerateSpeech({ ...speech, request: { text: "different" } })).toBe(false);
+    expect(await store().canRegenerateSpeech({ ...speech, providerAttemptId: "other" })).toBe(false);
+    expect((await store().claim(speech)).status).toBe("COMPLETED");
+    now = new Date(now.getTime() + 86400000);
+    await purgeExpiredAiResults(database, now);
+    expect(await store().canRegenerateSpeech(speech)).toBe(true);
+    expect(await store().claim(speech)).toEqual({ status: "EXPIRED" });
+    const failed = { ...speech, commandId: "failed-speech", providerAttemptId: "failed-attempt" };
+    await store().claim(failed);
+    await store().fail(failed);
+    expect(await store().canRegenerateSpeech(failed)).toBe(true);
+    expect(await store().canRegenerateSpeech(identity)).toBe(false);
+  }, 30000);
   it("authorizes explicit retry only for the exact failed owner request without reopening it", async () => {
     expect(await store().isFailed(identity)).toBe(false);
     await store().claim(identity);

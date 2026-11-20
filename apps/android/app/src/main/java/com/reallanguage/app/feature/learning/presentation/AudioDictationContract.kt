@@ -20,6 +20,7 @@ data class AudioDictationUiState(
 sealed interface AudioDictationAction {
     data object BackRequested : AudioDictationAction
     data object AudioToggled : AudioDictationAction
+    data object RegenerateAudioRequested : AudioDictationAction
     data object AudioPlaybackFailed : AudioDictationAction
     data object HintToggled : AudioDictationAction
     data class InputChanged(val value: String) : AudioDictationAction

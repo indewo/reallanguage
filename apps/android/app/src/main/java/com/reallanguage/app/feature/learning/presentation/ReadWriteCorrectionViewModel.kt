@@ -31,6 +31,9 @@ class ReadWriteCorrectionViewModel(
         if (navigationSent) return
         if (mutableUiState.value.saving && action != ReadWriteCorrectionAction.AudioPlaybackFailed) return
         when (action) {
+            ReadWriteCorrectionAction.RegenerateAudioRequested -> if (mutableUiState.value.audioFailed) mutableUiState.update {
+                it.copy(audioLooping = true, audioFailed = false)
+            }
             ReadWriteCorrectionAction.AudioPlaybackFailed -> mutableUiState.update {
                 it.copy(audioLooping = false, audioFailed = true)
             }

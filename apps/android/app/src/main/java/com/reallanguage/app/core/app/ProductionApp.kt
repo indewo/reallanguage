@@ -537,17 +537,23 @@ class ProductionAppGraph(
             val digest = java.security.MessageDigest.getInstance("SHA-256")
                 .digest("$owner:en-US:Cherry:v1:$text".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
             val originalCommand = "sentence-audio-$digest"
-            val retry = regenerate || retries.getBoolean(digest, false)
-            val retryDigest = java.security.MessageDigest.getInstance("SHA-256").digest(originalCommand.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+            val previousGeneration = retries.getInt("generation:$digest", if (retries.getBoolean(digest, false)) 1 else 0)
+            val generation = previousGeneration + if (regenerate) 1 else 0
+            check(generation in 0..10000)
+            val retry = generation > 0
+            val retrySeed = if (generation <= 1) originalCommand else "$originalCommand:$generation"
+            val retryDigest = java.security.MessageDigest.getInstance("SHA-256").digest(retrySeed.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
             val body = org.json.JSONObject().put("commandId", if (retry) "sentence-audio-retry-$retryDigest" else originalCommand).put("text", text)
                 .put("language", "en-US").put("speed", 3).put("requireWordTimings", false).put("purpose", "READING")
             if (retry) body.put("retryOfCommandId", originalCommand)
+            if (generation > 1) body.put("retryGeneration", generation)
+            // Keep the submitted attempt across failure/process death; ordinary playback reuses it.
+            if (regenerate) check(retries.edit().putInt("generation:$digest", generation).commit())
             val response = transport.execute(com.reallanguage.app.core.network.HttpRequest("POST", "/api/v1/media/sentence-audio", body.toString(),
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && response.statusCode in 200..299)
             val reference = org.json.JSONObject(response.body).getString("audioObjectRef")
             check(Regex("tts_[0-9a-f-]{36}").matches(reference))
-            if (retry) check(retries.edit().putBoolean(digest, true).commit())
             val payload = transport.execute(com.reallanguage.app.core.network.HttpRequest("GET", "/api/v1/media/sentence-audio/$reference/payload", "",
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && payload.statusCode == 200)
@@ -5259,9 +5265,9 @@ private fun AudioDictationReadyRoute(
 ) {
     AudioDictationEntry(graph.audioDictationFactory(route, hints), route, onReturn, onSpeaking, onCorrection) { state, onAction ->
     val context = LocalContext.current
-    val speaker = rememberConnectionAwareSentenceSpeaker()
+    val speaker = rememberConnectionAwareSentenceSpeaker(route) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     val sentenceText = remember(route.chapter, route.focusSentenceId) {
-        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
+        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn.normalizedEnglishTypography()
     }
     DisposableEffect(speaker) { onDispose { speaker.close() } }
     LaunchedEffect(state.audioLooping) {
@@ -5277,7 +5283,10 @@ private fun AudioDictationReadyRoute(
             }
         }
     }
-    AudioDictationScreen(state, onAction)
+    AudioDictationScreen(state) { action ->
+        if (action == AudioDictationAction.RegenerateAudioRequested && state.audioFailed && !speaker.requestRegeneration(sentenceText)) return@AudioDictationScreen
+        onAction(action)
+    }
     }
 }
 
@@ -5303,9 +5312,9 @@ private fun ReadWriteCorrectionReadyRoute(
 ) {
     ReadWriteCorrectionEntry(graph.correctionFactory(route, hints), route, onReturn, onSpeaking) { state, onAction ->
     val context = LocalContext.current
-    val speaker = rememberConnectionAwareSentenceSpeaker()
+    val speaker = rememberConnectionAwareSentenceSpeaker(route) { _, allowed -> graph.remoteSentenceSpeaker(allowed) }
     val sentenceText = remember(route.chapter, route.focusSentenceId) {
-        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn
+        route.chapter.sentences.first { it.sentenceId == route.focusSentenceId }.textEn.normalizedEnglishTypography()
     }
     DisposableEffect(speaker) { onDispose { speaker.close() } }
     LaunchedEffect(state.audioLooping) {
@@ -5322,6 +5331,7 @@ private fun ReadWriteCorrectionReadyRoute(
         }
     }
     ReadWriteCorrectionScreen(state) { action ->
+        if (action == ReadWriteCorrectionAction.RegenerateAudioRequested && state.audioFailed && !speaker.requestRegeneration(sentenceText)) return@ReadWriteCorrectionScreen
         if (action == ReadWriteCorrectionAction.AudioToggled && state.audioLooping) {
             speaker.stop()
         }

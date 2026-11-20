@@ -1477,6 +1477,7 @@ export const bilingualPassagesResponseSchema = z.object({
 export const sentenceAudioRequest = z.object({
   commandId: z.string().min(1).max(128),
   retryOfCommandId: z.string().min(1).max(128).optional(),
+  retryGeneration: z.number().int().min(2).max(10000).optional(),
   text: z.string().min(1).max(600).refine(text => Boolean(text.trim())),
   language: z.literal("en-US"),
   speed: z.literal(3),

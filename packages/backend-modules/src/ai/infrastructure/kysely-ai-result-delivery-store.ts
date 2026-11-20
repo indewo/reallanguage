@@ -217,6 +217,28 @@ export class KyselyAiResultDeliveryStore
   }
 
   /** Read-only authorization for a new user attempt; never reopens the old delivery. */
+  public async canRegenerateSpeech(identity: AiDeliveryIdentity): Promise<boolean> {
+    if (identity.task !== "TTS_RENDER_V1") return false;
+    const result = await sql<Row & { expires_at: Date }>`select * from ai.result_deliveries
+      where user_id=${identity.accountId} and task=${identity.task} and command_id=${identity.commandId}`.execute(this.database);
+    const row = result.rows[0];
+    if (!row || row.request_digest !== requestDigest(identity) || row.provider_attempt_id !== identity.providerAttemptId) return false;
+    if (row.status === "FAILED" || row.status === "EXPIRED") return true;
+    // An in-flight attempt is never authority to start another paid attempt.
+    if (row.status !== "COMPLETED") return false;
+    if (row.expires_at.getTime() <= this.clock.now().getTime()) return true;
+    if (!row.result_ciphertext || row.result_ciphertext.length < 28 || row.algorithm !== algorithm || row.key_version !== this.source.version) return false;
+    try {
+      const bytes = Buffer.from(row.result_ciphertext);
+      const cipher = createDecipheriv("aes-256-gcm", this.key, bytes.subarray(0, 12));
+      cipher.setAAD(associatedData(identity));
+      cipher.setAuthTag(bytes.subarray(12, 28));
+      const value: unknown = JSON.parse(Buffer.concat([cipher.update(bytes.subarray(28)), cipher.final()]).toString("utf8"));
+      const expiry = (value as { output?: { expiresAtMs?: unknown } })?.output?.expiresAtMs;
+      return typeof expiry === "number" && Number.isSafeInteger(expiry) && expiry <= this.clock.now().getTime();
+    } catch { return false; }
+  }
+
   public async isFailed(identity: AiDeliveryIdentity): Promise<boolean> {
     const result = await sql<{ status: string; request_digest: string; provider_attempt_id: string }>`
       select status, request_digest, provider_attempt_id from ai.result_deliveries

@@ -36,6 +36,18 @@ class ReadWriteCorrectionViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun explicitAudioRegenerationDoesNotMarkCorrectionWritten() = runTest(dispatcher) {
+        var completions = 0
+        val model = createViewModel(AudioDictationCompletionRepository { completions++; AudioDictationCompletionResult.Saved })
+        model.onAction(ReadWriteCorrectionAction.AudioPlaybackFailed)
+        model.onAction(ReadWriteCorrectionAction.RegenerateAudioRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.audioLooping)
+        assertFalse(model.uiState.value.audioFailed)
+        assertFalse(model.uiState.value.saving)
+        assertEquals(0, completions)
+    }
+
     @Test fun storageExceptionStopsSavingAndKeepsTheCorrectionRetryable() = runTest(dispatcher) {
         var fail = true
         val model = createViewModel(AudioDictationCompletionRepository {

@@ -92,6 +92,20 @@ class AudioDictationViewModelTest {
         assertFalse(model.uiState.value.audioFailed)
     }
 
+    @Test fun explicitAudioRegenerationPreservesUnsubmittedAnswerAndDoesNotCompleteLearning() = runTest(dispatcher) {
+        var completions = 0
+        val model = createViewModel(AudioDictationCompletionRepository { completions++; AudioDictationCompletionResult.Saved })
+        model.onAction(AudioDictationAction.InputChanged("my unfinished answer"))
+        model.onAction(AudioDictationAction.AudioPlaybackFailed)
+        model.onAction(AudioDictationAction.RegenerateAudioRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.audioLooping)
+        assertFalse(model.uiState.value.audioFailed)
+        assertFalse(model.uiState.value.correct)
+        assertEquals("my unfinished answer", model.uiState.value.input)
+        assertEquals(0, completions)
+    }
+
     @Test fun acceptedAnswerRemainsVisibleUntilUserContinuesAndCannotBeOverwritten() = runTest(dispatcher) {
         var submissions = 0
         val model = createViewModel(AudioDictationCompletionRepository { submissions++; AudioDictationCompletionResult.Saved })

@@ -89,11 +89,11 @@ fun AudioDictationScreen(
         },
         footer = {
             OutlinedButton(
-                onClick = { onAction(AudioDictationAction.AudioToggled) },
+                onClick = { onAction(if (state.audioFailed) AudioDictationAction.RegenerateAudioRequested else AudioDictationAction.AudioToggled) },
                 modifier = Modifier.weight(1f).heightIn(min = 48.dp),
             ) {
                 Text(
-                    stringResource(
+                    if (state.audioFailed) "重新生成发音（重新计费）" else stringResource(
                         if (state.audioLooping) R.string.learning_mute
                         else R.string.learning_pronounce,
                     ),

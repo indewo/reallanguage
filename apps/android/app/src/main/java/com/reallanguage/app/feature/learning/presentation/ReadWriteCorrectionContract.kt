@@ -15,6 +15,7 @@ data class ReadWriteCorrectionUiState(
 sealed interface ReadWriteCorrectionAction {
     data object BackRequested : ReadWriteCorrectionAction
     data object AudioToggled : ReadWriteCorrectionAction
+    data object RegenerateAudioRequested : ReadWriteCorrectionAction
     data object AudioPlaybackFailed : ReadWriteCorrectionAction
     data object WrittenFinished : ReadWriteCorrectionAction
 }

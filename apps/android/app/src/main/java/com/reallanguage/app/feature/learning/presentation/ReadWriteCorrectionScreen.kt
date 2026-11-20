@@ -81,6 +81,9 @@ fun ReadWriteCorrectionScreen(
             }
             if (state.audioFailed) {
                 Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
+                androidx.compose.material3.TextButton(onClick = { onAction(ReadWriteCorrectionAction.RegenerateAudioRequested) }, enabled = !state.saving) {
+                    Text("重新生成发音（重新计费）")
+                }
             }
         }
     }
