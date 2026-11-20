@@ -179,3 +179,6 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 语音运行文件公网部署（功能仍关闭）
 构建后取回公网local-main/local-app/production-api.module/contracts index比较：分别仅本次2行、2增3删、5行、8行差异；部署明确11个运行文件，不部署其他未提交音频解码/配置。四个原有模块打包备份为服务器.local-data/before-sentence-audio-runtime.tar，加入7个语音新模块，语法检查后重启。首次公网健康请求因启动中连接断开失败，随后检查同服务MainPID33429/active/running、回环和公网健康均ok/api，未重启第二次。启动入口/生产模块/契约index两端SHA256分别20570C6015F8BE457B42606ED44CF99836A64FC9A8C356C29CE2C96FA3078AF2、C92ECE63B1CF174989C2A26BA41CEE79798FAC704171F799CEBC621BA69BCF2A、82AE768B0F89242A6430B769DCB96662B7C8746D70A681D03AE0DC6C201CF4B7一致。语音GET路由404符合未配置关闭状态，未调用模型或收费。源码本地试用seed倍率1/1、向上取分、最低1分；这不是读取线上当前价格规则，不把seed当实时数据库证明。功能待配置启用，手机播放仍未接，自然度未通过。
+
+### 手机鉴权音频载荷接口
+现有Android HttpTransport只承载字符串响应，不能把WAV二进制误当文本解码，也不能直接把Authorization交给外部供应商URL播放器。新增sentence-audio/:objectRef/payload鉴权JSON载荷读取，账号从鉴权得出、严格引用格式、private/no-store，不返回供应商地址；供现有连接/账号网络边界下载后本机播放。控制器2项隔离测试及类型检查通过，未宣称跨真实账号/公网验证通过。此新增路由尚未部署，Android播放器正在接入；语音功能仍关闭，机械自然度仍待真实听音。

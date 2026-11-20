@@ -38,4 +38,14 @@ export class SentenceAudioController {
     if (!bytes) throw new NotFoundException();
     return new StreamableFile(bytes, { type: "audio/wav", length: bytes.length, disposition: "inline" });
   }
+  /** Existing mobile HTTP boundary carries JSON and performs account/connection checks. */
+  @Get(":objectRef/payload")
+  @Header("Cache-Control", "private, no-store")
+  async payload(@Param("objectRef") objectRef: string, @Headers("authorization") authorization: string | undefined) {
+    const account = await this.owner(authorization);
+    if (!/^tts_[0-9a-f-]{36}$/u.test(objectRef)) throw new NotFoundException();
+    const bytes = await this.application.read(account, objectRef);
+    if (!bytes) throw new NotFoundException();
+    return { audioBase64: bytes.toString("base64"), audioMimeType: "audio/wav" as const };
+  }
 }
