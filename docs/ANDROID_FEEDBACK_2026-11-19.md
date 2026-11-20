@@ -161,3 +161,6 @@ PFFM10点professors时显示语音播放失败，日志TextToSpeech stop failed:
 
 ### 整句语音计量网关补充（生产装配待接）
 新增SentenceSynthesisMeteredGateway供既有RunMeteredProviderAttempt注入：账号+command+task稳定attemptId，先校验再调用供应商，按供应商characters与显式配置单价计算成本回执，接收真实音频后按账号加密保存，结果不含临时下载URL。价格/预留上限/保留期必须显式配置，不沿用文本网关固定成本1、不默认杜撰价格；现仅正常语速speed3、en-US请求且不需词级时间，其他请求拒绝，不伪装支持。隔离测试验证身份稳定/跨账号分离、错误attempt不调用供应商、用量成本与归属及词级请求拒绝，通过；类型检查通过。未声称该单测验证现有计量器的完整幂等恢复；生产装配与真实计费/下载/手机仍未验收，尚未部署。
+
+### 整句语音鉴权控制器与业务桥接（待生产注册）
+新增SentenceAudioController的合成请求/音频读取方法及统一契约schema，先鉴权再处理输入，客户端不可传accountId冒用其他账号；读取只查当前鉴权账号，缺失/越权均无音频，响应private/no-store。MeteredSentenceAudio只把授权账号和原command交既有RunMeteredProviderAttempt，读取转账号缓存，不直接调用供应商。首次测试因apps/api没有直接zod依赖失败，改契约包统一导出schema并构建后，控制器隔离测试及类型检查通过。尚未在ProductionApiModule注册、无端口真实HTTP或手机入口证据，不称接口已上线/完成；价格配置、模型美式口音验证、媒体清理接线和自然度验收仍待推进。

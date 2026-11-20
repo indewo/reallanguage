@@ -1473,3 +1473,14 @@ export const bilingualPassagesResponseSchema = z.object({
     sentences: z.array(z.object({ textEn: nonblankPassageText, textZh: nonblankPassageText })).min(1),
   })).min(1),
 });
+
+export const sentenceAudioRequest = z.object({
+  commandId: z.string().min(1).max(128),
+  text: z.string().min(1).max(600).refine(text => Boolean(text.trim())),
+  language: z.literal("en-US"),
+  speed: z.literal(3),
+  requireWordTimings: z.literal(false),
+  purpose: z.enum(["EXPLANATION", "READING", "DICTATION", "KNOWLEDGE"]),
+}).strict();
+export type SentenceAudioRequest = z.infer<typeof sentenceAudioRequest>;
+
