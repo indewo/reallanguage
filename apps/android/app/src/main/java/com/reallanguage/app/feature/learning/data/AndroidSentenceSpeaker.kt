@@ -105,7 +105,12 @@ private class NativeSentenceSpeechEngine(context: Context) : SentenceSpeechEngin
 
     override fun start(text: String, rate: Float, locale: Locale, finished: (Boolean) -> Unit): Boolean {
         if (closed || !initialized.isCompleted || text.isBlank() || text.length > TextToSpeech.getMaxSpeechInputLength()) return false
-        val voice = bestEmbeddedVoice(engine.voices.orEmpty(), locale)
+        val available = engine.voices.orEmpty()
+        val voice = bestAvailableVoice(available, locale)
+        if (com.reallanguage.app.BuildConfig.DEBUG) {
+            android.util.Log.i("RlSpeechVoice", "selected=${voice?.name}, locale=${voice?.locale}, quality=${voice?.quality}, network=${voice?.isNetworkConnectionRequired}, requestedRate=$rate; available=" +
+                available.filter { it.locale.language == locale.language }.joinToString { "${it.name}/${it.locale}/${it.quality}/network=${it.isNetworkConnectionRequired}" })
+        }
         val languageReady = if (voice != null) engine.setVoice(voice) == TextToSpeech.SUCCESS
             else engine.setLanguage(locale) >= TextToSpeech.LANG_AVAILABLE
         if (!languageReady || engine.setSpeechRate(naturalRate(locale, rate)) != TextToSpeech.SUCCESS) return false
@@ -130,24 +135,24 @@ private class NativeSentenceSpeechEngine(context: Context) : SentenceSpeechEngin
 }
 
 /**
- * Prefer an already-installed, network-independent, human-like voice for weak-network use.
- * Country match wins first (en-US instead of another English accent), then quality and latency.
+ * Prefer the requested accent and highest advertised quality among installed voices.
+ * Offline wins ties, without excluding higher-quality network voices beforehand.
  */
-internal fun bestEmbeddedVoice(voices: Set<Voice>, locale: Locale): Voice? = voices
+internal fun bestAvailableVoice(voices: Set<Voice>, locale: Locale): Voice? = voices
     .asSequence()
     .filter { it.locale.language.equals(locale.language, ignoreCase = true) }
-    .filterNot { it.isNetworkConnectionRequired }
     .filterNot { TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED in it.features.orEmpty() }
     .sortedWith(
         compareByDescending<Voice> { it.locale.country.equals(locale.country, ignoreCase = true) }
             .thenByDescending { it.quality }
+            .thenBy { it.isNetworkConnectionRequired }
             .thenBy { it.latency }
             .thenBy { it.name },
     )
     .firstOrNull()
 
-/** Keep the user's speed setting while avoiding clipped, synthetic-sounding sentence pacing. */
+/** Preserve the requested speed; slower teaching modes set their rate explicitly. */
 internal fun naturalRate(locale: Locale, requested: Float): Float {
     val normalized = requested.coerceIn(.5f, 2f)
-    return if (locale.language.equals("en", ignoreCase = true)) normalized * .94f else normalized
+    return normalized
 }

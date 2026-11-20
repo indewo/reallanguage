@@ -146,3 +146,6 @@ PFFM10/Android15，用户在真实录音入口完成中文录音并转译后，�
 
 ### 新手机语音引擎可见性补修
 PFFM10点professors时显示语音播放失败，日志TextToSpeech stop failed: not bound to TTS engine；shell查询存在系统com.yuemeng.speechsuite服务，默认引擎设置null，不能据此断言缺英文包。核对Android官方TextToSpeech参考文档要求Android11+应用声明queries/TTS_SERVICE，项目清单原缺此项。补该intent查询声明，构建通过并保留数据覆盖安装。从未完成学习恢复后点击发音，最新页面无语音失败提示，professors词义与新用法/自然例句实际显示；此证据仅UI恢复不等于听到正确音频，仍需用户听音确认，不关闭语音验收。官方依据：https://developer.android.com/reference/android/speech/tts/TextToSpeech 。
+
+### 用户听音反馈：机械断词（未通过）
+用户实听基础讲解发音反馈机械、逐词往外蹦，语音自然度未通过。代码确认NativeSentenceSpeechEngine每次以完整text调用一次engine.speak，非应用逐词队列。取消无条件排除network voice，按目标口音/质量排序、同质量优先离线；取消英文语速额外乘0.94，保留各教学模式显式语速。debug仅记录音色参数不记录正文。构建及AndroidSentenceSpeakerConnectionTest/SentencePlaybackTest通过，已保留数据覆盖。真实发音触发日志21:16:24：selected=en locale=en quality=300 network=false requestedRate=1.0，available仅en/en/300/network=false。因此此设备没有可直接切换的另一英文音色，选择规则调整不能宣称自然度解决；需继续接入符合既有TTS合同的更自然整句音频来源及真实听音验证。未将系统完成回调当自然度通过，未覆盖用户桌面旧APK。
