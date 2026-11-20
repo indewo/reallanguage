@@ -78,6 +78,7 @@ fun ExplanationReadingScreen(
         compactContextRowsOnShortScreen = true,
         focusOnlyContext = true,
         fixedPageWithModuleOverflow = true,
+        limitContextHeight = true,
         leftPanelFooter = {
             val activeId = state.activeExpressionId ?: state.selectedExpression?.expressionId
             val phrase = state.expressions.firstOrNull { it.expressionId == activeId }?.display

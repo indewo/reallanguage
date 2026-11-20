@@ -83,6 +83,7 @@ fun ChapterLearningFrame(
     footer: (@Composable RowScope.() -> Unit)? = null,
     moduleScrollState: ScrollState? = null,
     fixedPageWithModuleOverflow: Boolean = false,
+    limitContextHeight: Boolean = false,
     moduleContent: @Composable () -> Unit,
 ) {
     LearningPage(modifier) {
@@ -99,6 +100,8 @@ fun ChapterLearningFrame(
         val bodyMinHeight = if (compact || density.fontScale > 1.2f) 160.dp
             else (maxHeight - headerHeight - ledgerHeight - footerHeight - 40.dp).coerceAtLeast(120.dp)
         val pageSectionSpacing = if (fixedPageWithModuleOverflow) 4.dp else 7.dp
+        val contextScroll = rememberScrollState()
+        val contextHeightLimit = maxHeight * .28f
         Column(Modifier.fillMaxSize().padding(horizontal = if (compact) 12.dp else 22.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(pageSectionSpacing)) {
         Column(Modifier.weight(1f).fillMaxWidth().testTag("learning-page-scroll-viewport")
@@ -108,6 +111,7 @@ fun ChapterLearningFrame(
                 Modifier.testTag("learning-page-heading").onSizeChanged { headerHeight = with(density) { it.height.toDp() } }, onBack = onBack)
             LearningSentenceLedger(chapter, currentFocusSentenceId,
                 modifier = Modifier.fillMaxWidth().testTag("learning-context-paper")
+                    .then(if (limitContextHeight) Modifier.heightIn(max = contextHeightLimit).verticalScroll(contextScroll) else Modifier)
                     .onSizeChanged { ledgerHeight = with(density) { it.height.toDp() } }
                     .then(if (keyboardVisible) Modifier.testTag("learning-keyboard-context") else Modifier),
                 showCurrentFocusChinese = showCurrentFocusChinese,
