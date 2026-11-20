@@ -332,7 +332,7 @@ export const createProductionApiModule = (
   providers: Readonly<{
     content?: MeteredProviderGateway;
     safety?: MeteredProviderGateway;
-    sentenceAudio?: { gateway: MeteredProviderGateway; store: Pick<SentenceAudioStore, "get"> };
+    sentenceAudio?: { gateway: MeteredProviderGateway; store: Pick<SentenceAudioStore, "get" | "purgeExpired"> };
   }> = {},
 ): Type<unknown> => {
   const now = { now: () => new Date() };
@@ -581,6 +581,7 @@ export const createProductionApiModule = (
       const results = await Promise.allSettled([
         purgeExpiredAiResults(database as Kysely<unknown>),
         purgeExpiredSafetyPayloads(database as Kysely<unknown>),
+        ...(providers.sentenceAudio ? [providers.sentenceAudio.store.purgeExpired()] : []),
       ]);
       if (results.some((result) => result.status === "rejected")) {
         throw new Error("TEMPORARY_PAYLOAD_CLEANUP_FAILED");

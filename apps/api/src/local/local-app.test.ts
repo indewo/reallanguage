@@ -18,7 +18,7 @@ describe("local API composition", () => {
     const quote = vi.fn();
     const execute = vi.fn();
     const get = vi.fn();
-    app = await createLocalApp({ sentenceAudio: { gateway: { quote, execute }, store: { get } } });
+    app = await createLocalApp({ sentenceAudio: { gateway: { quote, execute }, store: { get, purgeExpired: async () => undefined } } });
     const render = await app.inject({ method: "POST", url: "/api/v1/media/sentence-audio", payload: {} });
     const read = await app.inject({ method: "GET", url: "/api/v1/media/sentence-audio/tts_00000000-0000-0000-0000-000000000000" });
     expect(render.statusCode).toBe(401);

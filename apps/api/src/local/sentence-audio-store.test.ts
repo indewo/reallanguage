@@ -27,5 +27,12 @@ it("persists encrypted audio across instances, isolates owners and expires witho
     expect(await readdir(join(root, folder))).toEqual([]);
     await restored.deleteAccount("owner-one");
     expect(await readdir(root)).toEqual([]);
+    now = 3000;
+    const unread = await restored.put("owner-one", wav, 1000);
+    const live = await restored.put("owner-two", wav, 3000);
+    now = 4000;
+    await restored.purgeExpired();
+    expect(await restored.get("owner-one", unread.audioObjectRef)).toBeNull();
+    expect(await restored.get("owner-two", live.audioObjectRef)).toEqual(wav);
   } finally { await rm(root, { recursive: true, force: true }); }
 });
