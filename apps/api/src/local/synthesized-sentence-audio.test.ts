@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { measureSentenceWav, receiveSentenceAudio } from "./synthesized-sentence-audio.js";
+import { finalizeStreamingSentenceWav, measureSentenceWav, receiveSentenceAudio } from "./synthesized-sentence-audio.js";
 
 function wave() {
   const bytes = Buffer.alloc(44 + 48000);
@@ -10,6 +10,15 @@ function wave() {
   return bytes;
 }
 describe("synthesized waveform ingestion", () => {
+  it("finalizes only paired stream size sentinels without changing samples", () => {
+    const streamed = wave();
+    streamed.writeUInt32LE(0x7fffffbf, 4); streamed.writeUInt32LE(0x7fffffbf + 8 - 44, 40);
+    const finalized = finalizeStreamingSentenceWav(streamed);
+    expect(measureSentenceWav(finalized)).toBe(1000);
+    expect(finalized.subarray(44)).toEqual(streamed.subarray(44));
+    streamed.writeUInt32LE(100, 40);
+    expect(() => finalizeStreamingSentenceWav(streamed)).toThrow();
+  });
   it("measures actual audio bytes", () => { expect(measureSentenceWav(wave())).toBe(1000); });
   it.each(["truncated", "rate", "empty"])("rejects %s audio", (kind) => {
     let bytes = wave();

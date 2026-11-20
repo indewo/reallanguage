@@ -2,6 +2,28 @@ import type { SynthesizedSentence } from "./qwen-sentence-synthesis.js";
 
 const MAX_AUDIO_BYTES = 16 * 1024 * 1024;
 
+/** Finalize the observed Qwen streaming RIFF marker only with its consistent data-size pair. */
+export function finalizeStreamingSentenceWav(bytes: Buffer): Buffer {
+  if (bytes.length < 44 || bytes.toString("ascii", 0, 4) !== "RIFF" || bytes.toString("ascii", 8, 12) !== "WAVE" ||
+      bytes.readUInt32LE(4) !== 0x7fffffbf) return bytes;
+  for (let offset = 12; offset + 8 <= bytes.length;) {
+    const size = bytes.readUInt32LE(offset + 4);
+    const start = offset + 8;
+    if (bytes.toString("ascii", offset, offset + 4) === "data") {
+      // Only the exact paired sentinel is repairable; ordinary mismatches stay invalid.
+      if (size !== 0x7fffffbf + 8 - start) throw new Error(`Invalid streaming waveform size pair (data=${size}, start=${start})`);
+      const finalized = Buffer.from(bytes);
+      finalized.writeUInt32LE(bytes.length - 8, 4);
+      finalized.writeUInt32LE(bytes.length - start, offset + 4);
+      measureSentenceWav(finalized);
+      return finalized;
+    }
+    if (start + size > bytes.length) throw new Error("Invalid streaming waveform header");
+    offset = start + size + (size % 2);
+  }
+  throw new Error("Missing streaming waveform data");
+}
+
 /** Measure the downloaded waveform, never estimate duration from text length. */
 export function measureSentenceWav(bytes: Buffer): number {
   if (bytes.length < 44 || bytes.toString("ascii", 0, 4) !== "RIFF" || bytes.toString("ascii", 8, 12) !== "WAVE" ||
@@ -56,6 +78,6 @@ export async function receiveSentenceAudio(artifact: SynthesizedSentence, fetche
       chunks.push(Buffer.from(next.value));
     }
   } finally { await reader.cancel().catch(() => undefined); reader.releaseLock(); }
-  const bytes = Buffer.concat(chunks);
+  const bytes = finalizeStreamingSentenceWav(Buffer.concat(chunks));
   return { bytes, durationMs: measureSentenceWav(bytes) };
 }
