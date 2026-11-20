@@ -637,6 +637,7 @@ export const createProductionApiModule = (
         new RunMeteredProviderAttempt(aiCharges, providers.sentenceAudio.gateway,
           new KyselyAiResultDeliveryStore(database as Kysely<unknown>, config.safety.payloadEncryptionKey, now)),
         providers.sentenceAudio.store,
+        (identity) => new KyselyAiResultDeliveryStore(database as Kysely<unknown>, config.safety.payloadEncryptionKey, now).isFailed(identity),
       ) }] : []),
       { provide: START_REGISTRATION_APPLICATION, useValue: startRegistration },
       {

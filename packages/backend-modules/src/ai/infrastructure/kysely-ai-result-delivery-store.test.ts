@@ -37,6 +37,17 @@ beforeEach(async () => {
 afterEach(async () => database.destroy());
 
 describe("encrypted temporary AI result delivery", () => {
+  it("authorizes explicit retry only for the exact failed owner request without reopening it", async () => {
+    expect(await store().isFailed(identity)).toBe(false);
+    await store().claim(identity);
+    expect(await store().isFailed(identity)).toBe(false);
+    await store().fail(identity);
+    expect(await store().isFailed(identity)).toBe(true);
+    expect(await store().isFailed({ ...identity, accountId: otherAccountId })).toBe(false);
+    expect(await store().isFailed({ ...identity, request: { text: "different" } })).toBe(false);
+    expect(await store().isFailed({ ...identity, providerAttemptId: "other" })).toBe(false);
+    expect(await store().claim(identity)).toEqual({ status: "FAILED" });
+  }, 30_000);
   it("removes only the deleted account's payloads and rejects late saves", async () => {
     await store().claim(identity);
     await store().complete(identity, { text: "private" });

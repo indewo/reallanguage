@@ -202,3 +202,7 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 ### 完整例句新音源实听与重复/停止
 基础讲解自然例句区增加例句发音，播放selectedExpression内已交付textEn，不改原学习句、不增加用户已读次数。构建及既有ExplanationReadingViewModel/SentencePlayback测试通过；扩展恢复回归验证例句音频用保存原例句且播放完成不增加次数，首次断言未等待异步进度保存失败，补advanceUntilIdle后19项讲解测试通过。新版保留数据覆盖后从未完成学习恢复mainly及原例句，实际滚动看到按钮并点击，真实POST201/GET200取得tts_aa60ed6a-27e6-4eb2-9105-cce55b576a63，内容She studies hard mainly to get into a top university.。用户实听回复“连贯自然，明显改善”。该完整例句自然度有证据，不等于旧原句失败命令已恢复或其他语音页通过。
 再次点击例句发音，新的POST201/GET200返回同一对象，UI静音；再点例句发音后立即点静音，UI回到发音，无播放失败。实际查看rl-example-audio.png：例句英中和按钮可见、滚动区与底部按钮分离，用户原学习记录仍保留。没有以听示范冒充用户朗读。提供器词义enum单模块已备份部署，但旧communicate失败命令仍待恢复，不据新提示词关闭。
+
+### 显式重新生成发音的失败身份授权（未上线）
+复核读＋说代码确认长句使用既定横向指读轨道，不将初始仅显示首段擅自改成普通多行页面；滚动可发现性仍待共同核对。继续旧语音失败恢复：KyselyAiResultDeliveryStore新增只读isFailed，严格账号/task/command/providerAttempt/requestDigest匹配且仅FAILED允许；实际内存PGlite测试验证无记录/处理中/跨账号/改输入/改attempt拒绝，检查后旧claim仍FAILED。未删除、重开旧交付或释放/结算旧费用。
+统一语音契约新增可选retryOfCommandId；MeteredSentenceAudio仅在上面精确授权通过且新command为原command派生的固定重试ID时执行，callType=USER_RETRY且保留retryOf关联；原输入和INITIAL_CALL摘要不符拒绝，同一原请求只有一个固定新重试身份，不随机换ID绕过原状态。生产模块注入只读检查。隔离业务回归、后台模块构建、契约构建及API类型检查通过。该机制为用户显式新尝试，不是旧失败请求已对账；旧预留仍需处理。尚未接手机明确重新生成按钮、未部署或进行真实新尝试，不把新接口逻辑当旧失败恢复通过。

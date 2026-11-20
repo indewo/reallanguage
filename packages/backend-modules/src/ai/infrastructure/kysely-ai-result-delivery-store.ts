@@ -215,6 +215,15 @@ export class KyselyAiResultDeliveryStore
       and provider_attempt_id=${identity.providerAttemptId} and request_digest=${requestDigest(identity)}
       and status='PROCESSING'`.execute(this.database);
   }
+
+  /** Read-only authorization for a new user attempt; never reopens the old delivery. */
+  public async isFailed(identity: AiDeliveryIdentity): Promise<boolean> {
+    const result = await sql<{ status: string; request_digest: string; provider_attempt_id: string }>`
+      select status, request_digest, provider_attempt_id from ai.result_deliveries
+      where user_id=${identity.accountId} and task=${identity.task} and command_id=${identity.commandId}`.execute(this.database);
+    const row = result.rows[0];
+    return row?.status === "FAILED" && row.request_digest === requestDigest(identity) && row.provider_attempt_id === identity.providerAttemptId;
+  }
 }
 
 const associatedData = (identity: AiDeliveryIdentity) =>
