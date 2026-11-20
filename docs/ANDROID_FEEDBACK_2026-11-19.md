@@ -182,3 +182,6 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 手机鉴权音频载荷接口
 现有Android HttpTransport只承载字符串响应，不能把WAV二进制误当文本解码，也不能直接把Authorization交给外部供应商URL播放器。新增sentence-audio/:objectRef/payload鉴权JSON载荷读取，账号从鉴权得出、严格引用格式、private/no-store，不返回供应商地址；供现有连接/账号网络边界下载后本机播放。控制器2项隔离测试及类型检查通过，未宣称跨真实账号/公网验证通过。此新增路由尚未部署，Android播放器正在接入；语音功能仍关闭，机械自然度仍待真实听音。
+
+### Android整句内存播放器与下载工厂
+新增RemoteSentenceSpeechEngine，完整音频通过MediaDataSource内存交MediaPlayer，不留明文临时音频文件；完成/错误/停止均释放并清零字节，取消下载和关闭scope，generation隔离旧异步回调，账号资格再次检查。正常音源生成后按用户请求速度用播放器变速，不逐词生成。ProductionAppGraph新增remoteSentenceSpeaker工厂，走现有连接/余额/会话网络边界POST合成及GET账号载荷，command按账号+原文+音色版本稳定，校验引用/mime/大小及账号epoch。构建通过；尚未把工厂装配到页面CompositionLocal，未覆盖安装或真实播放，当前仅英文支持，中文/其他语言须保留原引擎路径，正式切换前继续接。并发/停止/清理目前是实现检查，不宣称真机验收，费用配置与服务启用尚未完成。

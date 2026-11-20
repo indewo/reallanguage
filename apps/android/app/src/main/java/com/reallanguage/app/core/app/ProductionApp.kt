@@ -525,6 +525,32 @@ class ProductionAppGraph(
     private val transport: BalanceAwareHttpTransport = BalanceAwareHttpTransport(
         connectionGate,
     ) { balanceRequiredSignal.tryEmit(Unit) }
+    internal fun remoteSentenceSpeaker(allowed: () -> Boolean): AndroidSentenceSpeaker {
+        val owner = sessionRuntime.accountId
+        val epoch = sessionRuntime.accountEpoch
+        fun current() = owner != null && sessionRuntime.accountId == owner && sessionRuntime.accountEpoch == epoch && allowed()
+        val engine = com.reallanguage.app.feature.learning.data.RemoteSentenceSpeechEngine(load = { text ->
+            check(current())
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+                .digest("$owner:en-US:Cherry:v1:$text".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+            val body = org.json.JSONObject().put("commandId", "sentence-audio-$digest").put("text", text)
+                .put("language", "en-US").put("speed", 3).put("requireWordTimings", false).put("purpose", "READING")
+            val response = transport.execute(com.reallanguage.app.core.network.HttpRequest("POST", "/api/v1/media/sentence-audio", body.toString(),
+                mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
+            check(current() && response.statusCode in 200..299)
+            val reference = org.json.JSONObject(response.body).getString("audioObjectRef")
+            check(Regex("tts_[0-9a-f-]{36}").matches(reference))
+            val payload = transport.execute(com.reallanguage.app.core.network.HttpRequest("GET", "/api/v1/media/sentence-audio/$reference/payload", "",
+                mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
+            check(current() && payload.statusCode == 200)
+            val audio = org.json.JSONObject(payload.body)
+            check(audio.getString("audioMimeType") == "audio/wav")
+            val base64 = audio.getString("audioBase64")
+            check(base64.length <= 23_000_000)
+            android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+        }, allowed = ::current)
+        return AndroidSentenceSpeaker(engine, ::current)
+    }
     internal suspend fun capturePassages(
         entryId: String, text: String, origin: CaptureOrigin, shape: SourceContentShape, back: HomeDiaryRoute,
     ) = generateCapturePassages(transport, sessionRuntime, entryId, text, origin, shape, back)
