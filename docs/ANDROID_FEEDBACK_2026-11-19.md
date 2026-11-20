@@ -164,3 +164,6 @@ PFFM10点professors时显示语音播放失败，日志TextToSpeech stop failed:
 
 ### 整句语音鉴权控制器与业务桥接（待生产注册）
 新增SentenceAudioController的合成请求/音频读取方法及统一契约schema，先鉴权再处理输入，客户端不可传accountId冒用其他账号；读取只查当前鉴权账号，缺失/越权均无音频，响应private/no-store。MeteredSentenceAudio只把授权账号和原command交既有RunMeteredProviderAttempt，读取转账号缓存，不直接调用供应商。首次测试因apps/api没有直接zod依赖失败，改契约包统一导出schema并构建后，控制器隔离测试及类型检查通过。尚未在ProductionApiModule注册、无端口真实HTTP或手机入口证据，不称接口已上线/完成；价格配置、模型美式口音验证、媒体清理接线和自然度验收仍待推进。
+
+### 语音接口生产模块可选装配
+ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时注册语音控制器并复用真实AiChargeStore/加密AiResultDeliveryStore/RunMeteredProviderAttempt；未配置时不注册路由。没有默认价格或隐式启用。类型检查通过；启动本地内存PGlite应用后，经Fastify inject验证两条语音路由未登录均401、没有调用报价/供应商/缓存。首次5秒默认测试超时，增加本项启动时限30秒重跑通过，其他4项未运行，不能宣称全套测试通过。本项是本地集成测试，不是公网、模型或手机验证。生产启动入口尚未注入已核实价格与缓存策略，账号删除/过期清理接线尚未完成；因此未部署启用，不宣称自然语音可用。

@@ -31,6 +31,7 @@ import {
 export type LocalAppOptions = Readonly<{
   dataDirectory?: string | undefined;
   aiProvider?: MeteredProviderGateway;
+  sentenceAudio?: NonNullable<Parameters<typeof createProductionApiModule>[2]>["sentenceAudio"];
   developmentCreditFen?: number;
   registrationEmail?: Readonly<{
     sender: RegistrationEmailSender;
@@ -82,9 +83,8 @@ export const createLocalApp = async (
     const productionModule = createProductionApiModule(
       database,
       config,
-      options.aiProvider
-        ? { content: options.aiProvider, safety: options.aiProvider }
-        : {},
+      { ...(options.aiProvider ? { content: options.aiProvider, safety: options.aiProvider } : {}),
+        ...(options.sentenceAudio ? { sentenceAudio: options.sentenceAudio } : {}) },
     );
     const rootModule = options.registrationEmail
       ? createLocalEmailModule(

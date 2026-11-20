@@ -14,6 +14,19 @@ afterEach(async () => {
 });
 
 describe("local API composition", () => {
+  it("registers optional sentence audio routes behind authentication without supplier calls", async () => {
+    const quote = vi.fn();
+    const execute = vi.fn();
+    const get = vi.fn();
+    app = await createLocalApp({ sentenceAudio: { gateway: { quote, execute }, store: { get } } });
+    const render = await app.inject({ method: "POST", url: "/api/v1/media/sentence-audio", payload: {} });
+    const read = await app.inject({ method: "GET", url: "/api/v1/media/sentence-audio/tts_00000000-0000-0000-0000-000000000000" });
+    expect(render.statusCode).toBe(401);
+    expect(read.statusCode).toBe(401);
+    expect(quote).not.toHaveBeenCalled();
+    expect(execute).not.toHaveBeenCalled();
+    expect(get).not.toHaveBeenCalled();
+  }, 30_000);
   it("starts with an embedded database and accepts registration", async () => {
     app = await createLocalApp({ dataDirectory: undefined });
 

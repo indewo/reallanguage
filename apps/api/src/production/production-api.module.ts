@@ -309,6 +309,10 @@ import {
   SceneFormationController,
 } from "../presentation/scene-formation.controller.js";
 
+import { SentenceAudioController, SENTENCE_AUDIO_APPLICATION } from "../presentation/sentence-audio.controller.js";
+import { MeteredSentenceAudio } from "../local/metered-sentence-audio.js";
+import type { SentenceAudioStore } from "../local/sentence-audio-store.js";
+
 export type ProductionDatabase = IdentityRegistrationDatabase &
   IdentitySessionDatabase &
   IdentityPasswordResetDatabase &
@@ -328,6 +332,7 @@ export const createProductionApiModule = (
   providers: Readonly<{
     content?: MeteredProviderGateway;
     safety?: MeteredProviderGateway;
+    sentenceAudio?: { gateway: MeteredProviderGateway; store: Pick<SentenceAudioStore, "get"> };
   }> = {},
 ): Type<unknown> => {
   const now = { now: () => new Date() };
@@ -593,6 +598,7 @@ export const createProductionApiModule = (
 
   @Module({
     controllers: [
+      ...(providers.sentenceAudio ? [SentenceAudioController] : []),
       HealthController,
       AgreementDocumentController,
       RegistrationController,
@@ -624,6 +630,11 @@ export const createProductionApiModule = (
       AdminReviewController,
     ],
     providers: [
+      ...(providers.sentenceAudio ? [{ provide: SENTENCE_AUDIO_APPLICATION, useValue: new MeteredSentenceAudio(
+        new RunMeteredProviderAttempt(aiCharges, providers.sentenceAudio.gateway,
+          new KyselyAiResultDeliveryStore(database as Kysely<unknown>, config.safety.payloadEncryptionKey, now)),
+        providers.sentenceAudio.store,
+      ) }] : []),
       { provide: START_REGISTRATION_APPLICATION, useValue: startRegistration },
       {
         provide: SETUP_INITIAL_ADMIN_APPLICATION,
