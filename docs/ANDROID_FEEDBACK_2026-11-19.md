@@ -176,3 +176,6 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 整句语音启动配置与价格核对
 官方模型信息https://help.aliyun.com/en/model-studio/qwen3-tts-flash列价0.8CNY/10000字符，折合80微元/字符，仅作为本次核对依据；实际计价以所用区域及供应商账单为准。新增configuredSentenceAudio并接local-main启动选项，默认不开启；启用必须显式提供独立语音API_KEY、32字节KEY_HEX、DIRECTORY、COST_MICRO_CNY_PER_CHARACTER、MAXIMUM_CHARGE_FEN、RETENTION_MS（统一REAL_LANGUAGE_SENTENCE_AUDIO_前缀，启用为ENABLED=true）。缺项/零价/超长保留期拒绝，不从文本模型凭证/固定成本自动推断。隔离配置检查与类型检查通过。预留上限仍需核对数据库倍率后配置，未把测试中的10分当已核准生产值。本批未写服务器秘密或启用环境，未调用真实供应商；手机音频仍为旧系统TTS，不能宣称自然度改善。
+
+### 语音运行文件公网部署（功能仍关闭）
+构建后取回公网local-main/local-app/production-api.module/contracts index比较：分别仅本次2行、2增3删、5行、8行差异；部署明确11个运行文件，不部署其他未提交音频解码/配置。四个原有模块打包备份为服务器.local-data/before-sentence-audio-runtime.tar，加入7个语音新模块，语法检查后重启。首次公网健康请求因启动中连接断开失败，随后检查同服务MainPID33429/active/running、回环和公网健康均ok/api，未重启第二次。启动入口/生产模块/契约index两端SHA256分别20570C6015F8BE457B42606ED44CF99836A64FC9A8C356C29CE2C96FA3078AF2、C92ECE63B1CF174989C2A26BA41CEE79798FAC704171F799CEBC621BA69BCF2A、82AE768B0F89242A6430B769DCB96662B7C8746D70A681D03AE0DC6C201CF4B7一致。语音GET路由404符合未配置关闭状态，未调用模型或收费。源码本地试用seed倍率1/1、向上取分、最低1分；这不是读取线上当前价格规则，不把seed当实时数据库证明。功能待配置启用，手机播放仍未接，自然度未通过。
