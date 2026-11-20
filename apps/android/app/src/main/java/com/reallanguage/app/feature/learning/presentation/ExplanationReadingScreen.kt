@@ -205,6 +205,9 @@ fun ExplanationReadingScreen(
                                 fontSize = 14.sp, lineHeight = 18.sp)
                             Text(example.textZh, color = RlColor.Ink, fontFamily = EditorialFont.Serif,
                                 fontSize = 13.sp, lineHeight = 18.sp)
+                            TextButton(onClick = { onAction(ExplanationReadingAction.ExampleAudioRequested) },
+                                enabled = state.voiceEnabled && !state.loading && !state.progressFailed,
+                                modifier = Modifier.testTag("explanation_example_audio")) { Text("例句发音") }
                         }
                 }
                 explanation.expressionHintZh?.let { ExpressionUsageHint(it) }

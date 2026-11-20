@@ -32,6 +32,7 @@ sealed interface ExplanationReadingAction {
     data object RetryProgressRequested : ExplanationReadingAction
     data object BackRequested : ExplanationReadingAction
     data object AudioToggled : ExplanationReadingAction
+    data object ExampleAudioRequested : ExplanationReadingAction
     data object AudioPlaybackFailed : ExplanationReadingAction
     data object ExplanationFinished : ExplanationReadingAction
     data object ReadFinished : ExplanationReadingAction

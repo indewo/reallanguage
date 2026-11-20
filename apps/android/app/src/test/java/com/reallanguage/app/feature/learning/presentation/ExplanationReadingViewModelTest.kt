@@ -50,6 +50,14 @@ class ExplanationReadingViewModelTest {
         val reopened = createViewModel(provider(expression = { error("No new expression request on restore") }), store)
         advanceUntilIdle()
         assertEquals(example, reopened.uiState.value.selectedExpression?.naturalExample)
+        val reads = reopened.uiState.value.completedReadCount
+        reopened.onAction(ExplanationReadingAction.ExampleAudioRequested)
+        advanceUntilIdle()
+        assertEquals(example.textEn, reopened.uiState.value.pronunciationText)
+        assertTrue(reopened.uiState.value.audioPlaying)
+        reopened.onAction(ExplanationReadingAction.ExplanationFinished)
+        assertFalse(reopened.uiState.value.audioPlaying)
+        assertEquals(reads, reopened.uiState.value.completedReadCount)
     }
 
     @Test fun structuredExpressionFieldsSaveAndRestoreWithoutReplacingTheRoundHint() = runTest(dispatcher) {

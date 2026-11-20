@@ -198,3 +198,7 @@ ProductionApiModule与createLocalApp新增显式sentenceAudio注入，启用时�
 
 ### 已确认词义输出约束补修
 针对communicate真实请求Invalid locked expression meaning output，现有后端拒绝不一致输出的校验保持不变；没有读取到供应商原始错值，不能断言具体换成哪个同义词。提供器generationFormat新增按input当前focusSentenceId和完整start/end匹配的单一canonical意思enum，直接引用已确认原文含空白；重复词另一处不借用，冲突/缺元数据不猜测。Responses结构化schema与兼容Chat内嵌schema均带同一约束，不在响应后手工改AI文本。55项提供器测试及构建通过，新增回归检查准确位置和空白，未匹配不附enum；首次回归mock重复消费Response失败，改每次创建Response后通过。此项未部署、未完成新的真实生成和旧失败请求恢复，不能声明点词错误关闭。整句语音失败的旧对账记录仍保留，未换command重发。
+
+### 完整例句新音源实听与重复/停止
+基础讲解自然例句区增加例句发音，播放selectedExpression内已交付textEn，不改原学习句、不增加用户已读次数。构建及既有ExplanationReadingViewModel/SentencePlayback测试通过；扩展恢复回归验证例句音频用保存原例句且播放完成不增加次数，首次断言未等待异步进度保存失败，补advanceUntilIdle后19项讲解测试通过。新版保留数据覆盖后从未完成学习恢复mainly及原例句，实际滚动看到按钮并点击，真实POST201/GET200取得tts_aa60ed6a-27e6-4eb2-9105-cce55b576a63，内容She studies hard mainly to get into a top university.。用户实听回复“连贯自然，明显改善”。该完整例句自然度有证据，不等于旧原句失败命令已恢复或其他语音页通过。
+再次点击例句发音，新的POST201/GET200返回同一对象，UI静音；再点例句发音后立即点静音，UI回到发音，无播放失败。实际查看rl-example-audio.png：例句英中和按钮可见、滚动区与底部按钮分离，用户原学习记录仍保留。没有以听示范冒充用户朗读。提供器词义enum单模块已备份部署，但旧communicate失败命令仍待恢复，不据新提示词关闭。

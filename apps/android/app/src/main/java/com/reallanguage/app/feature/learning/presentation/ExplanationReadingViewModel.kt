@@ -69,6 +69,12 @@ class ExplanationReadingViewModel(
                 else it.copy(audioPlaying = true, explaining = false, audioFailed = false,
                     pronunciationText = it.chapter.sentences.first { sentence -> sentence.sentenceId == it.currentFocusSentenceId }.textEn)
             }
+            ExplanationReadingAction.ExampleAudioRequested -> {
+                val example = mutableUiState.value.selectedExpression?.naturalExample?.textEn
+                if (!example.isNullOrBlank() && mutableUiState.value.voiceEnabled) change {
+                    it.copy(audioPlaying = true, explaining = false, audioFailed = false, pronunciationText = example)
+                }
+            }
             ExplanationReadingAction.ExplanationFinished -> change {
                 it.copy(explaining = false, audioPlaying = false, pronunciationText = null)
             }
