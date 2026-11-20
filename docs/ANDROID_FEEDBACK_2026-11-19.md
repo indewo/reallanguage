@@ -143,3 +143,6 @@ PFFM10/Android15，用户在真实录音入口完成中文录音并转译后，�
 
 ### 长句挤压词卡补修与新手机复验
 基础讲解独立启用顶部上下文高度限制（页面高度28%）及垂直滚动，其他学习页保持原配置。构建成功，同证书覆盖安装后从未完成学习恢复，实际截图rl-new-phone.png确认communicate/交流在蓝卡内完整居中、卡下会了和底部三按钮可见。实际在顶部句区向上滑动，英文节点由y198..470变为y168..440，中文同步上移，蓝卡位置不变，可查看原长句末行。此项仅当前PFFM10长句空间修复通过，窄屏其他长词与滚动提示可发现性仍需检查，未关闭讲解内容质量、全部学习阶段与所有设备验收。没有点击会了或改写完成状态。
+
+### 新手机语音引擎可见性补修
+PFFM10点professors时显示语音播放失败，日志TextToSpeech stop failed: not bound to TTS engine；shell查询存在系统com.yuemeng.speechsuite服务，默认引擎设置null，不能据此断言缺英文包。核对Android官方TextToSpeech参考文档要求Android11+应用声明queries/TTS_SERVICE，项目清单原缺此项。补该intent查询声明，构建通过并保留数据覆盖安装。从未完成学习恢复后点击发音，最新页面无语音失败提示，professors词义与新用法/自然例句实际显示；此证据仅UI恢复不等于听到正确音频，仍需用户听音确认，不关闭语音验收。官方依据：https://developer.android.com/reference/android/speech/tts/TextToSpeech 。
