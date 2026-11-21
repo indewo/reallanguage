@@ -54,6 +54,7 @@ fun SceneGenerationScreen(
         else stringResource(R.string.scene_generation_explanation),
         stages = listOf("整理场景信息", "编排中文场景", "生成练习内容"),
         activeStage = 1,
+        fixedStages = true,
         failed = state.error != null,
         modifier = modifier.testTag("scene-generation-workspace"),
     ) {

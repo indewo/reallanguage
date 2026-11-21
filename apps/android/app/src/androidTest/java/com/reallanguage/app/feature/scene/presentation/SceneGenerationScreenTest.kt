@@ -34,11 +34,11 @@ class SceneGenerationScreenTest {
         }
         composeRule.onNodeWithTag("scene-generation-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("scene-generation-progress").assertIsDisplayed()
-        listOf("整理场景信息", "编排中文场景", "生成练习内容").forEach {
-            composeRule.onNodeWithText(it).assertIsDisplayed()
-        }
         java.io.File(composeRule.activity.filesDir, "scene-generation-layout.png").outputStream().use {
             composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+        }
+        listOf("整理场景信息", "编排中文场景", "生成练习内容").forEach {
+            composeRule.onNodeWithText(it).assertIsDisplayed()
         }
     }
 }

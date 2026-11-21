@@ -1,3 +1,7 @@
+### 2026-11-21 C05场景生成短屏仅第一阶段可见
+
+新增组件检查失败于编排中文场景不可见；scene-generation-layout.png已实看：横屏扣除safeDrawing及padding后触发compact布局，三卡被换成纵向滚动列表，首屏只有第一阶段，左海报也不显示。SceneGenerationScreen启用已有fixedStages紧凑三卡布局，避免第二/三阶段藏在滚动下方；尚待构建/复验。该布局短屏仍不显示左海报，C05左侧文案对齐不能据此关闭，需要区分正常宽屏与紧凑屏。未擅自重画素材。
+
 ### 2026-11-21 短屏按钮复验通过，转C05场景等待页
 
 64156af主包/组件包构建覆盖后，shortScreenAtDoubleFontKeepsAllContentScrollableAndActionsReachable通过49.628s，保留文字边界/滚动/按钮检查。加上前批两项复验，原批3个失败已分别通过，仍属手机独立组件，非原章节完整真实流程。针对原C05场景生成三卡裁切，现有用例原仅检查workspace/spinner；增加生产横屏窗口、三标签可见及截图保存scene-generation-layout.png，尚待构建运行和看图，不提前关闭C05。
