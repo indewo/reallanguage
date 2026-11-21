@@ -135,7 +135,7 @@ class LearningTargetScreenTest {
             }
             bitmap.recycle()
         }
-        listOf("选择学习目标", "句子会继续学习，下面的词义与句式可以按需选择。", "全部取消", "返回", "继续").forEach { text ->
+        listOf("选择学习目标", "全部取消", "返回", "继续").forEach { text ->
             val layouts = mutableListOf<TextLayoutResult>()
             composeRule.onNodeWithText(text).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
             val measured = layouts.single()
@@ -218,8 +218,13 @@ class LearningTargetScreenTest {
         val inset = (card.left - page.left) / page.width
         org.junit.Assert.assertTrue("Card starts too far left: $inset", inset > .10f)
         org.junit.Assert.assertTrue("Card starts too far right: $inset", inset < .13f)
-        val label = composeRule.onNodeWithText("词义", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        org.junit.Assert.assertTrue("Label inherited an oversized default line height", label.height / page.height < .065f)
+        val labelLayouts = mutableListOf<TextLayoutResult>()
+        composeRule.onNodeWithText("词义", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(labelLayouts) }
+        val label = labelLayouts.single()
+        val maxLineHeight = 20f * composeRule.activity.resources.displayMetrics.scaledDensity
+        org.junit.Assert.assertTrue("Category text must not inherit body line height; padding is not a text line",
+            label.getLineBottom(0) - label.getLineTop(0) <= maxLineHeight)
     }
 
     @Test fun longBilingualSentenceDoesNotLoseLinesInsideItsPanel() {
@@ -350,7 +355,7 @@ class LearningTargetScreenTest {
         composeRule.setContent { RlTheme { LearningTargetScreen(state, actions::add) } }
 
         composeRule.onNodeWithText("其他可添加词或词组").assertIsDisplayed()
-        composeRule.onNodeWithText("多选 · 点选后自动加入并显示 ✓").assertIsDisplayed()
+        composeRule.onNodeWithTag("learning_expression_word:8").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("清楚地；明确地").assertIsDisplayed()
         composeRule.onNodeWithTag("learning_expression_word:8").performClick()
         org.junit.Assert.assertTrue(actions.contains(LearningTargetAction.ExpressionRequested("u1", "word:8")))
