@@ -42,7 +42,7 @@ fun AiBillingScreen(state: AiBillingUiState, onAction: (AiBillingAction) -> Unit
         val amount = state.balanceAmountFen?.asYuan() ?: "—"
         if (wide) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                Box(Modifier.weight(1.6f).padding(start = 70.dp, top = 38.dp)) {
+                Box(Modifier.weight(1.4f).padding(start = 70.dp, top = 38.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text(stringResource(R.string.ai_billing_balance_label), color = RlColor.TextSecondary,
                             fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp)
@@ -50,8 +50,8 @@ fun AiBillingScreen(state: AiBillingUiState, onAction: (AiBillingAction) -> Unit
                             fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 29.sp, lineHeight = 36.sp)
                     }
                 }
-                BillingBalanceNote(amount, Modifier.weight(.65f).offset(x = 3.dp))
-                BillingNavigation(onAction, Modifier.weight(.55f))
+                BillingBalanceNote(amount, Modifier.weight(.65f).padding(top = 36.dp).offset(x = 3.dp))
+                BillingNavigation(onAction, Modifier.weight(.75f))
             }
         } else {
             BillingAmount(stringResource(R.string.ai_billing_balance_label), amount)
