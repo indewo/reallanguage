@@ -13,6 +13,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HttpEnglishGenerationRepositoryTest {
+    @Test fun `refresh while freezing knowledge sends the current token`() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "owner") }
+        val transport = HttpTransport { request ->
+            assertEquals("Bearer refreshed", request.headers["Authorization"])
+            HttpResponse(200, "ignored")
+        }
+        val knowledge = com.reallanguage.app.feature.formation.domain.EnglishKnowledgeSnapshotSource { _, _ ->
+            runtime.update("refreshed", "owner")
+            com.reallanguage.app.feature.formation.domain.KnownKnowledgeSnapshotResult.Ready(emptyList())
+        }
+        val expected = listOf(EnglishChapterDraft("c1", emptyList()))
+        val result = HttpEnglishGenerationRepository(transport, runtime, "cmd", FakeCodec(expected), knowledge)
+            .generate(listOf(unit), listOf("u1"), listOf(ChapterDraft("c1", listOf("u1"))))
+        assertEquals(EnglishGenerationResult.Generated(expected), result)
+    }
     @Test fun `same session refresh during generation preserves the returned candidates`() = runTest {
         val runtime = SessionRuntime().apply { update("old", "owner") }
         val expected = listOf(EnglishChapterDraft("c1", emptyList()))

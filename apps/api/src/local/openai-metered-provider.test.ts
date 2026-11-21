@@ -16,6 +16,15 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it.each(["BILINGUAL_PASSAGE_WORDING_V1", "BILINGUAL_PASSAGE_FIDELITY_V1"])("sends dialogue agent constraints for %s", async task => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: "{}" })));
+    await new OpenAiLocalClient("isolated-test", "test-model", fetcher).generateJson(task, {
+      source: "用户：需求已对齐。对方：很好，下周同步排期结果。用户：收到，我会用邮件同步。",
+    });
+    const request = JSON.parse(String(fetcher.mock.calls[0]![1].body));
+    expect(request.instructions).toContain("commands or requests with an omitted subject");
+    expect(request.instructions).toContain("employee, not the leader");
+  });
   it.each([
     ["https://dashscope.aliyuncs.com/compatible-mode/v1", "dashscope"],
     ["https://dashscope-intl.aliyuncs.com/compatible-mode/v1", "dashscope"],

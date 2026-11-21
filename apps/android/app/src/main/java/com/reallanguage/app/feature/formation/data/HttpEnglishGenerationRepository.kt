@@ -41,7 +41,7 @@ class HttpEnglishGenerationRepository(
     private val ownerEpoch = runtime.accountEpoch
     private var completed: Pair<String, EnglishGenerationResult.Generated>? = null
     override suspend fun generate(units: List<SemanticUnit>, selectedUnitIds: List<String>, chapters: List<ChapterDraft>): EnglishGenerationResult = mutex.withLock {
-        val token = runtime.accessToken ?: return@withLock EnglishGenerationResult.Failed
+        if (runtime.accessToken == null) return@withLock EnglishGenerationResult.Failed
         fun active() = runtime.accountId == owner && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch
         if (!active() || sourceType !in setOf("DIARY", "RECORDING", "AI_SCENE")) return@withLock EnglishGenerationResult.Failed
         try {
@@ -56,10 +56,11 @@ class HttpEnglishGenerationRepository(
             val body = if (knowledgeSource == null && sourceType == "DIARY") codec.request(units, selectedUnitIds, chapters, commandId)
                 else codec.requestWithKnowledge(units, selectedUnitIds, chapters, "english-known-v1:${knowledgeDigest(frozenBody)}", knowledge, sourceType)
             completed?.takeIf { it.first == body }?.let { return@withLock it.second }
+            val requestToken = runtime.accessToken ?: return@withLock EnglishGenerationResult.Failed
             val response = transport.execute(HttpRequest(
                 "POST", "/api/v1/content-formation/english-candidates",
                 body,
-                mapOf("Authorization" to "Bearer $token"),
+                mapOf("Authorization" to "Bearer $requestToken"),
             ))
             currentCoroutineContext().ensureActive(); check(active())
             if (response.statusCode != 200) return@withLock EnglishGenerationResult.Failed
