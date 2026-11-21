@@ -16,6 +16,21 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("uses a scoped scene model and reports that model without changing other text tasks", async () => {
+    vi.stubEnv("OPENAI_SCENE_MODEL", "scene-quality-model");
+    try {
+      const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+      const client = new OpenAiLocalClient("isolated-test", "ordinary-model", fetcher);
+      await client.generateJson("SCENE_DIALOGUE_TURN_V1", {});
+      await client.generateJson("SCENE_EDIT_REVIEW_V1", {});
+      expect(JSON.parse(String(fetcher.mock.calls[0]![1].body)).model).toBe("scene-quality-model");
+      expect(JSON.parse(String(fetcher.mock.calls[1]![1].body)).model).toBe("ordinary-model");
+      const provider = new LocalOpenAiMeteredProvider({ generateJson: vi.fn().mockResolvedValue({}), transcribe: vi.fn() });
+      const request = command("SCENE_DIALOGUE_TURN_V1");
+      const quote = await provider.quote(request);
+      expect((await provider.execute({ ...request, providerAttemptId: quote.providerAttemptId })).receipt.modelSource).toBe("openai/scene-quality-model");
+    } finally { vi.unstubAllEnvs(); }
+  });
   it.each(["SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1"])("supplies a bounded scene output schema for %s", async (task) => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: "{}" })));
     const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);

@@ -1,5 +1,11 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 结构修复上机与按任务配置模型准备
+
+场景schema版provider已部署，本机/服务器SHA256一致c1ba2371b666ac95cab77f1e859fd07c212820faf91f36ff838f22e81bc91181，健康ok。实际返回问答把末问改为建议推迟，再提交新请求：三句角色正确、结构可呈现，但仍编造“今天有其他优先任务”及我方接受改期。未确认，不通过内容忠实性。当前线上文本模型配置为qwen-flash；反复指令修补仍无法取得符合要求的真实结果。
+
+增加可选OPENAI_SCENE_MODEL，仅作用于场景追问/对话生成/文章生成，未配置仍沿用原模型；Responses/chat两条路径一致选择，计量receipt.modelSource记录实际所选模型，其他任务不变。新增作用域与流水模型来源隔离回归，提供器60项及API构建通过。此新增配置能力当前仅本地，未部署或启用替代模型，不把模型更强当已验证。后续需先核实模型可用性和费用，再做同场景真实比较。官方参考：https://www.alibabacloud.com/help/en/model-studio/model-pricing 、https://docs.modelstudio.console.alibabacloud.com/en/model-studio/qwen-plus （本轮仅确认官方有该型号和计费资料，未据搜索摘要确定实际费用）。
+
 ### 计量身份排查及场景输出结构约束补齐
 
 读回MeteredProviderFetchAdapter确认Idempotency-Key原值作为operationId/commandId、完整body.input继续传入，交付身份还包含input；没有证据支持“独立命令被适配器合并为旧缓存”，先前只是排查假设。实际返回问答、改回同意后新请求47caaddc-93e0-41a3-8f54-ce9e0c96bf36失败原因是Invalid scene generation output（draftId/contentType/units数量校验），与之前重复内容失败不同。

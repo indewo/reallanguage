@@ -44,6 +44,10 @@ const openAiBaseUrl = (): string =>
   );
 const openAiTextModel = (): string =>
   process.env.OPENAI_MODEL ?? "gpt-5.4-mini";
+const textModelForTask = (task: string, fallback = openAiTextModel()): string =>
+  ["SCENE_NEXT_QUESTION_V1", "SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1"].includes(task)
+    ? process.env.OPENAI_SCENE_MODEL?.trim() || fallback
+    : fallback;
 const openAiAudioChatModel = (): string =>
   process.env.OPENAI_AUDIO_CHAT_MODEL ?? "gpt-audio-1.5";
 const audioChatWavInput = (base64: string) => ({
@@ -238,7 +242,7 @@ export class OpenAiLocalClient implements LocalAiClient {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: this.model,
+          model: textModelForTask(task, this.model),
           store: false,
           instructions: taskInstructions(task),
           input: JSON.stringify({ format: "json", task, input }),
@@ -291,7 +295,7 @@ export class OpenAiLocalClient implements LocalAiClient {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: this.model,
+          model: textModelForTask(task, this.model),
           messages: [
             { role: "system", content: systemContent },
             {
@@ -1013,7 +1017,7 @@ export class LocalOpenAiMeteredProvider implements MeteredProviderGateway {
               ? `openai/${openAiAudioChatModel()}`
               : command.task === "SPEAKING_TRANSCRIPTION_V1"
                 ? `openai/${openAiTranscribeModel()}`
-                : `openai/${openAiTextModel()}`,
+                : `openai/${textModelForTask(command.task)}`,
         providerCostMicroCny: 1,
       },
     };
