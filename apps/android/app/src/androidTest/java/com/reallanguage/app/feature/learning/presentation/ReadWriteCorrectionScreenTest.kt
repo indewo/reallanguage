@@ -10,6 +10,11 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.swipe
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlTheme
@@ -21,6 +26,25 @@ import org.junit.Test
 
 class ReadWriteCorrectionScreenTest {
     @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Test fun correctionCanvasCanBeClearedWithoutCompletingLearning() {
+        composeRule.activityRule.scenario.onActivity { configureFocusedLearningWindow(it.window) }
+        composeRule.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+        val chapter = FixedLearningChapter("isolated-correction", 1, listOf(
+            FixedLearningSentence("s1", "Hello, what would you like to order?", "你好，你想点什么？", true),
+            FixedLearningSentence("s2", "We have a special deal today.", "今天我们有特别优惠。", false)))
+        val actions = mutableListOf<ReadWriteCorrectionAction>()
+        composeRule.setContent { RlTheme { ReadWriteCorrectionScreen(
+            ReadWriteCorrectionUiState(chapter, "s1", listOf("order：点餐")), actions::add) } }
+        val clear = composeRule.onNodeWithTag("correction-clear")
+        clear.assertIsDisplayed().assertIsNotEnabled()
+        val canvas = composeRule.onNodeWithTag("correction-writing-canvas")
+        canvas.assertIsDisplayed().performTouchInput { swipe(Offset(width * .2f, height * .4f), Offset(width * .6f, height * .6f), 300) }
+        clear.assertIsEnabled().performClick().assertIsNotEnabled()
+        org.junit.Assert.assertTrue("Drawing and clearing must not submit a learning result", actions.isEmpty())
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.handwriting_finished)).assertIsDisplayed().assertIsEnabled()
+    }
 
     @Test fun pendingSaveClearlyDisablesConflictingActions() {
         composeRule.activityRule.scenario.onActivity { configureFocusedLearningWindow(it.window) }
