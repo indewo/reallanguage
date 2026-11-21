@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 后台学习应用层组合回归
+
+基于be61657执行packages/backend-modules/src/learning/application全部测试及apps/api/src/local/openai-metered-provider.test.ts，10文件163项通过，命令正常退出。覆盖范围是现有应用层用例和提供器隔离回归，不包含真实录音、供应商内容准确性、数据库归档实际流程或Windows目录fsync文件测试，未据此关闭待验项目。未变更后台配置或用户数据，未操作手机；本轮无新代码缺陷，记录检查证据供后续验收。
+
 ### 服务端不清楚原音不得被文字模型放行
 
 检查发现READING_FEEDBACK音频评估intelligible=false但language=en/confidence高时，文字模型action=CONTINUE仍可能保留。增加action保护：不充分英语证据或原音明确不可理解均REPEAT_FOR_CLARITY；保留真实ASR与置信证据，不根据目标句补录音。新增隔离回归覆盖ASR与目标完全匹配、confidence=.99但原音intelligible=false仍要求重读。57项提供器测试及API构建通过。只部署openai-metered-provider.js，备份.local-data/provider.before-intelligibility-20261121.js，语法检查、active、回环/公网ok/api通过，两端SHA256 68b52dc4ec509d69cb2365773f56e50fe90e73161b1cbb73f0f880bb36c7411f一致。未用真实不清楚录音验收，不能把健康检查当语音判断准确性通过；未操作用户手机。
