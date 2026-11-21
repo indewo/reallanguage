@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 服务端不清楚原音不得被文字模型放行
+
+检查发现READING_FEEDBACK音频评估intelligible=false但language=en/confidence高时，文字模型action=CONTINUE仍可能保留。增加action保护：不充分英语证据或原音明确不可理解均REPEAT_FOR_CLARITY；保留真实ASR与置信证据，不根据目标句补录音。新增隔离回归覆盖ASR与目标完全匹配、confidence=.99但原音intelligible=false仍要求重读。57项提供器测试及API构建通过。只部署openai-metered-provider.js，备份.local-data/provider.before-intelligibility-20261121.js，语法检查、active、回环/公网ok/api通过，两端SHA256 68b52dc4ec509d69cb2365773f56e50fe90e73161b1cbb73f0f880bb36c7411f一致。未用真实不清楚录音验收，不能把健康检查当语音判断准确性通过；未操作用户手机。
+
 ### 整组264项回归发现并修复不确定朗读误推进
 
 基于212a36f运行学习presentation全部ViewModelTest，264项中4项失败，集中在FullSpeakingRecovery/TrainingRetry：现场或恢复的REPEAT_FOR_CLARITY仍被trainingCanContinue=true放行，违反PRODUCT_CONTEXT不确定时要求重读。修复live和TrainingReady恢复均仅action=CONTINUE允许本轮继续；不确定时保留反馈与轮次，等待用户明确新录音，不自动开麦、不判正式失败。原主VM“正常完成2+2”测试错误使用REPEAT_FOR_CLARITY作为正常反馈，改为CONTINUE；保留并实际通过已有不确定保护测试，没有删除失败用例。

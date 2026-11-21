@@ -432,7 +432,7 @@ export class OpenAiLocalClient implements LocalAiClient {
       generated.feedbackConfidence = enoughEnglishEvidence
         ? evidence.confidence
         : 0;
-    if ("action" in generated && !enoughEnglishEvidence)
+    if ("action" in generated && (!enoughEnglishEvidence || !evidence.intelligible))
       generated.action = "REPEAT_FOR_CLARITY";
     if ("status" in generated && !enoughEnglishEvidence)
       return { status: "INCONCLUSIVE" };

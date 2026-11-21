@@ -16,6 +16,18 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("requires a reread when acoustic evidence is unintelligible even with matching ASR and high confidence", async () => {
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+        observedTranscript: "I'd like to learn English.", language: "en", intelligible: false, confidence: .99,
+        wordIssues: [], rhythmIssues: [],
+      }) } }] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ output_text: JSON.stringify({ action: "CONTINUE", feedbackConfidence: .99 }) })));
+    const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher, async () => "d2F2");
+    expect(await client.generateJson("READING_FEEDBACK_V1", { audioBase64: "bTRh", audioMimeType: "audio/mp4",
+      transcript: "I'd like to learn English.", targetTextEn: "I'd like to learn English." }))
+      .toMatchObject({ action: "REPEAT_FOR_CLARITY", transcript: "I'd like to learn English." });
+  });
   it("keeps independent ASR words when an audio assessor translates English into Chinese", async () => {
     const fetcher = vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
