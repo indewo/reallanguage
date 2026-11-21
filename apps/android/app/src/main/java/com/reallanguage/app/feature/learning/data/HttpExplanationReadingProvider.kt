@@ -72,6 +72,13 @@ class HttpExplanationReadingProvider(
             val context = readLockedContext()
             val expression = expressions(context).firstOrNull { it.expressionId == expressionId }
                 ?: return@requestSafely ExplanationContentResult.Failed
+            if (com.reallanguage.app.BuildConfig.DEBUG) {
+                fun matches(evidence: com.reallanguage.app.feature.formation.domain.SourceEvidence?) =
+                    evidence != null && evidence.startUtf16 == expression.startOffset && evidence.endUtf16 == expression.endOffset
+                val direct = context?.targets.orEmpty().any { it.type != com.reallanguage.app.feature.formation.domain.LearningTargetType.PATTERN && matches(it.sourceEvidence) }
+                val related = context?.targets.orEmpty().any { target -> target.relatedVocabulary.orEmpty().any { matches(it.sourceEvidence) } }
+                android.util.Log.i("RLMeaningSource", "lockedContext=${context != null} direct=$direct related=$related")
+            }
             val token = runtime.accessToken ?: return@requestSafely ExplanationContentResult.Failed
             val body = deliveredBody(1, null, expression, token, context) { body, cached ->
                 decodeExpression(body, context)?.let { value ->

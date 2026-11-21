@@ -1,5 +1,16 @@
 # 2026-11-19 用户反馈与增量验证
 
+### development错义来源定位与准确跨度规则部署（2026-11-21）
+
+08c9449当前分支，未覆盖无关dirty。为了区分锁定义与新生成，在HttpExplanationReadingProvider debug分支只加来源布尔标记RLMeaningSource：lockedContext/direct/related，不记录正文、词、ID、账号、token或响应。APK SHA256 f821ea6544ce5f8f5809c91a959ccc62111a5b92bccdbb3f25dadfc03ffade0c，assembleDebug通过且保留数据覆盖成功。实际恢复原QA章，先点requirements再点development，logcat对应16:10:48.737/16:10:51.336均lockedContext=true direct=false related=false；当前development仍为开发排期。故不是命中已确认目标/关联词义，而是本次词语解释生成把scheduling含义并入。没有手改当前结果、删除缓存或重新标掌握。
+
+仅补强WORD_EXPLANATION_V1规则：短释义边界为准确所点词跨度；语境选义不能多翻邻词，名词修饰语不吸收中心词、动词不吸收宾语、形容词不吸收相邻名词。组合放usageZh；精确锁定义仍保留，不静默改历史快照。AI_CONTRACTS 11.2同步说明。既有供应商适配71项测试通过，API tsc build通过；这不是71项真实语义例子的通过。
+
+只部署编译openai-metered-provider.js；旧部署SHA b58c4baa290118fa7a7f647c30d0b756a61f2f3841b4d99b182744f5a2c72c6e备份于服务器.local-data/provider-before-word-span-20261121-1614.js。新本机/服务器SHA一致e08327aebaa60717bd32bea5ba07fcca41bca53d6a97110e18c68e1c405c5856。重启reallanguage-api，health实际status=ok/service=api（c2a484e7-3c85-4910-9928-0da182a0ad64）后才操作手机，未同步无关decode-speaking-audio改动或私有配置。
+
+真实同句点击此前未查询的scheduling，来源仍无锁定跨度，后台learning/explanations200 requestId fb0dad06-3fcd-4d0c-a0a7-4ecef554dd51。查看rl-scheduling-word-1121.png：蓝卡实际释义“（在项目管理中）安排工作或活动的时间表”，没有并入development；右侧用法、双语例句返回。此为新规则单个新请求真实例证，不是原development错误缓存重生，也不据此宣布所有生成正确。原development仍需明确、可追踪且不重复计费的错误结果恢复，C12语义验收不关闭。存在词义来源/数据诊断能力，不意味已经实现人工对账或旧超时恢复。当前手机停scheduling词语讲解，未点击自评/完成，原8/9用户记录未进入。
+
+
 ### C13点词底部冗余核对与加载时旧讲解闪现修复（2026-11-21）
 
 8b0c0c3远程fetch无新提交。原最新需求QA章2/9当前requirements词语讲解，真实右侧滚到底查看rl-word-explanation-bottom-1121.png：自然例句中文、例句发音、表达提示完整可读，末尾没有重复整句基础讲解。对应C13现有词语实例取得证据；C12原special deal不在当前账号章节，不能用requirements替代原词组验收。
