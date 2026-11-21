@@ -19,7 +19,7 @@ class AudioDictationScreenTest {
         val actions = mutableListOf<AudioDictationAction>()
         val state = AudioDictationUiState(FixedLearningChapter("c1", 1, listOf(FixedLearningSentence("s1", "I felt calm.", "我很平静。", true))), "s1", input = "I felt", audioLooping = false, lockedHintItems = emptyList(), audioFailed = true)
         composeRule.setContent { RlTheme { AudioDictationScreen(state, actions::add) } }
-        composeRule.onNodeWithText("语音播放失败，请点“发音”重试。此操作不改变学习结果。").assertIsDisplayed()
+        composeRule.onNodeWithText(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.getString(com.reallanguage.app.R.string.learning_audio_failed)).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("I felt").assertIsDisplayed()
         if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("captureVisualEvidence") == "true") {
             val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
@@ -30,9 +30,9 @@ class AudioDictationScreenTest {
                 bitmap.recycle()
             }
         }
-        composeRule.onNodeWithText("发音").assertIsDisplayed().performClick()
+        composeRule.onNodeWithText("重新生成发音（重新计费）").assertIsDisplayed().performClick()
         composeRule.onNodeWithText("I felt").performScrollTo().assertIsDisplayed()
-        assert(actions == listOf(AudioDictationAction.AudioToggled))
+        assert(actions == listOf(AudioDictationAction.RegenerateAudioRequested))
     }
 
     @Test fun savedCorrectAnswerShowsAContinueActionRatherThanAnotherSubmit() {
