@@ -13,6 +13,37 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HttpSubsequentSettingsRepositoryTest {
+    @Test fun sameAccountRefreshDuringLoadKeepsTheValidSettings() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "fixture-owner") }
+        val transport = HttpTransport { runtime.update("new", "fixture-owner"); HttpResponse(200, currentSettingsJson) }
+        val repository = HttpSubsequentSettingsRepository(transport, SubsequentFakeCodec(settings), runtime)
+        assertEquals(SubsequentSettingsLoadResult.Ready(settings), repository.load())
+    }
+    @Test fun refreshDuringSaveUsesTheLatestTokenForVerificationRead() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "fixture-owner") }
+        val requests = mutableListOf<HttpRequest>()
+        val transport = HttpTransport { request ->
+            requests += request
+            if (request.method == "PUT") {
+                runtime.update("new", "fixture-owner")
+                HttpResponse(200, """{"status":"SAVED","rowVersion":2}""")
+            } else HttpResponse(200, currentSettingsJson)
+        }
+        val repository = HttpSubsequentSettingsRepository(transport, SubsequentFakeCodec(settings), runtime)
+        repository.load()
+        assertEquals(SubsequentSettingsSaveResult.Saved, repository.save(settings, "save"))
+        assertEquals("Bearer new", requests.last().headers["Authorization"])
+    }
+    @Test fun newLoginCannotSaveThePreviousSessionsLoadedDraft() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "fixture-owner") }
+        var writes = 0
+        val transport = HttpTransport { if (it.method == "PUT") writes++; HttpResponse(200, if(it.method == "GET") currentSettingsJson else """{"status":"SAVED","rowVersion":2}""") }
+        val repository = HttpSubsequentSettingsRepository(transport, SubsequentFakeCodec(settings), runtime)
+        repository.load()
+        runtime.update("new-login", "fixture-owner", newSession = true)
+        assertEquals(SubsequentSettingsSaveResult.Failed, repository.save(settings, "save"))
+        assertEquals(0, writes)
+    }
     @Test fun loadsTheCurrentSettingsWithTheActiveSession() = runTest {
         val transport = SubsequentRecordingTransport(HttpResponse(200, currentSettingsJson))
         val repository = HttpSubsequentSettingsRepository(

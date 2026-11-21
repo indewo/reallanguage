@@ -34,8 +34,8 @@ class HttpSubsequentSettingsRepository(
     private val sessionRuntime: SessionRuntime,
     private val vocabularyPoolPreference: AndroidVocabularyPoolPreference? = null,
 ) : SubsequentSettingsRepository {
-    private data class Loaded(val owner: String, val settings: InitialSettingsDraft, val version: Long)
-    private data class SaveAttempt(val owner: String, val proposed: InitialSettingsDraft, val version: Long,
+    private data class Loaded(val owner: String, val epoch: Long, val settings: InitialSettingsDraft, val version: Long)
+    private data class SaveAttempt(val owner: String, val epoch: Long, val proposed: InitialSettingsDraft, val version: Long,
         var verified: Boolean = false, var conflicted: Boolean = false)
     private val mutex = Mutex()
     private var loaded: Loaded? = null
@@ -44,11 +44,11 @@ class HttpSubsequentSettingsRepository(
     override suspend fun load(): SubsequentSettingsLoadResult = mutex.withLock {
         val owner = sessionRuntime.accountId ?: return@withLock SubsequentSettingsLoadResult.Failed
         val token = sessionRuntime.accessToken ?: return@withLock SubsequentSettingsLoadResult.Failed
-        val revision = sessionRuntime.identityRevision.value
+        val epoch = sessionRuntime.accountEpoch
         loaded = null
         try {
-            val current = read(owner, token)
-            if (current != null && sameSession(owner, revision)) {
+            val current = read(owner, token, epoch)
+            if (current != null && sameSession(owner, epoch)) {
                 loaded = current
                 SubsequentSettingsLoadResult.Ready(current.settings)
             } else SubsequentSettingsLoadResult.Failed
@@ -65,11 +65,12 @@ class HttpSubsequentSettingsRepository(
     ): SubsequentSettingsSaveResult = mutex.withLock {
         val owner = sessionRuntime.accountId ?: return@withLock SubsequentSettingsSaveResult.Failed
         val token = sessionRuntime.accessToken ?: return@withLock SubsequentSettingsSaveResult.Failed
-        val revision = sessionRuntime.identityRevision.value
-        val baseline = loaded?.takeIf { it.owner == owner } ?: return@withLock SubsequentSettingsSaveResult.Failed
+        val epoch = sessionRuntime.accountEpoch
+        val baseline = loaded?.takeIf { it.owner == owner && it.epoch == epoch } ?: return@withLock SubsequentSettingsSaveResult.Failed
         if (commandId.isBlank()) return@withLock SubsequentSettingsSaveResult.Failed
         val key = owner to commandId
-        val attempt = attempts.getOrPut(key) { SaveAttempt(owner, settings, baseline.version) }
+        val attempt = attempts.getOrPut(key) { SaveAttempt(owner, epoch, settings, baseline.version) }
+        if (attempt.epoch != epoch) return@withLock SubsequentSettingsSaveResult.Failed
         if (attempt.proposed != settings) return@withLock SubsequentSettingsSaveResult.Failed
         if (attempt.conflicted) return@withLock SubsequentSettingsSaveResult.Conflict
         if (attempt.verified) return@withLock if (baseline.settings == settings) SubsequentSettingsSaveResult.Saved
@@ -85,15 +86,16 @@ class HttpSubsequentSettingsRepository(
                     ),
                 ),
             )
-            if (!sameSession(owner, revision)) return@withLock SubsequentSettingsSaveResult.Failed
+            if (!sameSession(owner, epoch)) return@withLock SubsequentSettingsSaveResult.Failed
             if (response.statusCode == 409 && codec.versionConflict(response.body)) {
                 attempt.conflicted = true
                 return@withLock SubsequentSettingsSaveResult.Conflict
             }
             val savedVersion = response.body.takeIf { response.statusCode == HTTP_OK }?.let(codec::updatedVersion)
                 ?: return@withLock SubsequentSettingsSaveResult.Failed
-            val reread = read(owner, token)
-            if (sameSession(owner, revision) && reread != null && reread.version == savedVersion && reread.settings == settings) {
+            val latestToken = sessionRuntime.accessToken ?: return@withLock SubsequentSettingsSaveResult.Failed
+            val reread = read(owner, latestToken, epoch)
+            if (sameSession(owner, epoch) && reread != null && reread.version == savedVersion && reread.settings == settings) {
                 loaded = reread
                 attempt.verified = true
                 SubsequentSettingsSaveResult.Saved
@@ -105,17 +107,18 @@ class HttpSubsequentSettingsRepository(
         }
     }
 
-    private suspend fun read(owner: String, token: String): Loaded? {
+    private suspend fun read(owner: String, token: String, epoch: Long): Loaded? {
+        if (!sameSession(owner, epoch)) return null
         val response = transport.execute(HttpRequest("GET", VERSIONED_PATH, "", mapOf("Authorization" to "Bearer $token")))
-        if (response.statusCode != HTTP_OK) return null
+        if (response.statusCode != HTTP_OK || !sameSession(owner, epoch)) return null
         val settings = codec.current(response.body) ?: return null
         settings.basicVocabulary?.let { vocabularyPoolPreference?.write(owner, it.name) }
         val version = codec.rowVersion(response.body)?.takeIf { it > 0 } ?: return null
-        return Loaded(owner, settings, version)
+        return Loaded(owner, epoch, settings, version)
     }
 
-    private fun sameSession(owner: String, revision: Long) =
-        sessionRuntime.accountId == owner && sessionRuntime.accessToken != null && sessionRuntime.identityRevision.value == revision
+    private fun sameSession(owner: String, epoch: Long) =
+        sessionRuntime.accountId == owner && sessionRuntime.accessToken != null && sessionRuntime.accountEpoch == epoch
 
     private companion object {
         const val HTTP_OK = 200

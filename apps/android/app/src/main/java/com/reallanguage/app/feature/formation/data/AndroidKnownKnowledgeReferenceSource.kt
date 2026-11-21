@@ -15,8 +15,7 @@ class AndroidKnownKnowledgeReferenceSource(context: Context, private val runtime
     private val ownerEpoch = runtime.accountEpoch
     override suspend fun read(refs: List<String>): List<KnownKnowledgeCandidate>? = withContext(Dispatchers.IO) {
         val account = owner ?: return@withContext null
-        val revision = runtime.identityRevision.value
-        fun active() = runtime.accountId == account && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch && runtime.identityRevision.value == revision
+        fun active() = runtime.accountId == account && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch
         if (!active() || refs.size > 16 || refs.distinct().size != refs.size || !refs.all(::isValidKnowledgeRef)) return@withContext null
         if (refs.isEmpty()) return@withContext emptyList()
         try { FormationDatabase(applicationContext).use { helper ->

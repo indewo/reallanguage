@@ -26,8 +26,7 @@ class AndroidEnglishKnowledgeSnapshotSource(
     private val ownerEpoch = runtime.accountEpoch
     override suspend fun freeze(baseCommandId: String, requestDigest: String): KnownKnowledgeSnapshotResult = withContext(Dispatchers.IO) {
         val account = owner ?: return@withContext KnownKnowledgeSnapshotResult.Failed
-        val revision = runtime.identityRevision.value
-        fun active() = runtime.accountId == account && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch && runtime.identityRevision.value == revision
+        fun active() = runtime.accountId == account && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch
         if (!active() || baseCommandId.isBlank() || baseCommandId.length > 128 || requestDigest.isBlank() || requestDigest.length > 128) return@withContext KnownKnowledgeSnapshotResult.Failed
         try {
             FormationDatabase(applicationContext).use { helper ->

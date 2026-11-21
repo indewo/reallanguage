@@ -13,6 +13,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HttpEnglishGenerationRepositoryTest {
+    @Test fun `same session refresh during generation preserves the returned candidates`() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "owner") }
+        val expected = listOf(EnglishChapterDraft("c1", emptyList()))
+        val transport = HttpTransport { runtime.update("new", "owner"); HttpResponse(200, "ignored") }
+        val result = HttpEnglishGenerationRepository(transport, runtime, "cmd", FakeCodec(expected))
+            .generate(listOf(unit), listOf("u1"), listOf(ChapterDraft("c1", listOf("u1"))))
+        assertEquals(EnglishGenerationResult.Generated(expected), result)
+    }
+    @Test fun `same account new login during generation still rejects the old candidates`() = runTest {
+        val runtime = SessionRuntime().apply { update("old", "owner") }
+        val transport = HttpTransport { runtime.update("new-login", "owner", newSession = true); HttpResponse(200, "ignored") }
+        val result = HttpEnglishGenerationRepository(transport, runtime, "cmd", FakeCodec(emptyList()))
+            .generate(listOf(unit), listOf("u1"), listOf(ChapterDraft("c1", listOf("u1"))))
+        assertEquals(EnglishGenerationResult.Failed, result)
+    }
     @Test fun `posts authenticated stable generation request and decodes candidates`() = runTest {
         val transport = RecordingTransport(HttpResponse(200, "ignored"))
         val expected = listOf(EnglishChapterDraft("c1", emptyList()))

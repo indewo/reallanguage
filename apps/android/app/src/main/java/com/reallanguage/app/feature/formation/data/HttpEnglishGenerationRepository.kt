@@ -42,8 +42,7 @@ class HttpEnglishGenerationRepository(
     private var completed: Pair<String, EnglishGenerationResult.Generated>? = null
     override suspend fun generate(units: List<SemanticUnit>, selectedUnitIds: List<String>, chapters: List<ChapterDraft>): EnglishGenerationResult = mutex.withLock {
         val token = runtime.accessToken ?: return@withLock EnglishGenerationResult.Failed
-        val revision = runtime.identityRevision.value
-        fun active() = runtime.accountId == owner && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch && runtime.identityRevision.value == revision
+        fun active() = runtime.accountId == owner && runtime.accessToken != null && runtime.accountEpoch == ownerEpoch
         if (!active() || sourceType !in setOf("DIARY", "RECORDING", "AI_SCENE")) return@withLock EnglishGenerationResult.Failed
         try {
             val baseBody = codec.requestWithKnowledge(units, selectedUnitIds, chapters, commandId, emptyList(), sourceType)
