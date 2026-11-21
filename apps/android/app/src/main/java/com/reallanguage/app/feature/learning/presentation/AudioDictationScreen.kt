@@ -175,7 +175,7 @@ fun AudioDictationScreen(
 @Composable
 private fun DictationFeedback(state: AudioDictationUiState) {
     if (state.audioFailed) {
-        Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
+        Text(stringResource(R.string.dictation_audio_failed), color = RlColor.Error)
     }
     when {
         state.saveFailed -> Text(stringResource(R.string.audio_dictation_save_failed), color = RlColor.Error)

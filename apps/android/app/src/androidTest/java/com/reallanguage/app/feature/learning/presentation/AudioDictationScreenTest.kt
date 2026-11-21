@@ -13,13 +13,20 @@ import org.junit.Rule
 import org.junit.Test
 
 class AudioDictationScreenTest {
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule val composeRule = androidx.compose.ui.test.junit4.v2.createAndroidComposeRule<androidx.activity.ComponentActivity>()
+
+    @org.junit.Before fun productionWindow() {
+        composeRule.activityRule.scenario.onActivity {
+            it.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            com.reallanguage.app.core.app.configureFocusedLearningWindow(it.window)
+        }
+    }
 
     @Test fun playbackFailureKeepsRetryAndInputReachable() {
         val actions = mutableListOf<AudioDictationAction>()
         val state = AudioDictationUiState(FixedLearningChapter("c1", 1, listOf(FixedLearningSentence("s1", "I felt calm.", "我很平静。", true))), "s1", input = "I felt", audioLooping = false, lockedHintItems = emptyList(), audioFailed = true)
         composeRule.setContent { RlTheme { AudioDictationScreen(state, actions::add) } }
-        composeRule.onNodeWithText(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.getString(com.reallanguage.app.R.string.learning_audio_failed)).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.getString(com.reallanguage.app.R.string.dictation_audio_failed)).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("I felt").assertIsDisplayed()
         if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("captureVisualEvidence") == "true") {
             val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
