@@ -16,6 +16,30 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("uses the scoped word explanation model in both supplier request and receipt", async () => {
+    vi.stubEnv("OPENAI_EXPLANATION_MODEL", "explanation-model");
+    try {
+      const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+      const client = new OpenAiLocalClient("isolated-test", "ordinary-model", fetcher);
+      const provider = new LocalOpenAiMeteredProvider(client);
+      const request = command("WORD_EXPLANATION_V1");
+      const quote = await provider.quote(request);
+      const result = await provider.execute({ ...request, providerAttemptId: quote.providerAttemptId });
+      expect(JSON.parse(String(fetcher.mock.calls[0]![1].body)).model).toBe("explanation-model");
+      expect(result.receipt.modelSource.endsWith("/explanation-model")).toBe(true);
+      await client.generateJson("SENTENCE_EXPLANATION_V1", {});
+      expect(JSON.parse(String(fetcher.mock.calls[1]![1].body)).model).toBe("ordinary-model");
+    } finally { vi.unstubAllEnvs(); }
+  });
+  it("uses the configured quality model for word explanations when no dedicated override exists", async () => {
+    vi.stubEnv("OPENAI_EXPLANATION_MODEL", " ");
+    vi.stubEnv("OPENAI_TARGET_REVIEW_MODEL", "quality-model");
+    try {
+      const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+      await new OpenAiLocalClient("isolated-test", "ordinary-model", fetcher).generateJson("WORD_EXPLANATION_V1", {});
+      expect(JSON.parse(String(fetcher.mock.calls[0]![1].body)).model).toBe("quality-model");
+    } finally { vi.unstubAllEnvs(); }
+  });
   it("can scope target generation quality without changing other text models", async () => {
     vi.stubEnv("OPENAI_TARGET_MODEL", "target-model");
     try {

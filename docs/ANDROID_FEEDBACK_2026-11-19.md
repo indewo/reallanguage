@@ -1,3 +1,15 @@
+### 2026-11-21 词语解释模型与真实development语义复验
+
+同一development在qwen-flash两次混入scheduling义后，新增WORD_EXPLANATION_V1专用模型路由：OPENAI_EXPLANATION_MODEL优先，空值回退现有OPENAI_TARGET_REVIEW_MODEL，再回退普通模型。实际公网已有review配置qwen-plus，所以词语请求使用qwen-plus；不影响整句或其他任务，不另加隐式付费检查/重试。供应商请求与账单receipt共用同一路由。新增专用覆盖、空值回退及receipt一致性测试，provider74项通过，API构建通过。独立语义门禁/有界修复及只读恢复防绕过仍未实现，不能用此替代所有词语内容的验收。
+
+仅部署provider，备份.local-data/provider-before-explanation-model-20261121-1709.js；本机/远程SHA256均255755bb8c490da3d2da704281cb6e963711f25b9effa20917e3970bc466f01a。重启后一度连接未就绪，再查systemctl active及/api/v1/health实际ok requestIde845ea56-7e15-4d18-8c54-595995a5634e后操作手机，无重复重启。
+
+真实OPPO35587acd：首页→未完成7条→需求QA章2/9→development旧开发时间安排→滚到末尾→重新获取→实读费用确认后仅点一次。POST200 ac4f86b8-f9d7-48a4-b2ea-36619360aede。新词义为开发（指软件或产品的研发工作）；用法明确与scheduling构成development scheduling，组合义开发排期置于用法而非单词定义；例句The team is working on the next phase of development. / 团队正在开展下一阶段的开发工作。未手改模型输出。实际截图rl-development-quality-1121.png已查看，英文/中文避开左下叶子且两行完整。强制停止重开→首页→原章，词义/用法/例句保留。这个新发现的具体错义样本已改善，不代表原special deal、所有旧缓存或所有词义均验收通过。
+
+截图另见语音播放失败；服务日志旧自动播放的对象payload404 requestId9d111f30-5c6f-4964-a136-2aa81d09c5f9。重开后明确点发音，POST201 b2185694-a20a-4948-88ef-4512e9207126及不同对象payload200 04fd2a48-0717-4b94-b132-8cb4f33df96b，UI进入静音。未据此认定旧404已恢复，也无用户听音确认，仍待追踪请求对应文本/过期状态。
+
+暂时退出保存后真实费用页截图rl-quality-bill-1121.png已查看：生成表达讲解/手动重试/dashscope qwen-plus/-0.01；另有英文发音首次调用/-0.01，两处余额97.61一致。这里只证明当前显示路由/类型/余额一致，不证明真实Token价格对账或全局零重复。没有点充值/退款。账单转场uiautomator返回null，残留XML不可作为证据，以新截图为准。APK未变，未改用户掌握进度或删除记录。
+
 ### 2026-11-21 固定词义结构约束字段修正（未关闭语义验收）
 
 检查真实Android讲解请求合同发现lockedTargets没有提取阶段的unitId，而provider生成schema依赖unitId等于focusSentenceId，导致真实请求的准确跨度词义enum被跳过。修正为仅对显式携unitId的旧调用做句子过滤；真实合同由上游按focusSentence验证，继续只匹配准确UTF-16跨度。新增不带unitId的PATTERN关联词和显式其他句干扰项测试，72项provider测试通过，API构建通过。这是隔离测试，不能代替手机语义验收；无锁定命中的development错误不受此修复影响。

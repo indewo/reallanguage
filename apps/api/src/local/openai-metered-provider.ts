@@ -52,6 +52,7 @@ const textProviderNamespace = (): string => {
 const textModelForTask = (task: string, fallback = openAiTextModel()): string =>
   task === "LEARNING_TARGET_EXTRACTION_V1" ? process.env.OPENAI_TARGET_MODEL?.trim() || fallback
   : task === "LEARNING_TARGET_QUALITY_V1" ? process.env.OPENAI_TARGET_REVIEW_MODEL?.trim() || fallback
+  : task === "WORD_EXPLANATION_V1" ? process.env.OPENAI_EXPLANATION_MODEL?.trim() || process.env.OPENAI_TARGET_REVIEW_MODEL?.trim() || fallback
   : ["SCENE_NEXT_QUESTION_V1", "SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1", "SCENE_DRAFT_FIDELITY_V1"].includes(task)
     ? process.env.OPENAI_SCENE_MODEL?.trim() || fallback
     : fallback;

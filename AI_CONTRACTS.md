@@ -892,6 +892,9 @@ evidenceZh
 
 ### 11.2 `WORD_EXPLANATION_V1`
 
+2026-11-21后续：词语生成模型依次使用OPENAI_EXPLANATION_MODEL、OPENAI_TARGET_REVIEW_MODEL、普通模型，空白视未配置；供应商请求及receipt保持同一路由，整句不受影响。公网qwen-plus实际development重生后已正确区分单词开发与组合开发排期，并重开保留；这是该样本证据，独立语义门禁及所有旧缓存验收尚未完成。
+
+
 2026-11-21增量：错误词语讲解的显式重新获取使用新commandId及retryOfCommandId关联原操作，标USER_RETRY，保留旧交付。客户端经费用确认后持久化pending修订身份，同一次未完成操作沿用身份，保存新结果后标完成，不自动删缓存或隐式换版本付费。仅词语首轮可用；手机重新获取/重开与费用类型已验证，但development新结果仍错，语义质量验收未通过。不得用重生绕过未知费用状态的旧请求。
 
 输入：用户点击的完整单词或自然词组、固定句、当前语境和设置。
