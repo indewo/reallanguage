@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class ExplanationPreparationUiState(
     val loading: Boolean = false,
@@ -30,8 +31,17 @@ class ExplanationPreparationViewModel(private val repository: ExplanationPrepara
         ExplanationPreparationAction.RetryRequested -> load()
         ExplanationPreparationAction.BackRequested -> viewModelScope.launch { channel.send(ExplanationPreparationEffect.ReturnToChapter) }
     }
-    private fun load() { if (mutableUiState.value.loading) return; mutableUiState.update { ExplanationPreparationUiState(loading = true) }; viewModelScope.launch { when (val result = repository.prepare()) {
-        is ExplanationPreparationResult.Ready -> channel.send(ExplanationPreparationEffect.OpenExplanation(result.baseExplanationZh, result.expressions))
-        ExplanationPreparationResult.Failed -> mutableUiState.update { ExplanationPreparationUiState(failed = true) }
-    } } }
+    private fun load() {
+        if (mutableUiState.value.loading) return
+        mutableUiState.update { ExplanationPreparationUiState(loading = true) }
+        viewModelScope.launch {
+            val result = try { repository.prepare() }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { ExplanationPreparationResult.Failed }
+            when (result) {
+                is ExplanationPreparationResult.Ready -> channel.send(ExplanationPreparationEffect.OpenExplanation(result.baseExplanationZh, result.expressions))
+                ExplanationPreparationResult.Failed -> mutableUiState.update { ExplanationPreparationUiState(failed = true) }
+            }
+        }
+    }
 }

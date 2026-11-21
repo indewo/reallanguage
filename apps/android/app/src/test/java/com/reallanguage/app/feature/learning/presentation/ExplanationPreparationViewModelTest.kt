@@ -26,6 +26,24 @@ class ExplanationPreparationViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun thrownPreparationReleasesLoadingAndOnlyExplicitRetryRequestsAgain() = runTest(dispatcher) {
+        var calls = 0
+        val model = ExplanationPreparationViewModel {
+            if (++calls == 1) throw java.io.IOException("interrupted")
+            ExplanationPreparationResult.Ready("原章节讲解", emptyList())
+        }
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.failed)
+        assertFalse(model.uiState.value.loading)
+        assertEquals(1, calls)
+        val effect = async { model.effects.first() }
+        model.onAction(ExplanationPreparationAction.RetryRequested)
+        model.onAction(ExplanationPreparationAction.RetryRequested)
+        advanceUntilIdle()
+        assertEquals(ExplanationPreparationEffect.OpenExplanation("原章节讲解", emptyList()), effect.await())
+        assertEquals(2, calls)
+    }
+
     @Test fun `loads the base explanation immediately and opens fixed reading`() =
         runTest(dispatcher) {
             val expression = SelectableExpression("word-0", "Today", 0, 5)
