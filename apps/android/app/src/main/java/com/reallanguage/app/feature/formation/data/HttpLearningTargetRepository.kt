@@ -144,7 +144,6 @@ class HttpLearningTargetRepository(
         if (!validSource || runtime.accountId != ownerAccountId || runtime.accountEpoch != ownerEpoch) return null
         if (requested != null && requested.first !in focusIds) return null
         val token = runtime.accessToken ?: return null
-        val revision = runtime.identityRevision.value
         var diagnosticStage = "request"
         return try {
             val refsBySentence = sentences.associate { sentence -> sentence.unitId to sentence.candidates.single { it.candidateId == selections[sentence.unitId] }.reusedKnowledgeRefs }
@@ -155,7 +154,7 @@ class HttpLearningTargetRepository(
             val knownByRef = known.associateBy { it.ref }
             val perSentence = refsBySentence.mapValues { (_, refs) -> refs.map { knownByRef.getValue(it) } }
             currentCoroutineContext().ensureActive()
-            check(runtime.accountId == ownerAccountId && runtime.accessToken != null && runtime.identityRevision.value == revision)
+            check(isCurrentOwner())
             val expression = knownExpressions.firstOrNull { it.unitId == requested?.first && it.expressionId == requested?.second }
             val requestId = if (requested == null) commandId else java.util.UUID.nameUUIDFromBytes("$commandId:${requested.first}:${requested.second}".toByteArray()).toString()
             val body = if (acceptedVocabulary != null) {
@@ -168,7 +167,7 @@ class HttpLearningTargetRepository(
             }
             val response = transport.execute(HttpRequest("POST", "/api/v1/content-formation/learning-targets", body, mapOf("Authorization" to "Bearer $token")))
             currentCoroutineContext().ensureActive()
-            if (runtime.accountId != ownerAccountId || runtime.accessToken == null || runtime.identityRevision.value != revision || response.statusCode != 200) null
+            if (!isCurrentOwner() || response.statusCode != 200) null
             else {
                 diagnosticStage = "decode"
                 val decoded = codec.payload(response.body)
@@ -200,8 +199,7 @@ class HttpLearningTargetRepository(
                     } ?: true } &&
                     payload.targets.mapNotNull { it.knownKnowledgeRef?.let { ref -> it.unitId to ref } }.let { actual ->
                         actual.distinct().size == actual.size && (requested != null || actual.toSet() == refsBySentence.filterKeys { it in focusIds }.flatMap { (unit, refs) -> refs.map { unit to it } }.toSet())
-                    } && runtime.accountId == ownerAccountId && runtime.accountEpoch == ownerEpoch &&
-                    runtime.accessToken != null && runtime.identityRevision.value == revision
+                    } && isCurrentOwner()
                 if (!valid) reportTargetValidation("validation", "RejectedPayload")
                 valid
                 }

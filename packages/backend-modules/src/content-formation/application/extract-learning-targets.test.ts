@@ -41,7 +41,7 @@ const target = {
   selectedByDefault: true as const,
 };
 describe("ExtractLearningTargets", () => {
-  it.each(["tomorrow morning", "Next week", "this afternoon"])("omits compositional calendar suggestions without dropping real vocabulary: %s", async (display) => {
+  it.each(["tomorrow morning", "Next week", "this afternoon", "to tomorrow morning", "by next week"])("omits compositional calendar suggestions without dropping real vocabulary: %s", async (display) => {
     const app = new ExtractLearningTargets({ read: async () => settings }, { extract: async () => ({
       targets: [target, { ...target, targetId: "calendar", display, type: "FIXED_EXPRESSION" as const }],
       queryableExpressions: [{ expressionId: "calendar", unitId: "u1", display }],

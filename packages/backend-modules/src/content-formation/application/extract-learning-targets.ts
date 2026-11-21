@@ -104,7 +104,7 @@ export class InvalidLearningTargetOutputError extends Error {}
 
 // Ordinary calendar combinations are compositional, unlike lexical uses such as "on time".
 const isCalendarCombination = (value: string): boolean =>
-  /^(?:(?:tomorrow|yesterday|today)\s+(?:morning|afternoon|evening|night)|(?:this|next|last)\s+(?:morning|afternoon|evening|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday))$/i.test(
+  /^(?:(?:to|by|until|before|after|from|on|in)\s+)?(?:(?:tomorrow|yesterday|today)\s+(?:morning|afternoon|evening|night)|(?:this|next|last)\s+(?:morning|afternoon|evening|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday))$/i.test(
     value.trim().replace(/\s+/g, " "),
   );
 

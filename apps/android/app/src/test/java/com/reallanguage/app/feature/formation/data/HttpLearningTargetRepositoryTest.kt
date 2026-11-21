@@ -11,6 +11,16 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class HttpLearningTargetRepositoryTest {
+    @Test fun `same account token refresh during request does not discard successful extraction`() = runTest {
+        val runtime = session()
+        val repository = repository(runtime, TargetTransport { runtime.update("refreshed-token", "first") })
+        assertTrue(repository.extract() is LearningTargetExtractionResult.Extracted)
+    }
+    @Test fun `new session of same account during request still rejects the old result`() = runTest {
+        val runtime = session()
+        val repository = repository(runtime, TargetTransport { runtime.update("new-session-token", "first", newSession = true) })
+        assertEquals(LearningTargetExtractionResult.Failed, repository.extract())
+    }
     private val chapters = listOf(EnglishChapterDraft("chapter", listOf(
         EnglishSentenceDraft("s1", "我解释了计划。", true, listOf(EnglishCandidate("e1", "I explained the plan."))),
         EnglishSentenceDraft("s2", "她听着。", true, listOf(EnglishCandidate("e2", "She listened."))),

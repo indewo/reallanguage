@@ -1,5 +1,17 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 追查原单句失败：同账号令牌刷新导致成功结果被丢弃
+
+先核对once语义：Cambridge Grammar的once词条https://dictionary.cambridge.org/grammar/british-grammar/conjunction说明连词可表as soon as或after，不能把所有“立即”解释一律当错；当前完成后分享语境中不应无条件强化即时性，内容质量项保留待修，未手改缓存或宣称已纠正。
+
+为定位10:03单句提取而非重复抽样，短暂停服务后在服务器创建58MB受限临时副本，立即恢复服务并健康ok；仅在副本READ ONLY事务中按当前测试账号邮箱索引定位其交付结果，不直接打开分析原库、不下载数据库。原结果createdAt02:03:34Z确实存在，并将to tomorrow morning标为FIXED_EXPRESSION；诊断仅读取，不改余额/学习数据。已校验临时目录绝对路径后删除副本及服务器检查脚本，确认不存在；本机临时脚本亦删除，无数据库/密钥/私有导出提交仓库。
+
+原服务器日志在这次learning-targets 200前发生auth/sessions/refresh。代码确认HttpLearningTargetRepository请求前捕获identityRevision，而同账号合法刷新也递增此值，响应到达直接被判失败。新增“请求期间同账号刷新”的隔离回归，旧实现20项中1项失败，复现该丢弃路径；改用已有账号+accountEpoch+有效令牌判断归属后20项全过，并新增同账号重新登录newSession仍拒绝旧响应的保护，登出/换账号原回归保留。该机制与原日志一致，但真机在目标请求中恰逢TTL刷新的复验仍待做，不能用mock更新令牌冒充实机刷新验证。
+
+原返回还暴露带介词日历组合绕过过滤。窄规则扩展为可带to/by/until/before/after/from/on/in前缀的普通日历组合；新增to tomorrow morning/by next week，后端31项全过，on time等既有词汇保留回归仍过。backend-modules/API构建通过；部署extract-learning-targets.js，本机/服务器SHA256一致5a0a361b3f114e506cb05af71cbbea544539288c1d66fd55d37c2a6ce526bba8。安卓公网构建、原证书覆盖Success，APK SHA256 8b0c261edda38be391d91cac6319e51c649201bd250219945affb2d7d90fd2cf；实际启动首页正常、无需重登。旧桌面包未覆盖。新过滤尚无该介词实例的上机结果，单独保留待验。
+
+继续审计发现设置、英语形成、安全及本机知识快照也有identityRevision判断；并非所有观察该流的代码都错（录音服务用它触发账号边界复核）。本批仅修目标仓库，其他请求归属边界须逐个核对，不能全局替换。现场首页，三个学习章保留。
+
 ### 句式章初始蓝纸主体修复、真机切词恢复及新供应商流水核验
 
 根因是蓝纸兜底只找带lockedMeaningZh的词义，找不到就显示原句首词；句式刻意不混入词义出现位置，所以仅句式章显示Okay。新增只读InitialExplanationSubject，HttpExplanationReadingProvider从当前账号/句子的已固定上下文读取仅句式主体，无模型调用，不伪造词义位置；恢复时重新读取。统一卡片/卡下自评的主体解析：主动选择词语优先，未主动选择时用初始主体或已有锁定词义，无有效主体时不随意取首词。初始字段不改固定目标或原进度格式。
