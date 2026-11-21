@@ -105,8 +105,10 @@ class LearningTargetCandidateExampleScreenTest {
             val layouts = mutableListOf<TextLayoutResult>()
             node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
             val layout = layouts.single()
+            val displayed = if (text == english) "例  $text" else text
+            assertEquals(displayed, layout.layoutInput.text.text)
             assertFalse(layout.multiParagraph.didExceedMaxLines)
-            assertEquals(text.length, layout.getLineEnd(layout.lineCount - 1))
+            assertEquals(displayed.length, layout.getLineEnd(layout.lineCount - 1))
             assertTrue(layout.multiParagraph.height <= layout.size.height + 1f)
             node.performScrollTo().assertIsDisplayed()
             assertWholeVisibleLine(node, layout)
@@ -122,7 +124,7 @@ class LearningTargetCandidateExampleScreenTest {
     }
 
     private fun cardText(target: String, text: String) = compose.onNode(
-        hasText(text) and hasAnyAncestor(hasTestTag("learning_target_$target")), useUnmergedTree = true)
+        hasText(text, substring = true) and hasAnyAncestor(hasTestTag("learning_target_$target")), useUnmergedTree = true)
 
     private fun assertWholeVisibleLine(interaction: SemanticsNodeInteraction, layout: TextLayoutResult) {
         val node = interaction.fetchSemanticsNode()

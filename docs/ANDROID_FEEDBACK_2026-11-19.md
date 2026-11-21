@@ -1,3 +1,7 @@
+### 2026-11-21 目标长例句定位根因及复验
+
+失败现场target-long-layout.png已实际查看：长英文例句存在，前置例标签被包含在同一Text，测试精确全文缺前缀故未匹配，并非已证实例句缺失。修正cardText为内容包含定位，长内容检查另严格断言layout文本等于完整例前缀+原英文/完整中文，保留末行完整长度、无超行、整行可见、滚动、选择及返回检查。手机独立双倍字体组件复验1项通过49.662s，无产品代码修改，无用户数据修改。不把此隔离组件当原章节真实入口全验；B04/C07/C29仍按各自范围补证。
+
 ### 2026-11-21 目标页双倍字体检查失败，待现场定位
 
 现有longCandidateExampleAndTranslationCanScrollAtDoubleFontWithoutLosingSelectionOrReturn在手机隔离组件中失败：卡片可定位，但GetTextLayoutResult未取到长英文例句。测试结束截图为手机桌面，不能用于界面结论。新增在取布局前保存组件截图target-long-layout.png，尚待构建重跑；不削弱断言，不据本轮判定具体UI根因或关闭B04/C07/C29。未改用户数据或产品布局。
