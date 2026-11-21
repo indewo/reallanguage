@@ -93,6 +93,7 @@ fun ExplanationReadingScreen(
                 ?: stringResource(R.string.explanation_reading_title)
             BoxWithConstraints(Modifier.fillMaxSize().testTag("explanation_expression_card_content"), contentAlignment = Alignment.Center) {
               val shortCard = maxHeight < 100.dp
+              val meaningInset = maxWidth * .24f
               Column(
                   Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(end = 12.dp),
                   verticalArrangement = Arrangement.spacedBy(if (shortCard) 2.dp else 6.dp),
@@ -116,7 +117,8 @@ fun ExplanationReadingScreen(
                     else null
                 explanationText?.let { Text(
                     it,
-                    modifier = Modifier.fillMaxWidth().testTag("explanation_expression_card_meaning"),
+                    // The lower-left paper collage is decorative; keep the meaning in the clear blue area.
+                    modifier = Modifier.fillMaxWidth().padding(start = meaningInset).testTag("explanation_expression_card_meaning"),
                     textAlign = TextAlign.Center,
                     color = RlColor.OnPrimary.copy(alpha = .86f),
                     style = MaterialTheme.typography.titleMedium.copy(
