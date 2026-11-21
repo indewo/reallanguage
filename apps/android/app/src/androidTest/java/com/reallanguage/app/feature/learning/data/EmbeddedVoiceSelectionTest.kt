@@ -11,13 +11,25 @@ import java.util.Locale
 
 @RunWith(AndroidJUnit4::class)
 class EmbeddedVoiceSelectionTest {
-    @Test fun exactAccentAndHighestInstalledOfflineQualityWin() {
+    @Test fun exactAccentAndHighestAvailableQualityWin() {
         val network = voice("network-neural", Locale.US, Voice.QUALITY_VERY_HIGH, true)
         val british = voice("offline-en-gb", Locale.UK, Voice.QUALITY_VERY_HIGH, false)
         val standard = voice("offline-en-us-standard", Locale.US, Voice.QUALITY_NORMAL, false)
         val natural = voice("offline-en-us-natural", Locale.US, Voice.QUALITY_HIGH, false)
 
-        assertEquals(natural, bestEmbeddedVoice(setOf(network, british, standard, natural), Locale.US))
+        assertEquals(network, bestAvailableVoice(setOf(network, british, standard, natural), Locale.US))
+    }
+
+    @Test fun offlineWinsWhenAccentAndQualityAreEqual() {
+        val network = voice("network", Locale.US, Voice.QUALITY_HIGH, true)
+        val offline = voice("offline", Locale.US, Voice.QUALITY_HIGH, false)
+        assertEquals(offline, bestAvailableVoice(setOf(network, offline), Locale.US))
+    }
+
+    @Test fun requestedAccentWinsOverHigherQualityOtherAccent() {
+        val british = voice("british", Locale.UK, Voice.QUALITY_VERY_HIGH, false)
+        val american = voice("american", Locale.US, Voice.QUALITY_NORMAL, false)
+        assertEquals(american, bestAvailableVoice(setOf(british, american), Locale.US))
     }
 
     @Test fun voicesNeedingDownloadAreNotTreatedAsOfflineReady() {
@@ -25,7 +37,7 @@ class EmbeddedVoiceSelectionTest {
             "missing", Locale.US, Voice.QUALITY_VERY_HIGH, Voice.LATENCY_LOW, false,
             setOf(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED),
         )
-        assertNull(bestEmbeddedVoice(setOf(missing), Locale.US))
+        assertNull(bestAvailableVoice(setOf(missing), Locale.US))
     }
 
     private fun voice(name: String, locale: Locale, quality: Int, network: Boolean) =
