@@ -24,6 +24,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlColor
@@ -37,6 +38,9 @@ fun ReadWriteCorrectionScreen(
     onAction: (ReadWriteCorrectionAction) -> Unit,
 ) {
     ChapterWritingFrame(state.chapter, state.currentFocusSentenceId, stageTitle = "读写订正",
+        workspaceMinHeight = 220.dp,
+        focusOnlyContext = true,
+        centerLeftPanelContent = true,
         onBack = { onAction(ReadWriteCorrectionAction.BackRequested) },
         leftPanelContent = {
             Text("订正提示", color = androidx.compose.ui.graphics.Color.White, fontSize = 20.sp, fontFamily = EditorialFont.Serif)
@@ -53,8 +57,16 @@ fun ReadWriteCorrectionScreen(
         }) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
             val points = remember { mutableStateListOf<Offset?>() }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Text("在纸面上抄写当前句", color = RlColor.TextSecondary, fontSize = 14.sp)
+                TextButton(onClick = { points.clear() }, enabled = !state.saving && points.isNotEmpty(),
+                    modifier = Modifier.testTag("correction-clear")) { Text("清空重写") }
+            }
             Canvas(
-                Modifier.fillMaxWidth().weight(1f).clipToBounds()
+                // Keep a gutter outside the ink surface for vertical page scrolling.
+                Modifier.fillMaxWidth().weight(1f).padding(end = 20.dp).clipToBounds()
+                    .testTag("correction-writing-canvas")
                     .pointerInput(state.saving) {
                         if (!state.saving) {
                             detectDragGestures(

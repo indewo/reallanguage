@@ -1,3 +1,7 @@
+### 2026-11-21 展示优先：C16订正页集中修改（待真机）
+
+按用户最新要求暂停音频专项，集中展示。ReadWriteCorrectionScreen启用focusOnlyContext，避免原三句上下文挤压画布；左侧提示垂直居中，workspaceMinHeight220dp；增加明确书写说明及清空重写（仅清当前页面内存笔迹），画布右侧20dp留作页面滚动手势区域，底按钮仍沿用固定footer。assembleDebug通过，尚未覆盖安装/真实画线清空滚动，不能关闭C16，原order流程仍待验。无学习结果/数据修改。
+
 ### 2026-11-21 发音重新生成未知结果时不得跳代修复
 
 发现ProductionApp.remoteSentenceSpeaker原实现每次明确regenerate均generation+1并立即保存，HTTP未知/失败也推进；下一次可能引用从未真正交付的上一代，服务端严格资格检查后持续409。新增SentenceAudioRevisionStore复用既有sentence_audio_user_retries命名空间和generation/legacy boolean键，另加pending元数据。请求前commit新代号及pending；pending期间普通播放/再次明确重新生成/重开实例均沿用同代号，只有合法成功POST交付元数据后才结束pending。成功POST校验audioObjectRef、durationMs及expiresAtMs后标delivered，下载音频失败不伪造供应商未完成。旧版本已有代号但没有pending字段按未知处理，先重放原身份而不是直接付费下一代；旧boolean首代兼容，损坏元数据失败关闭，不重置。迟到交付不得完成新代号。无音频/文本/凭证写入此存储，hash scope仍含账号/声线/全文，保持原计费身份算法。
