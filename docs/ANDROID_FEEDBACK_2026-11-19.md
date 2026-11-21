@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 近期异常恢复组合检查与候选包
+
+基于源码944a3f2，组合执行CompleteWriting(18)、LearningExit(5)、HandwritingCopy(7)、ExplanationPreparation(4)、SceneResponse(22)、PatternSpeaking(34)，共90项单元测试0失败；同次assembleDebug公网参数构建成功。原证书SHA256仍9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa；本地apps/android/app/build/outputs/apk/debug/app-debug.apk SHA256 338be739d16273ee5739a92793fc20c512ead107d5892cc15fd7e06635466ded。未覆盖用户手机或旧桌面APK，未提交二进制/私钥。这是单元回归及候选构建证据，不是场景、书写、归档真实全流程通过；此前Windows目录持久化14项失败不在本次筛选范围内，没有据90项通过抹除该限制。
+
 ### 讲解准备异常恢复
 
 ExplanationPreparationViewModel的prepare抛异常未捕获，会保留loading=true并阻止明确重试。补充取消传播、其他异常映射既有Failed页面状态；不自动重发生成请求，不修改固定章节内容。4项隔离测试通过，新增首次IOException后解除loading、未自动再调用、用户双击重试仍只有一次新prepare且返回实际交付内容。未安装本修改或做真实供应商失败恢复验收；未知收费请求的后端对账及历史失败交付仍未因此关闭。未操作用户手机。
