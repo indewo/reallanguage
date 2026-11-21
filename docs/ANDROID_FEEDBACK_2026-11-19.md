@@ -1,5 +1,13 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 改期不再断言达成协议，真实进入目标提取后发现例句错误
+
+调整对话生成允许同一角色的不同已确认意图连续成句，三句下限不应由虚构结局补足；提供器60项及API构建通过，部署SHA256 a53ed2359e21806a6ef732b6a9d1574409489d26d9c8b2df2360b7fa2c0ccb05。手机重新生成实际保留“建议推迟”，最后询问明天上午几点，未再断言接受改期（rl-scene-delay-open-question-1121.png已查看）。该问句是围绕已确认目的的未定追问，非已经发生/达成的新事实；仍不能由一次结果断言全部语义正确，日期today的推断及其他分支仍待核对。
+
+为继续授权的助手QA流程，点击确认此模型生成场景（未手工改稿），实际中英三句进入选择学习短句：API测试时间/建议改期/询问时间均可见。选择第2、3句进入目标选择，发现候选例句“The meeting was rescheduling to next week.”语法错误，tomorrow morning被当固定搭配。保存现场rl-scene-target-bad-example-1121.png，未固定目标或提交任何学习完成。
+
+补充候选及正式例句指令检查时态/语态/主谓一致/补语，不得强塞原句屈折形式；普通日历时间组合不作为词汇固定搭配目标。60项及API构建通过，部署SHA256 21fc0062d831c96cffcd29b41bcc0b1bd3d0d32a607517f20128e6f70dcc22ac，健康ok。手机返回选句，改选第1、2句发起新提取：第1章显示scheduled例句“The meeting is scheduled for 3 PM.”、on time例句“We need to deliver the report on time.”，这两句语法自然；第2章rescheduling及时间短语过滤尚未查看，不能宣布两个问题已修好。原用户录音章节仍保留，新增仅助手QA来源流程。
+
 ### 场景专用模型真实对比：同意分支改善，改期仍不通过
 
 已部署56d41f0 provider，SHA256 17ce0aa4fc04617af701bed181fb7a6931784a9f3a5b8e21f09110312ffdb7b4；服务器私有env备份到.local-data/env.before-scene-model-20261121，仅新增OPENAI_SCENE_MODEL=qwen-plus，普通OPENAI_MODEL=qwen-flash不变。未改测试账户余额或旧账目。官方价格表https://help.aliyun.com/zh/model-studio/model-pricing列qwen-plus不同地域、思考模式价格，不把单一价格误用于所有请求；当前项目原有1分预留与providerCostMicroCny=1仍是历史临时计量，不能称已核对供应商实际token成本，本轮不对外宣称费用验收通过。
