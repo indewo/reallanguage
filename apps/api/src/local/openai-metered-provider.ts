@@ -774,7 +774,10 @@ function generationFormat(task: string, input?: unknown) {
     };
     for (const raw of source.lockedTargets) {
       const target = record(raw);
-      if (target.unitId !== source.focusSentenceId) continue;
+      // The explanation contract contains only targets of the focus sentence;
+      // unlike extraction targets, these records do not carry a unitId.
+      // Retain the guard for older callers which explicitly supply one.
+      if (target.unitId !== undefined && target.unitId !== source.focusSentenceId) continue;
       if (["WORD", "FIXED_EXPRESSION"].includes(String(target.type)) && matches(target.sourceEvidence) &&
           typeof target.explanationZh === "string" && target.explanationZh.trim()) meanings.add(target.explanationZh);
       if (Array.isArray(target.relatedVocabulary)) for (const item of target.relatedVocabulary) {

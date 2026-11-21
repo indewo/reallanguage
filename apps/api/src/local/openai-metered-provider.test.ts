@@ -162,6 +162,23 @@ describe("LocalOpenAiMeteredProvider", () => {
     const unmatched = JSON.parse(String(fetcher.mock.calls[1]![1].body));
     expect(unmatched.text.format.schema.properties.contextualMeaningZh.enum).toBeUndefined();
   });
+  it("constrains real explanation wire targets without extraction-only unitId", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+    const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);
+    await client.generateJson("WORD_EXPLANATION_V1", {
+      focusSentenceId: "s1", requestedExpression: { startUtf16: 0, endUtf16: 11 },
+      lockedTargets: [
+        { targetId: "t1", type: "PATTERN", display: "is being confirmed", explanationZh: "正在确认",
+          structureParts: [], sourceEvidence: null,
+          relatedVocabulary: [{ display: "development", senseZh: "开发", unitType: "WORD",
+            sourceEvidence: { startUtf16: 0, endUtf16: 11 } }] },
+        { unitId: "other", type: "WORD", explanationZh: "不应混入",
+          sourceEvidence: { startUtf16: 0, endUtf16: 11 } },
+      ],
+    });
+    const request = JSON.parse(String(fetcher.mock.calls[0]![1].body));
+    expect(request.text.format.schema.properties.contextualMeaningZh.enum).toEqual(["开发"]);
+  });
   it("requires scene-grounded natural American English instead of text-only literal translation", async () => {
     const fetcher = vi.fn().mockResolvedValue(
       new Response(

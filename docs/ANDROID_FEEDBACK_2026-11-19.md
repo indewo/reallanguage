@@ -1,3 +1,9 @@
+### 2026-11-21 固定词义结构约束字段修正（未关闭语义验收）
+
+检查真实Android讲解请求合同发现lockedTargets没有提取阶段的unitId，而provider生成schema依赖unitId等于focusSentenceId，导致真实请求的准确跨度词义enum被跳过。修正为仅对显式携unitId的旧调用做句子过滤；真实合同由上游按focusSentence验证，继续只匹配准确UTF-16跨度。新增不带unitId的PATTERN关联词和显式其他句干扰项测试，72项provider测试通过，API构建通过。这是隔离测试，不能代替手机语义验收；无锁定命中的development错误不受此修复影响。
+
+部署provider单模块，原件备份.local-data/provider-before-wire-lock-20261121-1708.js，本机/远程SHA256均f744b80ede490324dfcc5b5de2ce58b623e46146facdea82ace3ca5021cc3dfc。重启后实际/api/v1/health返回ok；最初误查/health得到404，未拿404当成功。未变更APK、用户记录或账务。继续需要讲解语义检查及有界修复，并保证只读GET恢复不能绕过检查返回原错误；尚未实现，C12保持未验收。
+
 # 2026-11-19 用户反馈与增量验证
 
 ### 显式重新获取词语解释：手机链路已验，development内容仍失败（2026-11-21）
