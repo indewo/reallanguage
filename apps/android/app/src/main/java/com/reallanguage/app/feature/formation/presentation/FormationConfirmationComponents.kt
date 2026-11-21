@@ -62,6 +62,7 @@ internal fun FormationChapterBadge(
             fontWeight = FontWeight.Medium,
             fontSize = if (compact) 15.sp else 17.sp,
             lineHeight = if (compact) 20.sp else 23.sp,
+            textAlign = TextAlign.Center,
         )
     }
 }

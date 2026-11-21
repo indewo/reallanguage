@@ -56,6 +56,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -668,11 +669,12 @@ fun RlEditorialDialog(
     ) {
         RlImmersiveDialogWindow()
         Box(
-            modifier = modifier.fillMaxSize().padding(horizontal = 176.dp, vertical = 12.dp),
+            modifier = modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp, vertical = 12.dp),
             contentAlignment = Alignment.Center,
         ) {
             RlPaperPanel(
-                modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth(),
+                modifier = Modifier.widthIn(max = 400.dp).fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
                 contentPadding = RlSpace.Space16,
                 contentSpacing = RlSpace.Space8,
             ) {
@@ -794,6 +796,8 @@ private fun RlEditorialAction(
                 filled -> RlColor.OnPrimary
                 else -> accent
             },
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 8.dp),
             style = MaterialTheme.typography.labelLarge,
         )
     }
