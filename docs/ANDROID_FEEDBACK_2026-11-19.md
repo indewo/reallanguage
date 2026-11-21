@@ -1,5 +1,18 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 目标提取504后409的明确状态与真实返回验证（2026-11-21）
+
+基线39cc678，远程fetch无新提交。读取连接排障技能及runbook，当前是业务请求状态而非本机网络故障；没有更改端点/清数据。RunMeteredProviderAttempt在gateway.execute抛异常时调用requireReconciliation并将delivery标失败，随后同一attempt保留RECONCILIATION_REQUIRED时直接拒绝，不能任意释放或换命令重复花费。上一批原输入两句超时f6955053-a24e-43be-9b3d-641f857a2070，重试409 b704607a-cd58-43e1-8243-d790750da3c8的恢复问题仍未解决；不将保留防重复计费改成无条件重试。
+
+修复客户端把明确AI_CHARGE_RECONCILIATION_REQUIRED吞成泛化Failed的误导：仅当前账号/epoch且409嵌套error.code精确匹配时，返回单独ReconciliationRequired结果；其他失败/冲突不混归。ViewModel保留区分，页面显示“本次请求需要核对”“本次费用待核对，暂不能重新生成；原文和选择已保留。”，按钮为检查恢复状态/返回确认内容；检查仍使用同一请求，不自动新建命令。失败页顶栏不再写正在提取；普通失败仍可重试。截图来源实际回到短句选择，故原返回英语确认改通用且准确的返回确认内容。单词补生成分支尚未同样扩展，单列未验。
+
+新增ViewModel状态/返回回归；相关23个JVM测试通过（HttpLearningTargetRepository20、LoadingViewModel3），应用assembleDebug通过。曾尝试在普通JVM用JSONObject直接测试409正文，受Android JSON不可用导致Failed，已移除该不适用测试；不能声称单元覆盖JSON正反分支。生产未为测试更换宽松解析。实际手机已覆盖并收到真实后端409，证明真实错误码解析正分支。非对账409/畸形正文在本轮未真机注入。
+
+首轮APK7f91a259原签名覆盖，首页→未完成→本轮OCR草稿，真实409 requestId47997dd1-5070-49dd-92d7-8025cb8b020c，实看rl-target-reconciliation-1121.png为明确核对状态。点击检查恢复状态仍409 requestId7305c99c-3978-4416-a8ee-0c0113575d1c，状态停留；返回后原两句中文/英文及已选2/3保留，没有确认新章节。
+
+最终APK SHA256 7ce212c68f5e1a60aba66d0f10c19f9e26aedf58fc7d8c7544eabefc23c4a0fa，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa，install-r Success。再次从真实未完成入口恢复已选2/3，继续选择目标，同一原请求实际显示核对状态；实看rl-target-reconciliation-final-1121.png：顶栏学习目标提取，缩短后说明不挨纸孔，红卡无叶子，检查恢复状态/返回确认内容完整。未修改服务器计量/供应商账目/用户数据。C08仍未验收：需查供应商超时实际调用与可核对结果，再设计安全恢复，不能把UI明确说明当原请求已恢复。
+
+
 ### 原图归类纠正、场景形式与目标加载红卡漏项修复（2026-11-21）
 
 以adf0f35远程最新提交为基线。重新读两份1118原文和图片发现：B03三个框/中框叶子实际对应第二波image3的“正在提取学习目标”，不是场景形式页；纠正矩阵归类，不能用场景形式证据关闭B03。

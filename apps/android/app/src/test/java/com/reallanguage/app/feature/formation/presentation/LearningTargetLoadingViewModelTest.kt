@@ -15,6 +15,18 @@ import org.junit.Test
 
 class LearningTargetLoadingViewModelTest {
     @get:Rule val dispatcher = MainDispatcherRule()
+    @Test fun `reconciliation keeps a distinct recoverable state and back action`() = runTest {
+        val repository = object : LearningTargetExtractionRepository {
+            override suspend fun extract() = LearningTargetExtractionResult.ReconciliationRequired
+            override suspend fun generate(unitId: String, expressionId: String) = LearningTargetGenerationResult.Failed
+        }
+        val viewModel = LearningTargetLoadingViewModel(repository)
+        dispatcher.dispatcher.scheduler.advanceUntilIdle()
+        assertEquals(true, viewModel.uiState.value.reconciliationRequired)
+        assertEquals(false, viewModel.uiState.value.processing)
+        viewModel.onAction(LearningTargetLoadingAction.BackRequested)
+        assertEquals(LearningTargetLoadingEffect.ReturnToEnglishConfirmation, viewModel.effects.first())
+    }
     @Test fun `opens selection after extracting focus targets`() = runTest {
         val target = LearningTarget("t1", "u1", "happy", "高兴的", LearningTargetType.WORD)
         val repository = object : LearningTargetExtractionRepository {

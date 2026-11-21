@@ -107,6 +107,7 @@ sealed interface LearningTargetExtractionResult {
         val targets: List<LearningTarget>,
         val queryableExpressions: List<QueryableExpression>,
     ) : LearningTargetExtractionResult
+    data object ReconciliationRequired : LearningTargetExtractionResult
     data object Failed : LearningTargetExtractionResult
 }
 

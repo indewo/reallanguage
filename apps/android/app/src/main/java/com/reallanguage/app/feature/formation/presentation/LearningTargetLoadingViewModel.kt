@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LearningTargetLoadingUiState(val processing: Boolean = false, val failed: Boolean = false)
+data class LearningTargetLoadingUiState(val processing: Boolean = false, val failed: Boolean = false, val reconciliationRequired: Boolean = false)
 sealed interface LearningTargetLoadingAction { data object RetryRequested : LearningTargetLoadingAction; data object BackRequested : LearningTargetLoadingAction }
 sealed interface LearningTargetLoadingEffect {
     data class OpenSelection(val targets: List<LearningTarget>, val queryableExpressions: List<QueryableExpression>) : LearningTargetLoadingEffect
@@ -67,6 +67,7 @@ class LearningTargetLoadingViewModel(private val repository: LearningTargetExtra
                 if (departed || version != currentVersion) return@launch
                 when (result) {
                     is LearningTargetExtractionResult.Extracted -> leave(LearningTargetLoadingEffect.OpenSelection(result.targets, result.queryableExpressions))
+                    LearningTargetExtractionResult.ReconciliationRequired -> mutableUiState.update { LearningTargetLoadingUiState(failed = true, reconciliationRequired = true) }
                     LearningTargetExtractionResult.Failed -> mutableUiState.update { LearningTargetLoadingUiState(failed = true) }
                 }
             } finally {

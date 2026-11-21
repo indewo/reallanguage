@@ -71,7 +71,9 @@ class HttpLearningTargetRepository(
     private var knownExpressions = sentenceWords + initialQueryableExpressions.filterNot { it.expressionId.startsWith("word:") }
     private var acceptedTargets = initialTargets.toList()
     override suspend fun extract(): LearningTargetExtractionResult {
-        val payload = request(null) ?: return LearningTargetExtractionResult.Failed
+        val payload = try { request(null) } catch (_: TargetReconciliationRequired) {
+            return LearningTargetExtractionResult.ReconciliationRequired
+        } ?: return LearningTargetExtractionResult.Failed
         if (!isCurrentOwner()) return LearningTargetExtractionResult.Failed
         knownExpressions = sentenceWords + payload.queryableExpressions.filterNot { it.expressionId.startsWith("word:") }
         acceptedTargets = payload.targets.toList()
@@ -167,6 +169,10 @@ class HttpLearningTargetRepository(
             }
             val response = transport.execute(HttpRequest("POST", "/api/v1/content-formation/learning-targets", body, mapOf("Authorization" to "Bearer $token")))
             currentCoroutineContext().ensureActive()
+            if (isCurrentOwner() && requested == null && response.statusCode == 409 &&
+                runCatching { JSONObject(response.body).optJSONObject("error")?.optString("code") }.getOrNull() == "AI_CHARGE_RECONCILIATION_REQUIRED") {
+                throw TargetReconciliationRequired()
+            }
             if (!isCurrentOwner() || response.statusCode != 200) null
             else {
                 diagnosticStage = "decode"
@@ -206,6 +212,8 @@ class HttpLearningTargetRepository(
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
+        } catch (pending: TargetReconciliationRequired) {
+            throw pending
         } catch (failure: Exception) {
             reportTargetValidation(diagnosticStage, failure.javaClass.simpleName)
             null
@@ -222,6 +230,8 @@ class HttpLearningTargetRepository(
         return payload.copy(targets = targets)
     }
 }
+
+private class TargetReconciliationRequired : Exception()
 
 /** Only static stage/class metadata: never log response bodies, source text, IDs or credentials. */
 private fun reportTargetValidation(stage: String, failureClass: String) {
