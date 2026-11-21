@@ -13,6 +13,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HttpManualReviewResultRepositoryTest {
+    @Test fun sameSessionRefreshKeepsTheResultButANewLoginRejectsIt() = runTest {
+        for (newSession in listOf(false, true)) {
+            val runtime = SessionRuntime().apply { update("old", "account") }
+            val expected = ManualReviewResult.Ready(ManualReviewOutcome.APPROVED, source)
+            val repository = HttpManualReviewResultRepository({
+                runtime.update("new", "account", newSession = newSession)
+                HttpResponse(200, "approved")
+            }, runtime, ManualReviewResultWireCodec { expected })
+            assertEquals(if (newSession) ManualReviewResult.Failed else expected, repository.load("review-1"))
+        }
+    }
     @Test fun loadsOnlyAnAuthenticatedOwnedResult() = runTest {
         val runtime = SessionRuntime().apply { update("token", "account") }
         val repository = HttpManualReviewResultRepository({ request ->

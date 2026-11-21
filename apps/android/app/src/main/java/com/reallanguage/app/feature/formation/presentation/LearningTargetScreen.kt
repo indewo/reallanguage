@@ -214,7 +214,7 @@ private fun HighlightedEnglishSentence(
     modifier: Modifier,
 ) {
     val marked = remember(english, sentenceId, targets, selectedTargetIds) {
-        targets.filter { it.targetId in selectedTargetIds && it.type != LearningTargetType.PATTERN }.mapNotNull { target ->
+        targets.filter { it.targetId in selectedTargetIds && (it.type != LearningTargetType.PATTERN || it.sourceEvidence != null) }.mapNotNull { target ->
             val literal = target.sourceEvidence?.surfaceForm
                 ?: target.display.substringBefore(" + ").takeIf { english.contains(it, ignoreCase = true) }
                 ?: target.structureParts.firstOrNull { english.contains(it, ignoreCase = true) }

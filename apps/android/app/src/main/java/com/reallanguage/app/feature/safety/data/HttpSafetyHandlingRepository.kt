@@ -43,11 +43,11 @@ class HttpSafetyHandlingRepository(
     }
     private suspend fun execute(path: String, body: String): HttpResponse? {
         val owner = sessionRuntime.accountId ?: return null
-        val revision = sessionRuntime.identityRevision.value
+        val epoch = sessionRuntime.accountEpoch
         val token = sessionRuntime.accessToken ?: return null
         return try {
             val response = transport.execute(HttpRequest("POST", path, body, mapOf("Authorization" to "Bearer $token")))
-            response.takeIf { sessionRuntime.accountId == owner && sessionRuntime.identityRevision.value == revision }
+            response.takeIf { sessionRuntime.accountId == owner && sessionRuntime.accountEpoch == epoch && sessionRuntime.accessToken != null }
         } catch (cancelled: CancellationException) {
             throw cancelled
         } catch (_: Exception) {

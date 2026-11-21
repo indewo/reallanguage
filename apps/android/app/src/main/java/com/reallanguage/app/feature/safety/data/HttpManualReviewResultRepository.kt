@@ -20,12 +20,12 @@ class HttpManualReviewResultRepository(
     private val codec: ManualReviewResultWireCodec = JsonManualReviewResultWireCodec(),
 ) : ManualReviewResultRepository {
     override suspend fun load(reviewRequestId: String): ManualReviewResult = withContext(Dispatchers.IO) {
-        val revision = runtime.identityRevision.value
+        val epoch = runtime.accountEpoch
         val owner = runtime.accountId ?: return@withContext ManualReviewResult.Failed
         val token = runtime.accessToken ?: return@withContext ManualReviewResult.Failed
         try {
             val response = transport.execute(HttpRequest("GET", "/api/v1/safety/cases/manual-reviews/$reviewRequestId", "", mapOf("Authorization" to "Bearer $token")))
-            if (runtime.identityRevision.value != revision || runtime.accountId != owner) return@withContext ManualReviewResult.Failed
+            if (runtime.accountEpoch != epoch || runtime.accountId != owner || runtime.accessToken == null) return@withContext ManualReviewResult.Failed
             when (response.statusCode) {
                 200 -> codec.result(response.body)
                 401 -> ManualReviewResult.RequiresLogin

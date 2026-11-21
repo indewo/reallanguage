@@ -12,6 +12,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HttpSafetyHandlingRepositoryTest {
+    @Test fun sameSessionRefreshKeepsTheResultButANewLoginRejectsIt() = runTest {
+        for (newSession in listOf(false, true)) {
+            val runtime = SessionRuntime().apply { update("old", "owner") }
+            val transport = HttpTransport {
+                runtime.update("new", "owner", newSession = newSession)
+                HttpResponse(200, "completed")
+            }
+            val result = HttpSafetyHandlingRepository(transport, runtime, ids, FakeSafetyHandlingCodec).acceptDeidentified(caseId)
+            assertEquals(if (newSession) SafetyHandlingCommandResult.Failed else SafetyHandlingCommandResult.Completed, result)
+        }
+    }
     @Test fun loadsOwnedCaseAndMapsAllVisibleEvidence() = runTest {
         val transport = QueueTransport(mutableListOf(HttpResponse(200, "details")))
         val result = repository(transport).load(caseId)
