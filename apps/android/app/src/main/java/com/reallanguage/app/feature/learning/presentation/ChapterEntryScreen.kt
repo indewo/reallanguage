@@ -56,7 +56,7 @@ fun ChapterEntryScreen(state: ChapterEntryUiState, onAction: (ChapterEntryAction
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
                     ) {
-                        Text("无法读取已固定章节")
+                        Text("无法读取已确认章节")
                         LearningAction("重试", { onAction(ChapterEntryAction.RetryRequested) }, primary = true)
                         LearningAction("返回首页", { onAction(ChapterEntryAction.BackRequested) })
                     }

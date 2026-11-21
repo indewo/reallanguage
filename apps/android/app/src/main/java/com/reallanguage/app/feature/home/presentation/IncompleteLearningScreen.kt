@@ -154,7 +154,7 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
     val currentStep = entry.savedStepId.takeIf { !forming && it.matches(Regex("LR-0[1-9]")) }
         ?.substringAfterLast('-')?.toIntOrNull()
     val position = when {
-        forming -> "尚未固定"
+        forming -> "尚未确认"
         currentStep != null -> "停在 $currentStep / 9 步"
         else -> "进度待确认"
     }

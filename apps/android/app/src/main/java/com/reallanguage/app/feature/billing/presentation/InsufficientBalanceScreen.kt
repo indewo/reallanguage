@@ -90,5 +90,5 @@ private fun BalanceOriginState.operationLabel(): String = when (this) {
     BalanceOriginState.UNIFIED_REVIEW -> "统一回顾"
     BalanceOriginState.UNFIXED_DIARY_OR_AI_SCENE -> "场景生成"
     BalanceOriginState.RECORDING_AWAITING_TRANSCRIPTION -> "录音转写"
-    BalanceOriginState.FIXED_UNSTARTED_CHAPTER -> "固定章节"
+    BalanceOriginState.FIXED_UNSTARTED_CHAPTER -> "已确认章节"
 }

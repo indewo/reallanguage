@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Mic
 import com.reallanguage.app.core.designsystem.EditorialFont
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,6 +66,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlColor
 import com.reallanguage.app.core.designsystem.RlPrimaryButton
@@ -154,11 +156,20 @@ fun SubsequentSettingsScreen(
                             onClick = { onAction(SubsequentSettingsAction.RetryRequested) },
                         )
                     }
-                    else -> CompositionLocalProvider(LocalSettingsEditorialPaper provides true) {
-                        ProvideTextStyle(MaterialTheme.typography.bodyMedium.copy(fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 20.sp)) {
+                    else -> CompositionLocalProvider(LocalSettingsEditorialPaper provides true, LocalContentColor provides RlColor.Ink) {
+                        val typography = MaterialTheme.typography
+                        MaterialTheme(typography = typography.copy(
+                            titleMedium = typography.titleMedium.copy(fontFamily = EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.Medium),
+                            titleLarge = typography.titleLarge.copy(fontFamily = EditorialFont.Serif, fontSize = 19.sp, lineHeight = 27.sp, fontWeight = FontWeight.SemiBold),
+                            bodyMedium = typography.bodyMedium.copy(fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 21.sp),
+                            bodyLarge = typography.bodyLarge.copy(fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 22.sp),
+                            bodySmall = typography.bodySmall.copy(fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp),
+                        )) {
+                        ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
                             SettingsGroups(state, onAction, onReminderEnableRequested, reminderSchedulingMessage) { index, offset ->
                                 if (groupOffsets[index] != offset) groupOffsets[index] = offset
                             }
+                        }
                         }
                     }
                 }
@@ -259,7 +270,7 @@ private fun SettingsGroups(
             .onGloballyPositioned { onGroupPositionChanged(0, it.positionInParent().y.roundToInt()) },
         verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
     ) {
-        Text("①  ${stringResource(R.string.settings_expression_basics)}", style = MaterialTheme.typography.titleMedium)
+        Text("①  ${stringResource(R.string.settings_expression_basics)}", style = MaterialTheme.typography.titleLarge)
         ExpressionBasics(initialState, bridge)
     }
     Column(
@@ -267,7 +278,7 @@ private fun SettingsGroups(
             .onGloballyPositioned { onGroupPositionChanged(1, it.positionInParent().y.roundToInt()) },
         verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
     ) {
-        Text("②  ${stringResource(R.string.settings_usage_preferences)}", style = MaterialTheme.typography.titleMedium)
+        Text("②  ${stringResource(R.string.settings_usage_preferences)}", style = MaterialTheme.typography.titleLarge)
         UsagePreferences(initialState, bridge)
         ReminderPreferences(state, onAction, onReminderEnableRequested, reminderSchedulingMessage)
     }
@@ -276,7 +287,7 @@ private fun SettingsGroups(
             .onGloballyPositioned { onGroupPositionChanged(2, it.positionInParent().y.roundToInt()) },
         verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
     ) {
-        Text("③  ${stringResource(R.string.settings_voice)}", style = MaterialTheme.typography.titleMedium)
+        Text("③  ${stringResource(R.string.settings_voice)}", style = MaterialTheme.typography.titleLarge)
         VoiceSettings(initialState, bridge)
     }
 }

@@ -169,7 +169,7 @@ private fun SettingsEffectGuide(wide: Boolean) {
             Row(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    EffectDiagramLabel("已固定内容", R.drawable.rl_olive_torn_paper)
+                    EffectDiagramLabel("已确认内容", R.drawable.rl_olive_torn_paper)
                 }
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     EffectDiagramLabel("新内容", R.drawable.rl_home_scene_torn_blue_transparent)
@@ -179,7 +179,7 @@ private fun SettingsEffectGuide(wide: Boolean) {
             Image(painterResource(R.drawable.rl_v73_settings_effect_diagram), null,
                 Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                EffectDiagramLabel("已固定内容", R.drawable.rl_olive_torn_paper, Modifier.weight(1f))
+                EffectDiagramLabel("已确认内容", R.drawable.rl_olive_torn_paper, Modifier.weight(1f))
                 EffectDiagramLabel("新内容", R.drawable.rl_home_scene_torn_blue_transparent, Modifier.weight(1f))
             }
         }
@@ -190,7 +190,7 @@ private fun SettingsEffectGuide(wide: Boolean) {
             horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             Icon(Icons.Outlined.Info, null, Modifier.size(18.dp), tint = RlColor.PaperWarm)
             Text(
-                "已固定的学习内容不会被直接覆盖",
+                "已确认的学习内容不会被直接覆盖",
                 Modifier.weight(1f),
                 color = RlColor.PaperWarm,
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 20.sp),
@@ -250,7 +250,7 @@ private fun effectChoices(context: SettingsSourceContext): List<EffectChoice> = 
     )
     is SettingsSourceContext.FixedContent -> listOf(
         EffectChoice(
-            "基于固定来源新开流程",
+            "基于已确认来源新开流程",
             "保留现有版本，从相同来源重新开始",
             SettingsEffectScopeAction.ReprocessRequested,
         ),
