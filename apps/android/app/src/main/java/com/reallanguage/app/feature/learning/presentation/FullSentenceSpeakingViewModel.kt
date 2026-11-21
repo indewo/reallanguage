@@ -220,7 +220,7 @@ class FullSentenceSpeakingViewModel(
                                 feedbackConfidence = result.feedback.feedbackConfidence,
                                 feedbackDetails = result.feedback.details,
                                 feedbackTranscript = result.feedback.transcript,
-                                trainingCanContinue = true,
+                                trainingCanContinue = result.feedback.action == com.reallanguage.app.feature.learning.domain.ReadingFeedbackAction.CONTINUE,
                                 technicalRetryPending = false,
                                 technicalRetryBlocked = false,
                             )
@@ -573,7 +573,7 @@ class FullSentenceSpeakingViewModel(
                     feedbackConfidence = recovery.feedback.feedbackConfidence,
                     feedbackDetails = recovery.feedback.details,
                     feedbackTranscript = recovery.feedback.transcript,
-                    trainingCanContinue = true)
+                    trainingCanContinue = recovery.feedback.action == com.reallanguage.app.feature.learning.domain.ReadingFeedbackAction.CONTINUE)
             }
             FullSpeakingRecovery.TranscriptionPending -> {
                 require(state.attemptIndex == 4)

@@ -416,7 +416,7 @@ class FullSentenceSpeakingViewModelTest {
 
     @Test
     fun followsTwoBilingualThenReadsTwoEnglishWithoutMasteryDecision() = runTest(dispatcher) {
-        val repository = FakeRepository(trainingAction = ReadingFeedbackAction.REPEAT_FOR_CLARITY)
+        val repository = FakeRepository(trainingAction = ReadingFeedbackAction.CONTINUE)
         val viewModel = createViewModel(repository)
         repeat(4) { attempt ->
             val before = viewModel.uiState.value

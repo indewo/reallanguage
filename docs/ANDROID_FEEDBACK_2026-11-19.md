@@ -1,5 +1,11 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 整组264项回归发现并修复不确定朗读误推进
+
+基于212a36f运行学习presentation全部ViewModelTest，264项中4项失败，集中在FullSpeakingRecovery/TrainingRetry：现场或恢复的REPEAT_FOR_CLARITY仍被trainingCanContinue=true放行，违反PRODUCT_CONTEXT不确定时要求重读。修复live和TrainingReady恢复均仅action=CONTINUE允许本轮继续；不确定时保留反馈与轮次，等待用户明确新录音，不自动开麦、不判正式失败。原主VM“正常完成2+2”测试错误使用REPEAT_FOR_CLARITY作为正常反馈，改为CONTINUE；保留并实际通过已有不确定保护测试，没有删除失败用例。
+
+修复后整组264项ViewModel测试及公网assembleDebug通过。此筛选不含Windows目录fsync失败的文件测试，不能抹除其限制。未安装此修改、未清除用户历史已完成轮次，也未把此前可推进的实际记录追认为符合不确定保护验收；需新真实朗读与恢复检查。本轮真实评价准确性、全部章节归档仍未完成。
+
 ### 归档摘要统计边界检查
 
 章节结果VM已有归档异常恢复和命令复用，本次补充摘要结构检查：拒绝同一category重复出现及非正chapterNumber，允许历史记录chapterNumber为空；不在前端重写或补造统计。新增隔离回归分别输入重复分类、0/-1章节号，确认不显示成功摘要，明确重试仍使用原chapterId/commandId且合法AlreadyArchived可恢复。章节结果VM测试通过，未修改用户学习记录，未真实完成章节归档验收或安装本修改。
