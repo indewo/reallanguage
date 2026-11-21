@@ -1,3 +1,13 @@
+### 2026-11-21 单词播放失败后普通重试错播整句修复
+
+真实OPPO复现：需求QA章2/9点击development，旧音频tts_79ffe6c5-6f09-4983-9c3b-0fe0c720839e返回404，页面提示点发音再试；旧AudioToggled却无条件改为焦点整句，前轮看似恢复的不同对象200实际是另一文本，不能用来证明单词恢复。修正AudioToggled：仅在audioFailed且保留了非空pronunciationText时沿用失败文本；普通整句发音不变，不触发自动付费重生。新增失败单词重试不切整句/不计朗读次数测试，ExplanationReadingViewModel24项通过，assembleDebug通过。
+
+新APK SHA256 b6a23ab8328306e1cfe1c477a3b3c70628ad04a202a3d6ed9bd5f0f9eaf731d9，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa覆盖Success，不卸载清数据。实际首页→未完成7条→原需求QA章2/9→点development旧对象404 requestId47113a5b-2067-4e51-9020-3003dbf315f1；点底部发音，仍同对象404 requestId630f4626-5b52-4913-abad-b474cd8e2814，证明普通重试内容一致，不冒称旧音频复活。
+
+再明确点重新生成发音（重新计费）一次；此入口本身显示费用提示，并无额外确认弹窗（之前口头所称费用确认并不准确）。POST201 31d75f07-752b-4e3b-864e-b09804fc59c3，新对象tts_af21e269-fbce-4f8c-845b-3dec89107d6c payload200 7e398518-c003-4b6a-b575-d48d407eefe6，UI静音后自然结束回发音、失败提示移除，截图rl-word-audio-recovered-1121.png已实看。随后再点development：POST201 4e219e70-bd80-4758-ae2d-54dceb09e57d，仍同新对象payload200 8e7d358b-26f0-4233-9998-5f23ba1d2b35，UI进入静音。证明此单词真实显式重生与普通复用流程；未听音、不据此判音色内容完整自然或所有发音模块验收，未新增用户掌握进度。没有删除旧对象或修改费用状态。
+
+页面增量：基础讲解页失败重试文本保持已改完并真机验证；原音频失效原因/过期提示区分、其他音频页及整体验收未改完。服务端无变更。
+
 ### 2026-11-21 词语解释模型与真实development语义复验
 
 同一development在qwen-flash两次混入scheduling义后，新增WORD_EXPLANATION_V1专用模型路由：OPENAI_EXPLANATION_MODEL优先，空值回退现有OPENAI_TARGET_REVIEW_MODEL，再回退普通模型。实际公网已有review配置qwen-plus，所以词语请求使用qwen-plus；不影响整句或其他任务，不另加隐式付费检查/重试。供应商请求与账单receipt共用同一路由。新增专用覆盖、空值回退及receipt一致性测试，provider74项通过，API构建通过。独立语义门禁/有界修复及只读恢复防绕过仍未实现，不能用此替代所有词语内容的验收。

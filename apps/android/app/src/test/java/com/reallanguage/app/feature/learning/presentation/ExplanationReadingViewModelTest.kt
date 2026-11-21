@@ -250,6 +250,21 @@ class ExplanationReadingViewModelTest {
         assertEquals(sentence.textEn, model.uiState.value.pronunciationText)
     }
 
+    @Test fun failedWordPlaybackRetriesTheSameWordRatherThanChangingToTheSentence() = runTest(dispatcher) {
+        val model = createViewModel()
+        model.onAction(ExplanationReadingAction.ExpressionRequested("x1"))
+        advanceUntilIdle()
+        val failedText = model.uiState.value.pronunciationText
+        assertTrue(!failedText.isNullOrBlank())
+        assertTrue(failedText != sentence.textEn)
+        model.onAction(ExplanationReadingAction.AudioPlaybackFailed)
+        model.onAction(ExplanationReadingAction.AudioToggled)
+        assertEquals(failedText, model.uiState.value.pronunciationText)
+        assertTrue(model.uiState.value.audioPlaying)
+        assertFalse(model.uiState.value.audioFailed)
+        assertEquals(0, model.uiState.value.completedReadCount)
+    }
+
     @Test fun playbackFailureDoesNotCountAReadAndManualRetryPlaysOnlyTheTargetSentence() {
         val model = createViewModel()
         model.onAction(ExplanationReadingAction.AudioPlaybackFailed)
