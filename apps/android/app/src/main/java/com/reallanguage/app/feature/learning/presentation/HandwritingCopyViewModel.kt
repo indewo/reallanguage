@@ -70,7 +70,10 @@ class HandwritingCopyViewModel(
         if (!current.minimumCompleted || current.copyInProgress || current.saving) return
         mutableUiState.update { it.copy(saving = true, saveFailed = false) }
         viewModelScope.launch {
-            when (repository.complete(sentenceId, current.confirmedCopyCount)) {
+            val result = try { repository.complete(sentenceId, current.confirmedCopyCount) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { HandwritingCompletionResult.Failed }
+            when (result) {
                 HandwritingCompletionResult.Saved -> {
                     mutableUiState.update { it.copy(saving = false) }
                     effectChannel.send(HandwritingCopyEffect.OpenAudioDictation)

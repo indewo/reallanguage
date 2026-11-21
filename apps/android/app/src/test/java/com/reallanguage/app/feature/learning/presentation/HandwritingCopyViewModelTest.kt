@@ -35,6 +35,31 @@ class HandwritingCopyViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun completionExceptionRetainsTwoConfirmedCopiesAndRetriesWithoutRewriting() = runTest(dispatcher) {
+        var calls = 0
+        val model = HandwritingCopyViewModel(chapter, "s1", HandwritingCompletionRepository { sentence, count ->
+            assertEquals("s1", sentence)
+            assertEquals(2, count)
+            if (++calls == 1) throw java.io.IOException("interrupted")
+            HandwritingCompletionResult.Saved
+        })
+        repeat(2) { model.onAction(HandwritingCopyAction.WrittenFinished) }
+        val revision = model.uiState.value.canvasRevision
+        model.onAction(HandwritingCopyAction.ContinueRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.minimumCompleted)
+        assertFalse(model.uiState.value.saving)
+        assertTrue(model.uiState.value.saveFailed)
+        assertEquals(2, model.uiState.value.confirmedCopyCount)
+        assertEquals(revision, model.uiState.value.canvasRevision)
+        val effect = async { model.effects.first() }
+        model.onAction(HandwritingCopyAction.ContinueRequested)
+        advanceUntilIdle()
+        assertEquals(HandwritingCopyEffect.OpenAudioDictation, effect.await())
+        assertEquals(2, calls)
+        assertFalse(model.uiState.value.saveFailed)
+    }
+
     @Test fun aConfirmedCopyIsRestoredInsteadOfRequiringTwoMoreCopies() = runTest(dispatcher) {
         var saved: Map<String, String>? = null
         val store = object : com.reallanguage.app.feature.learning.domain.LearningProgressStore {
