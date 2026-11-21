@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 class LearningExitViewModel(
     checkpoint: OrdinaryLearningCheckpoint,
@@ -23,6 +24,7 @@ class LearningExitViewModel(
     val effects = effectChannel.receiveAsFlow()
 
     fun onAction(action: LearningExitAction) {
+        if (mutableUiState.value.saving) return
         when (action) {
             LearningExitAction.ContinueLearningRequested -> send(
                 LearningExitEffect.CloseDialog,
@@ -36,9 +38,12 @@ class LearningExitViewModel(
 
     private fun saveAndExit() {
         if (mutableUiState.value.saving) return
+        mutableUiState.update { it.copy(saving = true, saveFailed = false) }
         viewModelScope.launch {
-            mutableUiState.update { it.copy(saving = true, saveFailed = false) }
-            when (repository.save(mutableUiState.value.checkpoint)) {
+            val result = try { repository.save(mutableUiState.value.checkpoint) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { CheckpointSaveResult.Failed }
+            when (result) {
                 CheckpointSaveResult.Saved -> {
                     mutableUiState.update { it.copy(saving = false) }
                     send(LearningExitEffect.ReturnHome)

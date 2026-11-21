@@ -27,6 +27,32 @@ class LearningExitViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun thrownSaveRetainsCheckpointAndAllowsOneExplicitRetry() = runTest(dispatcher) {
+        var calls = 0
+        val repository = object : LearningCheckpointRepository {
+            override suspend fun save(checkpoint: OrdinaryLearningCheckpoint): CheckpointSaveResult {
+                if (++calls == 1) throw java.io.IOException("interrupted")
+                return CheckpointSaveResult.Saved
+            }
+        }
+        val model = LearningExitViewModel(checkpoint, repository)
+        model.onAction(LearningExitAction.PauseLearningRequested)
+        model.onAction(LearningExitAction.PauseLearningRequested)
+        assertTrue(model.uiState.value.saving)
+        advanceUntilIdle()
+        assertEquals(1, calls)
+        assertTrue(model.uiState.value.saveFailed)
+        assertFalse(model.uiState.value.saving)
+        assertEquals(checkpoint, model.uiState.value.checkpoint)
+        val effect = async { model.effects.first() }
+        model.onAction(LearningExitAction.PauseLearningRequested)
+        model.onAction(LearningExitAction.ContinueLearningRequested)
+        model.onAction(LearningExitAction.AbandonChapterRequested)
+        advanceUntilIdle()
+        assertEquals(LearningExitEffect.ReturnHome, effect.await())
+        assertEquals(2, calls)
+    }
+
     @Test
     fun continueLearningOnlyClosesDialog() = runTest(dispatcher) {
         val repository = FakeRepository()
