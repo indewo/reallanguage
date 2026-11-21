@@ -32,6 +32,24 @@ class ChapterResultViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun duplicateCategoryOrNonpositiveChapterNumberCannotBecomeAnAcceptedSummary() = runTest(dispatcher) {
+        val item = ChapterResultSummaryItem(ChapterResultCategory.SENTENCE, "整句", 1, 2)
+        for (invalid in listOf(summary.copy(chapterNumber = 0), summary.copy(chapterNumber = -1),
+            summary.copy(items = listOf(item, item.copy(completedCount = 2))))) {
+            val repository = FakeRepository(ChapterArchiveResult.Archived(invalid))
+            val model = ChapterResultViewModel("c1", "cmd-1", repository)
+            advanceUntilIdle()
+            assertTrue(model.uiState.value.archiveFailed)
+            assertNull(model.uiState.value.summary)
+            assertFalse(model.uiState.value.archiving)
+            repository.result = ChapterArchiveResult.AlreadyArchived(summary)
+            model.onAction(ChapterResultAction.RetryArchiveRequested)
+            advanceUntilIdle()
+            assertEquals(summary, model.uiState.value.summary)
+            assertEquals(listOf("c1" to "cmd-1", "c1" to "cmd-1"), repository.calls)
+        }
+    }
+
     @Test fun aDifferentChaptersReceiptCannotUnlockNavigation() = runTest(dispatcher) {
         val viewModel = ChapterResultViewModel("c1", "cmd-1", FakeRepository(
             ChapterArchiveResult.Archived(summary.copy(chapterId = "other-chapter")),

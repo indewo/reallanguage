@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 归档摘要统计边界检查
+
+章节结果VM已有归档异常恢复和命令复用，本次补充摘要结构检查：拒绝同一category重复出现及非正chapterNumber，允许历史记录chapterNumber为空；不在前端重写或补造统计。新增隔离回归分别输入重复分类、0/-1章节号，确认不显示成功摘要，明确重试仍使用原chapterId/commandId且合法AlreadyArchived可恢复。章节结果VM测试通过，未修改用户学习记录，未真实完成章节归档验收或安装本修改。
+
 ### 场景回应最终保存异常不重复评价
 
 savePassAndAdvance和用户明确不再练后的saveFailureAndContinue调用saveFinalDecision未捕获抛出异常，可能使submitting持续锁住。补充取消传播及其他异常进入既有Failed状态，保留原PASS/FAIL候选、转录和轮次；明确重试只保存原判断，不重新评价原音。新增隔离回归覆盖PASS和FAIL两条路径，首次IOException后未完成/解锁/保留候选，重试成功后评价调用仍1次、保存2次。24项场景VM测试通过；未安装此修改或跑真实场景最终保存/归档闭环，不能据测试关闭原反馈，未操作用户手机。

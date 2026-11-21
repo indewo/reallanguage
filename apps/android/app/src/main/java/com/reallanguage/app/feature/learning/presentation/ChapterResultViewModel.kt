@@ -68,7 +68,9 @@ class ChapterResultViewModel(
     }
 
     private fun showSummary(summary: com.reallanguage.app.feature.learning.domain.ChapterArchiveSummary) {
-        if (summary.chapterId != mutableUiState.value.chapterId || summary.items.any {
+        if (summary.chapterId != mutableUiState.value.chapterId ||
+            (summary.chapterNumber != null && summary.chapterNumber <= 0) ||
+            summary.items.map { it.category }.distinct().size != summary.items.size || summary.items.any {
                 it.completedCount < 0 || it.totalCount < 0 || it.completedCount > it.totalCount
             }) {
             mutableUiState.update { it.copy(archiving = false, archiveFailed = true, summary = null) }
