@@ -1,3 +1,7 @@
+### 2026-11-22 指读触控隔离手机补查
+
+ReadSpeakFingerTrackingTest中oneUnbrokenFingerPathStartsRecordingAndWaitsForRecordedConfirmation及onlyDraggingTheFocusSentenceAutomaticallyStartsTheReadingTask在PFFM10运行95.396s，两项通过。真实pointer驱动生产Screen/VM，短句逐词高亮后仍等待录完确认；拖只读背景不启动，拖焦点句才启动。录音/反馈使用替身，不读写用户SQL，不是真实朗读验收。cache/finger-display-current.png取回实看：三词高亮完整、中文/提示/底按钮完整，提示仍明确等待录完；截图存在系统栏，不能据隔离Activity判断生产沉浸状态。B14真实学习入口及完成后去文案仍待验，不整组关闭。
+
 ### 2026-11-22 新真实章节基础讲解蓝卡补证
 
 从新时间表章共同学习点击开始学习，实际进入基础讲解；rl-basic-live.png实看：整句三行与中文完整、timeline蓝卡英文水平居中、长释义避开左下树叶/纸角、会了在卡下、右讲解全文到进度与预期可读、底三按钮固定，圆孔正常。实际内容说明timeline时间表，未见音标及重复整句底部讲解。未点会了/我理解了，未代替用户完成学习。此为当前timeline样本，不关闭原hello/special deal及B08自评消失分支。加载太快，截图已是结果页，B11仍缺真实等待页证据。源码ExplanationPreparationScreen无左空白纸，返回章节仅failed显示；仅源码不能替代等待页验收。
