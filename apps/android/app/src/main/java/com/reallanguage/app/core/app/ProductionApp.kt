@@ -532,15 +532,13 @@ class ProductionAppGraph(
         val owner = sessionRuntime.accountId
         val epoch = sessionRuntime.accountEpoch
         fun current() = owner != null && sessionRuntime.accountId == owner && sessionRuntime.accountEpoch == epoch && allowed()
-        val retries = applicationContext.getSharedPreferences("sentence_audio_user_retries", android.content.Context.MODE_PRIVATE)
+        val revisions = com.reallanguage.app.feature.learning.data.SentenceAudioRevisionStore(applicationContext)
         val engine = com.reallanguage.app.feature.learning.data.RemoteSentenceSpeechEngine(load = { text, regenerate ->
             check(current())
             val digest = java.security.MessageDigest.getInstance("SHA-256")
                 .digest("$owner:en-US:Cherry:v1:$text".toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
             val originalCommand = "sentence-audio-$digest"
-            val previousGeneration = retries.getInt("generation:$digest", if (retries.getBoolean(digest, false)) 1 else 0)
-            val generation = previousGeneration + if (regenerate) 1 else 0
-            check(generation in 0..10000)
+            val generation = revisions.request(digest, regenerate)
             val retry = generation > 0
             val retrySeed = if (generation <= 1) originalCommand else "$originalCommand:$generation"
             val retryDigest = java.security.MessageDigest.getInstance("SHA-256").digest(retrySeed.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
@@ -548,13 +546,15 @@ class ProductionAppGraph(
                 .put("language", "en-US").put("speed", 3).put("requireWordTimings", false).put("purpose", "READING")
             if (retry) body.put("retryOfCommandId", originalCommand)
             if (generation > 1) body.put("retryGeneration", generation)
-            // Keep the submitted attempt across failure/process death; ordinary playback reuses it.
-            if (regenerate) check(retries.edit().putInt("generation:$digest", generation).commit())
             val response = transport.execute(com.reallanguage.app.core.network.HttpRequest("POST", "/api/v1/media/sentence-audio", body.toString(),
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && response.statusCode in 200..299)
-            val reference = org.json.JSONObject(response.body).getString("audioObjectRef")
+            val metadata = org.json.JSONObject(response.body)
+            val reference = metadata.getString("audioObjectRef")
             check(Regex("tts_[0-9a-f-]{36}").matches(reference))
+            check(metadata.get("durationMs") is Number && metadata.getLong("durationMs") > 0 &&
+                metadata.get("expiresAtMs") is Number && metadata.getLong("expiresAtMs") > 0)
+            revisions.delivered(digest, generation)
             val payload = transport.execute(com.reallanguage.app.core.network.HttpRequest("GET", "/api/v1/media/sentence-audio/$reference/payload", "",
                 mapOf("Authorization" to "Bearer ${sessionRuntime.accessToken}")))
             check(current() && payload.statusCode == 200)

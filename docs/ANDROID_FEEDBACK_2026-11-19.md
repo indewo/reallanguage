@@ -1,3 +1,15 @@
+### 2026-11-21 发音重新生成未知结果时不得跳代修复
+
+发现ProductionApp.remoteSentenceSpeaker原实现每次明确regenerate均generation+1并立即保存，HTTP未知/失败也推进；下一次可能引用从未真正交付的上一代，服务端严格资格检查后持续409。新增SentenceAudioRevisionStore复用既有sentence_audio_user_retries命名空间和generation/legacy boolean键，另加pending元数据。请求前commit新代号及pending；pending期间普通播放/再次明确重新生成/重开实例均沿用同代号，只有合法成功POST交付元数据后才结束pending。成功POST校验audioObjectRef、durationMs及expiresAtMs后标delivered，下载音频失败不伪造供应商未完成。旧版本已有代号但没有pending字段按未知处理，先重放原身份而不是直接付费下一代；旧boolean首代兼容，损坏元数据失败关闭，不重置。迟到交付不得完成新代号。无音频/文本/凭证写入此存储，hash scope仍含账号/声线/全文，保持原计费身份算法。
+
+主包及androidTest构建通过。真机独立临时SharedPreferences组件测试3项通过（0.038s）：未知重试跨实例/重复点击身份保持、完成才推进与拒绝迟到完成、旧counter/boolean迁移及损坏不重置；只删除测试独立命名空间，不动用户prefs。不是实际网络中断验收。
+
+APK SHA256cd096ec7a2f558b7da1593b998dc075851b82d39606557bd14a57e60edb52b8f，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa覆盖Success。真实OPPO需求QA章2/9点development，原f21音频404 requestId372a202c-231c-43c5-8f5b-80e6e94c094f（完整对象af21e269-fbce-4f8c-845b-3dec89107d6c），说明过期对象未恢复。明确点重新生成发音（重新计费）一次，POST201 7ce95c6c-d926-47cd-b9fe-a59caf96ec74，新对象tts_f50ca21a-6e90-4b9f-98e5-21d3f2851f7e GET200 05fda745-dc6f-4658-a323-57dad31edcca，UI进入静音后回发音/错误移除。随后再次点development，POST201 d69bb934-92dc-4015-9870-f0c41783e9c7，仍同新对象GET200 221dc6f9-e53d-4981-b4f1-b30ed1753d4a；rl-audio-revision-replay-1121.png实看无失败提示。仅验证实际旧对象失败→明确再生→普通复用路径，未听音，不证明音色、未知POST丢失重放或所有音频页通过。
+
+本轮真机未知POST故障注入/跨进程pending仍待后续补证；服务器音频保留期限及过期体验未改变，也未把HTTP200当原旧音频已复活。QA章仍2/9，原用户8/9未进入，无答案/掌握变化，无后端代码/配置/账目变更。
+
+页面增量：无设计改动；共用发音请求身份/旧状态兼容已改并组件验证，基础讲解实际普通再生复用已验；未知响应真机分支及其他原问题未验收。
+
 ### 2026-11-21 真机真实重生＋单次客户端丢响应故障注入验证
 
 针对0161729恢复修复，检查HttpExplanationReadingProvider不确定响应仅同command只读GET一次，不以未完成状态授权自动POST。为验证实际手机分支，临时在该provider中对DEBUG、revision存在、expression.display=development、实际POST200且通过原结构校验的响应仅一次丢弃为null；没有mock供应商/交付/响应正文/GET结果。此为客户端应用边界故障注入，不是真实物理断网，不能用来关闭所有网络故障路径。原文件先备份，SHA25633b9b47e8673b0d74ccb7e28fe17d35e06be9742dc783b1aeb81a4ecbb05c807。临时APK970a2e54ba1a8397d717da46be6e5ae0c1c290224f0c49e57008eba3e54313f3只用于本轮验证，未交付桌面/提交临时代码。
