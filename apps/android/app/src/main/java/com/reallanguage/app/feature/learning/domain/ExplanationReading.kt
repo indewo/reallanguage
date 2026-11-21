@@ -57,6 +57,8 @@ sealed interface ExplanationContentResult {
 }
 
 interface ExplanationReadingProvider {
+    val supportsExpressionRegeneration: Boolean get() = false
+    suspend fun regenerateExpression(sentenceId: String, expressionId: String): ExplanationContentResult = ExplanationContentResult.Failed
     suspend fun initialSubject(sentenceId: String): InitialExplanationSubject? = null
     /** Read-only validation against the current locked sentence; never generates or charges. */
     suspend fun validateSavedExpression(sentenceId: String, explanation: ExpressionExplanation): Boolean = true

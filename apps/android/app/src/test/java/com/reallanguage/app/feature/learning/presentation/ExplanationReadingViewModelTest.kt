@@ -25,6 +25,33 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExplanationReadingViewModelTest {
+    @Test fun explicitRegenerationIgnoresDoubleClicksAndKeepsPreviousResultOnFailure() = runTest(dispatcher) {
+        val base = provider()
+        var calls = 0
+        val response = kotlinx.coroutines.CompletableDeferred<ExplanationContentResult>()
+        val source = object : ExplanationReadingProvider by base {
+            override val supportsExpressionRegeneration = true
+            override suspend fun regenerateExpression(sentenceId: String, expressionId: String): ExplanationContentResult {
+                calls++
+                return response.await()
+            }
+        }
+        val model = createViewModel(source)
+        model.onAction(ExplanationReadingAction.ExpressionRequested("x1"))
+        advanceUntilIdle()
+        val previous = model.uiState.value.selectedExpression
+        model.onAction(ExplanationReadingAction.RegenerateExplanationRequested)
+        model.onAction(ExplanationReadingAction.RegenerateExplanationRequested)
+        advanceUntilIdle()
+        assertEquals(1, calls)
+        assertEquals(previous, model.uiState.value.selectedExpression)
+        assertTrue(model.uiState.value.regeneratingExplanation)
+        response.complete(ExplanationContentResult.Failed)
+        advanceUntilIdle()
+        assertEquals(previous, model.uiState.value.selectedExpression)
+        assertTrue(model.uiState.value.loadingFailed)
+        assertFalse(model.uiState.value.regeneratingExplanation)
+    }
     @Test fun patternOnlyInitialSubjectSurvivesReopenAndDoesNotSelectAnUnrelatedWord() = runTest {
         val subject = com.reallanguage.app.feature.learning.domain.InitialExplanationSubject("once + clause", "一旦……")
         val base = provider()

@@ -37,6 +37,7 @@ class HttpExplanationReadingProvider(
     private val cache: ExplanationCache? = null,
     private val selectedExpressions: suspend () -> List<String> = { emptyList() },
     private val lockedContext: (suspend () -> LockedExplanationContext?)? = null,
+    private val revisions: ExplanationRevisionStore? = null,
 ) : ExplanationPreparationRepository, ExplanationReadingProvider {
     private val ownerAccountId = runtime.accountId
     private val ownerEpoch = runtime.accountEpoch
@@ -66,7 +67,11 @@ class HttpExplanationReadingProvider(
         if (sentenceId != focusSentenceId || round !in 2..3) return ExplanationContentResult.Failed
         return requestSafely { sentenceRequest(round, baseExplanationZh, readLockedContext()) }
     }
-    override suspend fun explainExpression(sentenceId: String, expressionId: String): ExplanationContentResult {
+    override val supportsExpressionRegeneration get() = cache != null && revisions != null
+    override suspend fun regenerateExpression(sentenceId: String, expressionId: String): ExplanationContentResult =
+        if (supportsExpressionRegeneration) expressionRequest(sentenceId, expressionId, true) else ExplanationContentResult.Failed
+    override suspend fun explainExpression(sentenceId: String, expressionId: String): ExplanationContentResult = expressionRequest(sentenceId, expressionId, false)
+    private suspend fun expressionRequest(sentenceId: String, expressionId: String, regenerate: Boolean): ExplanationContentResult {
         if (sentenceId != focusSentenceId || !isCurrentOwner() || focus == null) return ExplanationContentResult.Failed
         return requestSafely {
             val context = readLockedContext()
@@ -77,10 +82,10 @@ class HttpExplanationReadingProvider(
                     evidence != null && evidence.startUtf16 == expression.startOffset && evidence.endUtf16 == expression.endOffset
                 val direct = context?.targets.orEmpty().any { it.type != com.reallanguage.app.feature.formation.domain.LearningTargetType.PATTERN && matches(it.sourceEvidence) }
                 val related = context?.targets.orEmpty().any { target -> target.relatedVocabulary.orEmpty().any { matches(it.sourceEvidence) } }
-                android.util.Log.i("RLMeaningSource", "lockedContext=${context != null} direct=$direct related=$related")
+                runCatching { android.util.Log.i("RLMeaningSource", "lockedContext=${context != null} direct=$direct related=$related") }
             }
             val token = runtime.accessToken ?: return@requestSafely ExplanationContentResult.Failed
-            val body = deliveredBody(1, null, expression, token, context) { body, cached ->
+            val body = deliveredBody(1, null, expression, token, context, regenerate) { body, cached ->
                 decodeExpression(body, context)?.let { value ->
                     lockedExplanationMeaningMatches(context, expression, value, allowLegacy = cached || context == null)
                 } == true
@@ -136,16 +141,23 @@ class HttpExplanationReadingProvider(
         try { block() } catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { ExplanationContentResult.Failed }
     private suspend fun deliveredBody(round: Int, existing: String?, expression: SelectableExpression?, token: String,
-        context: LockedExplanationContext?, valid: (String, Boolean) -> Boolean): String? =
+        context: LockedExplanationContext?, regenerate: Boolean = false, valid: (String, Boolean) -> Boolean): String? =
         withContext(Dispatchers.IO) {
             deliveryLock.withLock {
                 if (!isCurrentOwner()) return@withLock null
                 val account = ownerAccountId
                 if (cache != null && account == null) return@withLock null
-                val key = UUID.nameUUIDFromBytes("v1:$round:${expression?.expressionId ?: "sentence"}:${existing.orEmpty()}".toByteArray(Charsets.UTF_8)).toString()
+                val baseKey = UUID.nameUUIDFromBytes("v1:$round:${expression?.expressionId ?: "sentence"}:${existing.orEmpty()}".toByteArray(Charsets.UTF_8)).toString()
+                val revisionScope = "$account:${chapter.chapterId}:$focusSentenceId:$baseKey"
+                val revision = if (expression != null && account != null && revisions != null) {
+                    if (regenerate) revisions.begin(revisionScope) else revisions.read(revisionScope)
+                } else null
+                val key = revision?.let { UUID.nameUUIDFromBytes("$baseKey:revision:${it.id}".toByteArray(Charsets.UTF_8)).toString() } ?: baseKey
                 if (cache != null && account != null) {
                     cache.read(account, chapter.chapterId, focusSentenceId, key)?.let {
-                        return@withLock it.takeIf { value -> isCurrentOwner() && valid(value, true) && isCurrentOwner() }
+                        val saved = it.takeIf { value -> isCurrentOwner() && valid(value, true) && isCurrentOwner() }
+                        if (saved != null && revision != null) revisions?.complete(revisionScope, revision.id)
+                        return@withLock saved
                     }
                 }
                 val stableCommand = if (cache != null) UUID.nameUUIDFromBytes(
@@ -153,7 +165,9 @@ class HttpExplanationReadingProvider(
                 ).toString() else null
                 if (!isCurrentOwner()) return@withLock null
                 // Encoding/validation failures are not evidence that a request reached the service.
-                val requestBody = request(round, existing, expression, stableCommand, context)
+                val originalCommand = UUID.nameUUIDFromBytes("$account:${chapter.chapterId}:$focusSentenceId:$baseKey".toByteArray(Charsets.UTF_8)).toString()
+                val encoded = request(round, existing, expression, stableCommand, context)
+                val requestBody = if (revision != null) JSONObject(encoded).put("retryOfCommandId", originalCommand).toString() else encoded
                 val response = try {
                     transport.execute(HttpRequest("POST", "/api/v1/learning/explanations", requestBody, mapOf("Authorization" to "Bearer $token")))
                 } catch (cancelled: CancellationException) { throw cancelled }
@@ -163,6 +177,7 @@ class HttpExplanationReadingProvider(
                 if (response?.statusCode == 200) {
                     if (!valid(response.body, false) || !isCurrentOwner()) return@withLock null
                     if (cache != null && account != null) cache.write(account, chapter.chapterId, focusSentenceId, key, response.body)
+                    if (revision != null) revisions?.complete(revisionScope, revision.id)
                     return@withLock response.body.takeIf { isCurrentOwner() }
                 }
                 val uncertainDelivery = response == null || response.statusCode == 409 || response.statusCode in 500..599
@@ -184,7 +199,9 @@ class HttpExplanationReadingProvider(
                 if (!isCurrentOwner()) return@withLock null
                 val saved = cache.read(account, chapter.chapterId, focusSentenceId, key)
                 currentCoroutineContext().ensureActive()
-                saved?.takeIf { it == delivered && isCurrentOwner() && valid(it, true) && isCurrentOwner() }
+                saved?.takeIf { it == delivered && isCurrentOwner() && valid(it, true) && isCurrentOwner() }?.also {
+                    if (revision != null) revisions?.complete(revisionScope, revision.id)
+                }
             }
         }
     private fun request(round: Int, existing: String?, expression: SelectableExpression?, stableCommand: String? = null,

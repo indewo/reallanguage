@@ -31,6 +31,7 @@ class ExplanationReadingViewModel(
             currentFocusSentenceId = currentFocusSentenceId,
             baseExplanationZh = baseExplanationZh,
             expressions = expressions,
+            canRegenerateExplanation = provider.supportsExpressionRegeneration,
         ),
     )
     val uiState: StateFlow<ExplanationReadingUiState> = mutableUiState.asStateFlow()
@@ -100,6 +101,11 @@ class ExplanationReadingViewModel(
             }
             ExplanationReadingAction.UnderstoodRequested -> {
                 understandAndContinue()
+            }
+            ExplanationReadingAction.RegenerateExplanationRequested -> {
+                val current = mutableUiState.value
+                if (current.canRegenerateExplanation && current.selectedExpression != null)
+                    explainExpression(current.selectedExpression.expressionId, regenerate = true)
             }
             is ExplanationReadingAction.ExpressionRequested -> explainExpression(action.expressionId)
         }
@@ -179,18 +185,20 @@ class ExplanationReadingViewModel(
         }
     }
 
-    private fun explainExpression(expressionId: String) {
+    private fun explainExpression(expressionId: String, regenerate: Boolean = false) {
         val current = mutableUiState.value
         if ((current.loading && expressionJob?.isActive != true) || current.expressions.none { it.expressionId == expressionId }) return
         val generation = ++expressionGeneration
         expressionJob?.cancel()
         val expression = current.expressions.first { it.expressionId == expressionId }
         mutableUiState.update { it.copy(loading = true, loadingFailed = false, explaining = false,
-            activeExpressionId = expressionId, selectedExpression = null,
+            activeExpressionId = expressionId, selectedExpression = if (regenerate) current.selectedExpression else null,
+            regeneratingExplanation = regenerate,
             pronunciationText = expression.display, audioPlaying = it.voiceEnabled, audioFailed = false) }
         expressionJob = viewModelScope.launch {
             val result = try {
-                val delivered = provider.explainExpression(current.currentFocusSentenceId, expressionId)
+                val delivered = if (regenerate) provider.regenerateExpression(current.currentFocusSentenceId, expressionId)
+                    else provider.explainExpression(current.currentFocusSentenceId, expressionId)
                 if (delivered is ExplanationContentResult.ExpressionReady &&
                     !provider.validateSavedExpressionOccurrence(current.currentFocusSentenceId, expression, delivered.explanation)) ExplanationContentResult.Failed
                 else delivered
@@ -202,10 +210,10 @@ class ExplanationReadingViewModel(
                 result
             ) {
                 is ExplanationContentResult.ExpressionReady -> commit(
-                    mutableUiState.value.copy(selectedExpression = result.explanation, loading = false),
+                    mutableUiState.value.copy(selectedExpression = result.explanation, loading = false, regeneratingExplanation = false),
                 )
                 else -> mutableUiState.update {
-                    it.copy(loading = false, loadingFailed = true)
+                    it.copy(loading = false, loadingFailed = true, regeneratingExplanation = false)
                 }
             }
         }

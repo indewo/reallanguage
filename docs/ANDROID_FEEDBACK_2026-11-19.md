@@ -1,5 +1,22 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 显式重新获取词语解释：手机链路已验，development内容仍失败（2026-11-21）
+
+da3d44e基础上接入手机：右侧词语讲解底部新增重新获取词语解释，复用纸面确认框，明确新AI调用费用与原结果保留。只在provider支持且已有词语结果时提供，加载/保存失败时不可重复触发。ViewModel再生时保留旧结果并显示正在重新获取，失败保留原结果，双击只发一次。普通点词不自动新建修订。
+
+新增AndroidExplanationRevisionStore在私有SharedPreferences只保存哈希scope与UUID/pending-complete元数据，不含正文或凭证。scope绑定账号/章/句/原缓存键；调用前commit请求身份，同一pending修订的重试继续用同ID，不悄悄换请求；成功响应写新缓存键后才完成，旧缓存键保留。完成后下一次明确操作才能新建修订；旧回调不得覆盖新修订，损坏元数据失败关闭。新请求以原稳定commandId作为retryOfCommandId，技术重放/GET恢复仍同一修订键，不绕过目标提取旧RECONCILIATION_REQUIRED。
+
+初次限定Android测试12项失败，定位上轮debug日志AndroidLog在JVM抛异常，使请求未执行；已将日志调用runCatching隔离为不影响业务的旁路。修正后45项通过：ReadingViewModel23（含双击及失败保留）、HttpProvider10、ExistingDeliveryRecovery12。新增真机独立SharedPreferences组件测试3项：跨实例pending沿用、完成后新修订及拒绝迟到完成、损坏不重置；全部通过，测试独立临时命名空间并清理自身数据，不动用户记录。它们不代替真实网络中断/未知费用恢复验收。
+
+contracts/backend/api三包构建通过，仅部署上一批配套4模块，备份.local-data/explanation-regeneration-20261121-1635。部署后本机/服务器SHA均一致：contracts index 69008a5944ab42c5142608f2134fe6431b224ddf8007bed9fc78d562cd97b790；generate bfa7db4aa87e4ab9a547c12e2bedf64a2c7f40c46df6d649d9d12d5b6851a0de；http provider ea45f82d7d448679690f770175d9bb8a1def76f4055011f5b8d814aae3c8f8b9；controller 1bf5e2638a64b1a3be72640ca8ec58cda07a104c6295ce7bc196a1870f728959。重启后health status=ok/service=api，requestId0479b627-da88-409b-b128-9d7481eef822，再操作手机。未部署无关decode-speaking-audio或私有配置。
+
+APK SHA25635690883cbaf387cea5c8c4888610fdd39a1631b898b4a5269f17269153924cb，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa覆盖Success。真实首页→未完成7条→原需求QA章2/9，点development原显示开发排期，滚到末尾→重新获取词语解释→实看rl-regeneration-confirm-1121.png→明确点击重新获取一次。等待中保留旧结果；POST learning/explanations200 requestId27e13cc1-051b-4152-9afb-a15c261f158b。
+
+关键失败：新结果为开发时间安排，仍把scheduling含义并入development，例句也用了整段development scheduling。实看rl-development-regenerated-1121.png；不得将网络成功、不同旧结果或机制可用称语义修复通过。未再连续付费重生，没有手改模型结果。必须继续增加语义质量拒绝/有界修复，旧错误依然未关闭。
+
+对同一新结果强制停止应用再从首页/未完成续学，仍恢复开发时间安排；切requirements再点development仍新修订结果。仅读取私有修订元数据的状态计数，1条complete，不输出ID/账号/内容。再通过退出学习→暂时退出实际保存回首页。账号→AI费用实看rl-explanation-retry-billing-1121.png，首条生成表达讲解/手动重试/dashscope qwen-flash/0.01元，两处余额97.63一致；只证明这一条已显示流水，不据此证明全局零重复计费或真实Token成本已对账。一次UI XML dump返回null，未拿残留旧XML作账单证据，以实际新截图为准。独立组件测试结束重新打开实际App停首页。原用户8/9未推进或清理。
+
+
 ### 错误词语讲解重生：服务端合同与计费关联基础（未完成验收）
 
 0a343fb后继续处理原development错误缓存。现行客户端稳定缓存键与后台commandId可防重复调用，但没有显式重新获取讲解入口，不能靠修改prompt、删缓存或自动换版本键修复旧结果。开始补充显式重生链路，本批仅完成后端基础，不把原错误结果描述成已恢复。

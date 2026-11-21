@@ -28,6 +28,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,6 +65,13 @@ fun ExplanationReadingScreen(
     onAction: (ExplanationReadingAction) -> Unit,
     targetAssessment: @Composable (String) -> Unit,
 ) {
+    var confirmRegeneration by remember(state.selectedExpression?.expressionId) { mutableStateOf(false) }
+    if (confirmRegeneration) com.reallanguage.app.core.designsystem.RlEditorialDialog(
+        title = "重新获取词语解释？", onDismissRequest = { confirmRegeneration = false },
+        body = { Text("将重新生成当前词语的讲解，产生新的 AI 调用费用；原结果会保留。", color = RlColor.Ink, fontFamily = EditorialFont.Serif) },
+        primaryText = "重新获取", onPrimary = { confirmRegeneration = false; onAction(ExplanationReadingAction.RegenerateExplanationRequested) },
+        secondaryText = "取消", onSecondary = { confirmRegeneration = false },
+    )
     ChapterLearningFrame(
         chapter = state.chapter,
         currentFocusSentenceId = state.currentFocusSentenceId,
@@ -217,6 +228,12 @@ fun ExplanationReadingScreen(
                         }
                 }
                 explanation.expressionHintZh?.let { ExpressionUsageHint(it) }
+                if (state.regeneratingExplanation) Text("正在重新获取，当前仍显示上次结果。", color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif)
+                if (state.loadingFailed) Text("未取得新的解释，当前仍为上次结果。", color = RlColor.Error, fontFamily = EditorialFont.Serif)
+                if (state.canRegenerateExplanation) TextButton(
+                    onClick = { confirmRegeneration = true }, enabled = !state.loading && !state.progressFailed,
+                    modifier = Modifier.testTag("explanation-regenerate"),
+                ) { Text("重新获取词语解释") }
             }
             // Selected targets already show their meaning, usage and example above.
             if (state.selectedExpression == null && state.activeExpressionId == null && state.baseExplanationZh.isNotBlank()) {

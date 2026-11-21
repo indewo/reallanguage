@@ -24,6 +24,8 @@ data class ExplanationReadingUiState(
     val autoExplanationSuppressed: Boolean = false,
     val voiceEnabled: Boolean = true,
     val speechRate: Float = 1f,
+    val canRegenerateExplanation: Boolean = false,
+    val regeneratingExplanation: Boolean = false,
     val initialSubject: com.reallanguage.app.feature.learning.domain.InitialExplanationSubject? = null,
 ) {
     val threeReadsCompleted: Boolean get() = completedReadCount >= 3
@@ -46,6 +48,7 @@ sealed interface ExplanationReadingAction {
     data object BackRequested : ExplanationReadingAction
     data object AudioToggled : ExplanationReadingAction
     data object ExampleAudioRequested : ExplanationReadingAction
+    data object RegenerateExplanationRequested : ExplanationReadingAction
     data object RegenerateAudioRequested : ExplanationReadingAction
     data object AudioPlaybackFailed : ExplanationReadingAction
     data object ExplanationFinished : ExplanationReadingAction

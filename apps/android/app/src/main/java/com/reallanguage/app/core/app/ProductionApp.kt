@@ -1203,6 +1203,7 @@ class ProductionAppGraph(
         val locked = com.reallanguage.app.feature.learning.data.AndroidLockedExplanationContextReader(applicationContext, sessionRuntime)
         return HttpExplanationReadingProvider(transport, sessionRuntime, chapter, focusSentenceId,
             UUID.randomUUID().toString(), cache = com.reallanguage.app.feature.learning.data.AndroidExplanationCache(applicationContext),
+            revisions = com.reallanguage.app.feature.learning.data.AndroidExplanationRevisionStore(applicationContext),
             selectedExpressions = targets::selectedExpressionDisplays,
             lockedContext = { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { locked.read(chapter.chapterId, focusSentenceId) } })
     }
