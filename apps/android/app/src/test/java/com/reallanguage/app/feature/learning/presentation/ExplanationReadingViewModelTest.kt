@@ -25,6 +25,26 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExplanationReadingViewModelTest {
+    @Test fun retryingUnderstoodSaveResumesTheRequestedReadSpeakTransition() = runTest {
+        var writable = true
+        val store = object : com.reallanguage.app.feature.learning.domain.LearningProgressStore {
+            override suspend fun read(): Map<String, String>? = null
+            override suspend fun write(values: Map<String, String>) = writable
+        }
+        val model = createViewModel(progressStore = store)
+        advanceUntilIdle()
+        writable = false
+        model.onAction(ExplanationReadingAction.UnderstoodRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.progressFailed)
+        assertFalse(model.uiState.value.loading)
+        val effect = async { model.effects.first() }
+        writable = true
+        model.onAction(ExplanationReadingAction.RetryProgressRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.progressFailed)
+        assertEquals(ExplanationReadingEffect.OpenReadAndSpeak, effect.await())
+    }
     private val dispatcher = StandardTestDispatcher()
     private val sentence = FixedLearningSentence(
         "s1", "I expressed myself more clearly.", "我表达得更清楚了。", true,

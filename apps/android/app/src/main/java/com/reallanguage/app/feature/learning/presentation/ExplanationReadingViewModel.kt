@@ -39,6 +39,7 @@ class ExplanationReadingViewModel(
     private var pendingSave: ExplanationReadingUiState? = null
     private var expressionJob: kotlinx.coroutines.Job? = null
     private var expressionGeneration = 0L
+    private var pendingReadAndSpeak = false
 
     init { if (progressStore != null || voicePreferencesProvider != null) restoreProgress() }
 
@@ -120,7 +121,11 @@ class ExplanationReadingViewModel(
         } else {
             mutableUiState.update { it.copy(loading = true) }
             viewModelScope.launch {
-                if (commit(next)) send(ExplanationReadingEffect.OpenReadAndSpeak)
+                pendingReadAndSpeak = true
+                if (commit(next)) {
+                    pendingReadAndSpeak = false
+                    send(ExplanationReadingEffect.OpenReadAndSpeak)
+                }
             }
         }
     }
@@ -265,7 +270,12 @@ class ExplanationReadingViewModel(
         else {
             mutableUiState.update { it.copy(loading = true) }
             viewModelScope.launch {
-                if (commit(next) && next.loading && next.pendingHintRound != null) loadPendingHint()
+                if (commit(next)) {
+                    if (pendingReadAndSpeak) {
+                        pendingReadAndSpeak = false
+                        send(ExplanationReadingEffect.OpenReadAndSpeak)
+                    } else if (next.loading && next.pendingHintRound != null) loadPendingHint()
+                }
             }
         }
     }
