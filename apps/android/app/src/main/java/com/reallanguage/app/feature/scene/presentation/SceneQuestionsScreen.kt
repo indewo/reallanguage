@@ -51,6 +51,9 @@ import com.reallanguage.app.core.designsystem.RlSpace
 @Composable
 fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestionsAction) -> Unit) {
     BackHandler { onAction(SceneQuestionsAction.BackRequested) }
+    val previous = state.history.lastOrNull().takeIf { state.loading }
+    val visibleQuestion = state.currentQuestion ?: previous?.question
+    val visibleAnswer = previous?.answer?.answerZh ?: state.answerText
     SceneEditorialFrame(
         title = stringResource(R.string.scene_questions_title),
         supporting = "让场景更像\n你真实经历的",
@@ -63,10 +66,11 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 OutlinedButton(
                     onClick = { onAction(SceneQuestionsAction.PreviousRequested) },
                     modifier = Modifier.weight(.45f).testTag("scene-questions-previous"),
+                    enabled = !state.loading,
                 ) { Text(stringResource(R.string.scene_questions_previous)) }
             }
             RlPrimaryButton(
-                text = stringResource(
+                text = if (state.loading) stringResource(R.string.scene_questions_loading) else stringResource(
                     when (state.error) {
                         SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_return_edit
                         null -> R.string.scene_questions_submit
@@ -89,17 +93,9 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
     ) {
         SceneQuestionProgress(if (state.loading && state.history.isNotEmpty()) state.confirmedAnswers.size - 1 else state.confirmedAnswers.size)
         when {
-            state.loading -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                state.history.lastOrNull()?.let { previous ->
-                    Text(previous.question.questionZh, color = RlColor.Ink,
-                        fontSize = 22.sp, lineHeight = 30.sp)
-                    Text(previous.answer.answerZh, color = RlColor.TextSecondary,
-                        fontSize = 16.sp, lineHeight = 24.sp)
-                }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), color = RlColor.Secondary, strokeWidth = 2.dp)
-                    Text(stringResource(R.string.scene_questions_loading), color = RlColor.TextSecondary, fontSize = 14.sp)
-                }
+            state.loading && visibleQuestion == null -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), color = RlColor.Secondary, strokeWidth = 2.dp)
+                Text(stringResource(R.string.scene_questions_loading), color = RlColor.TextSecondary, fontSize = 14.sp)
             }
             state.error != null -> {
                 Text(
@@ -119,20 +115,20 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                     }
                 }
             }
-            state.currentQuestion != null -> {
-                Text(state.currentQuestion.questionZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
+            visibleQuestion != null -> {
+                Text(visibleQuestion.questionZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
                     fontSize = 22.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
-                if (state.currentQuestion.options.isNotEmpty()) {
+                if (visibleQuestion.options.isNotEmpty()) {
                     Column(
                         modifier = Modifier.fillMaxWidth().testTag("scene-questions-options"),
                         verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
                     ) {
-                        state.currentQuestion.options.chunked(2).forEach { options ->
+                        visibleQuestion.options.chunked(2).forEach { options ->
                           Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
                           options.forEach { option ->
-                            val selected = state.answerText == option
+                            val selected = visibleAnswer == option
                             BoxWithConstraints(Modifier.weight(1f).heightIn(min = 48.dp).padding(bottom = 8.dp)
-                                .clickable { onAction(SceneQuestionsAction.AnswerChanged(option)) }
+                                .clickable(enabled = !state.loading) { onAction(SceneQuestionsAction.AnswerChanged(option)) }
                                 .testTag("scene-option-$option")) {
                                 Image(painterResource(if (selected) R.drawable.rl_scene_recent_ticket_sage_v2 else R.drawable.rl_scene_recent_ticket_blue_v2),
                                     null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
@@ -151,7 +147,8 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                     }
                 }
                 com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(
-                    value = state.answerText,
+                    value = visibleAnswer,
+                    readOnly = state.loading,
                     onValueChange = { onAction(SceneQuestionsAction.AnswerChanged(it)) },
                     label = { Text(stringResource(R.string.scene_questions_answer_label)) },
                     minLines = 1,
