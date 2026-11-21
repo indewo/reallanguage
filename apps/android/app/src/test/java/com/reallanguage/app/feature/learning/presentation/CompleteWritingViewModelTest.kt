@@ -34,6 +34,33 @@ class CompleteWritingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun failedDraftReadNeverOverwritesSavedAnswersAndExplicitRetryRestoresThem() = runTest(dispatcher) {
+        val saved = mapOf("version" to "1", "phase" to "FINAL_BATCH", "sentenceIndex" to "0",
+            "input" to "", "helpUsed" to "true", "attemptCorrect" to "",
+            "answer:s1" to "original first draft", "answer:s2" to "original second draft")
+        var unavailable = true
+        var writes = 0
+        val store = object : com.reallanguage.app.feature.learning.domain.LearningProgressStore {
+            override suspend fun read(): Map<String, String> { if (unavailable) throw java.io.IOException("read interrupted"); return saved }
+            override suspend fun write(values: Map<String, String>): Boolean { writes++; return true }
+        }
+        val model = CompleteWritingViewModel(chapter, emptyList(), comparator, CompleteWritingEvaluator(comparator),
+            CompleteWritingRepository { _, _ -> CompleteWritingSaveResult.Saved }, store)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.saveFailed)
+        assertFalse(model.uiState.value.saving)
+        assertEquals(0, writes)
+        model.onAction(CompleteWritingAction.FinalInputChanged("s1", "must not overwrite"))
+        unavailable = false
+        model.onAction(CompleteWritingAction.SubmitRequested)
+        advanceUntilIdle()
+        assertEquals("original first draft", model.uiState.value.finalInputs["s1"])
+        assertEquals("original second draft", model.uiState.value.finalInputs["s2"])
+        assertTrue(model.uiState.value.helpUsed)
+        assertFalse(model.uiState.value.saveFailed)
+        assertEquals(0, writes)
+    }
+
     @Test fun thrownFinalSavePreservesAnswersAndReleasesControlsForExplicitRetry() = runTest(dispatcher) {
         var calls = 0
         val model = createViewModel(CompleteWritingRepository { _, _ ->
