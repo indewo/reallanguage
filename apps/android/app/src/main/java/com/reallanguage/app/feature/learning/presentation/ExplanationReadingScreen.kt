@@ -219,7 +219,7 @@ fun ExplanationReadingScreen(
                 explanation.expressionHintZh?.let { ExpressionUsageHint(it) }
             }
             // Selected targets already show their meaning, usage and example above.
-            if (state.selectedExpression == null && state.baseExplanationZh.isNotBlank()) {
+            if (state.selectedExpression == null && state.activeExpressionId == null && state.baseExplanationZh.isNotBlank()) {
                 Text(stringResource(R.string.explanation_reading_title), color = RlColor.Ink,
                     fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                 Text(state.baseExplanationZh, color = RlColor.Ink,

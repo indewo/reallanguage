@@ -1,5 +1,16 @@
 # 2026-11-19 用户反馈与增量验证
 
+### C13点词底部冗余核对与加载时旧讲解闪现修复（2026-11-21）
+
+8b0c0c3远程fetch无新提交。原最新需求QA章2/9当前requirements词语讲解，真实右侧滚到底查看rl-word-explanation-bottom-1121.png：自然例句中文、例句发音、表达提示完整可读，末尾没有重复整句基础讲解。对应C13现有词语实例取得证据；C12原special deal不在当前账号章节，不能用requirements替代原词组验收。
+
+同时上轮点requirements加载时截图/XML曾显示新词已在蓝卡，但右侧仍为旧is currently being confirmed整句基础讲解。原因Screen仅在selectedExpression为空时显示base，未排除activeExpressionId已切换但新结果未到的状态。改为仅未选择任何词语时显示整句基础讲解；加载失败也不会把旧整句当当前词语解释，不改变生成结果/请求/恢复逻辑。
+
+assembleDebug成功，APK SHA256 439d7442774c621a69baa77199f1a19df9f128734bda8cc62230ece20dce0fee，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa校验，install-r Success。真实首页→未完成→原QA章恢复requirements结果与焦点一致，然后实际点development。实看rl-word-loading-clear-1121.png：蓝卡development/正在获取当前词语解释，右侧不再闪现旧句讲解；几秒后真实返回development的用法/例句。没有手工填充响应、没有点自评或我理解了。此低影响显示修复依据构建与真实瞬间截图，未另加隔离测试，不声称失败分支已注入验证。
+
+新发现内容错误：实际返回development的中文为“开发排期”，而用法解释自己写development修饰scheduling。该释义把后一个词scheduling带入单词，不能作为正确单词释义验收。当前请求携已锁定目标及relatedVocabulary快照，现行规则要求精确证据跨度命中的已锁定词义保持不变，因此尚需查是原相关词义已错还是本次新解释生成引入；不能只改提示或手改当前结果就声称修好。C12/词义质量继续未关闭。原超时409恢复仍未解决，不受UI修复影响。当前停在development解释页，原用户8/9未推进。
+
+
 ### B08蓝卡中文与装饰重叠修复、长词组/单词真实检查（2026-11-21）
 
 87fe60f远程fetch无新提交。针对上轮实图中文前几个字压在浅色报纸/叶片上，仅在ExplanationReadingScreen蓝卡中文释义的可用宽度中预留左侧24%装饰区域，中文在剩余蓝色区域居中并正常换行；英文仍在原完整可用宽度居中。保留原素材、字号、已有内容高度滚动、卡下自评与所有行为，不重画素材或首页。第一次编译因在ColumnScope隐式取maxWidth失败，改在外层BoxWithConstraints捕获meaningInset后编译成功，未安装失败构建。
