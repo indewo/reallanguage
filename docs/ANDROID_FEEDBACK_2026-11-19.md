@@ -1,3 +1,7 @@
+### 2026-11-21 目标页双倍字体检查失败，待现场定位
+
+现有longCandidateExampleAndTranslationCanScrollAtDoubleFontWithoutLosingSelectionOrReturn在手机隔离组件中失败：卡片可定位，但GetTextLayoutResult未取到长英文例句。测试结束截图为手机桌面，不能用于界面结论。新增在取布局前保存组件截图target-long-layout.png，尚待构建重跑；不削弱断言，不据本轮判定具体UI根因或关闭B04/C07/C29。未改用户数据或产品布局。
+
 ### 2026-11-21 用户要求订正页位置集中重设计
 
 用户明确指出说明文字和清空操作位置不好，加入docs/FEEDBACK_DESIGN_REVIEW_PENDING_2026-11-21.md，待一起集中审视。暂停自行调整这两个元素的位置；现有位置不算设计验收通过。C16功能验证与设计审视分别保留，未改代码。

@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
@@ -95,6 +96,11 @@ class LearningTargetCandidateExampleScreenTest {
             // A card below the long accessible header is reached in the outer
             // list first; its unmerged text then uses the local paper scroll.
             compose.onNodeWithTag("learning_target_tea").performScrollTo().assertIsDisplayed()
+            val capture = java.io.File(compose.activity.filesDir, "target-long-layout.png")
+            capture.outputStream().use { output ->
+                compose.onRoot().captureToImage().asAndroidBitmap()
+                    .compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)
+            }
             val node = cardText("tea", text)
             val layouts = mutableListOf<TextLayoutResult>()
             node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
