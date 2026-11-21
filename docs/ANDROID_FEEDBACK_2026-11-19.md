@@ -1,5 +1,11 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 安卓目标提取失败诊断与保留数据覆盖
+
+单句提取200后失败尚未定位。HttpLearningTargetRepository原来把JSON解码、词库绑定和完整校验失败均静默合并；新增只含静态stage及异常类名的RLTargetValidation诊断，分request/decode/catalog/validation，不输出正文、目标ID、账号、令牌或响应体，不放宽任何校验。失败日志写入本身用runCatching保护，不影响原失败/取消语义。18项HttpLearningTargetRepositoryTest通过，公网assembleDebug通过。
+
+在已保存QA章基础讲解→退出→暂时退出，实际返回首页，再原证书覆盖安装成功。证书SHA256仍9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa，候选APK SHA256 970f6673a4f0feda64faf1f9727242aa34c6807088815f35ef7426e19467098f。重新启动实际回首页、账号无需重登；未卸载或清数据，旧桌面APK未覆盖。新增诊断当前已上机，尚未用新入口重现单句失败，不把可诊断当故障已修复。
+
 ### 助手QA来源的确认目标→保存→退出→重开真实闭环
 
 从第2重点句目标页点继续进入确认学习目标，统计为2个重点句、1个章节。rl-qa-final-fix-1121.png已查看：两列首屏有后续内容，下三角提示；实际左列滑动并点下三角后可见第2句完整英中，右列滑动可见scheduled/on time/rescheduling三个目标，无tomorrow morning。并非首屏全部可见，不能声称无需滚动；本次没有添加句式。

@@ -145,6 +145,7 @@ class HttpLearningTargetRepository(
         if (requested != null && requested.first !in focusIds) return null
         val token = runtime.accessToken ?: return null
         val revision = runtime.identityRevision.value
+        var diagnosticStage = "request"
         return try {
             val refsBySentence = sentences.associate { sentence -> sentence.unitId to sentence.candidates.single { it.candidateId == selections[sentence.unitId] }.reusedKnowledgeRefs }
             check(refsBySentence.values.all { refs -> refs.size <= 16 && refs.distinct().size == refs.size && refs.all(::isValidKnowledgeRef) })
@@ -168,8 +169,14 @@ class HttpLearningTargetRepository(
             val response = transport.execute(HttpRequest("POST", "/api/v1/content-formation/learning-targets", body, mapOf("Authorization" to "Bearer $token")))
             currentCoroutineContext().ensureActive()
             if (runtime.accountId != ownerAccountId || runtime.accessToken == null || runtime.identityRevision.value != revision || response.statusCode != 200) null
-            else bindCatalogScopes(codec.payload(response.body)).takeIf { payload ->
-                payload.targets.all { target -> target.unitId in focusIds && target.targetId.isNotBlank() && target.hasValidStructureParts() && target.hasValidCandidateExample() &&
+            else {
+                diagnosticStage = "decode"
+                val decoded = codec.payload(response.body)
+                diagnosticStage = "catalog"
+                val bound = bindCatalogScopes(decoded)
+                diagnosticStage = "validation"
+                bound.takeIf { payload ->
+                val valid = payload.targets.all { target -> target.unitId in focusIds && target.targetId.isNotBlank() && target.hasValidStructureParts() && target.hasValidCandidateExample() &&
                     sentences.single { it.unitId == target.unitId }.let { sentence ->
                         val english = sentence.candidates.single { it.candidateId == selections[sentence.unitId] }.textEn
                         target.isVocabularyBookEligible(english) && target.hasValidRelatedVocabularyItems(english)
@@ -195,10 +202,14 @@ class HttpLearningTargetRepository(
                         actual.distinct().size == actual.size && (requested != null || actual.toSet() == refsBySentence.filterKeys { it in focusIds }.flatMap { (unit, refs) -> refs.map { unit to it } }.toSet())
                     } && runtime.accountId == ownerAccountId && runtime.accountEpoch == ownerEpoch &&
                     runtime.accessToken != null && runtime.identityRevision.value == revision
+                if (!valid) reportTargetValidation("validation", "RejectedPayload")
+                valid
+                }
             }
         } catch (cancelled: CancellationException) {
             throw cancelled
-        } catch (_: Exception) {
+        } catch (failure: Exception) {
+            reportTargetValidation(diagnosticStage, failure.javaClass.simpleName)
             null
         }
     }
@@ -212,6 +223,11 @@ class HttpLearningTargetRepository(
         }
         return payload.copy(targets = targets)
     }
+}
+
+/** Only static stage/class metadata: never log response bodies, source text, IDs or credentials. */
+private fun reportTargetValidation(stage: String, failureClass: String) {
+    runCatching { android.util.Log.w("RLTargetValidation", "stage=$stage class=$failureClass") }
 }
 
 internal fun knownTargetMatches(known: KnownKnowledgeCandidate, target: LearningTarget): Boolean =
