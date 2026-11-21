@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 场景回应四类供应商异常解锁
+
+generateTasks、transcribeResponse、trainingFeedback、evaluateFinalRound原调用未捕获抛出异常，可能使loading/transcribing/submitting保持锁定。补充取消继续传播，其他异常进入各自既有Failed分支，保留转录、任务/轮次和仓库提供的原请求重试资格，不伪造训练完成或最终通过。新增隔离测试分别在生成、转录、训练反馈及第3轮评价抛IOException，核对按钮状态释放、已转录内容保持、无最终保存。23项场景VM测试通过；未安装本修改或进行真实场景录音、供应商中断及归档验证，不据此关闭场景真实流程。用户无需操作，未触碰手机。
+
 ### 我理解了保存重试后继续原导航
 
 检查发现UnderstoodRequested保存失败后仅保留pendingSave，RetryProgressRequested成功只恢复状态，不再执行原OpenReadAndSpeak意图。新增仅当前VM内的待继续标志：原保存成功或明确重试成功后发送读＋说导航并清标志，失败仍留原页；不额外生成讲解，不跨进程推断用户新意图。新增隔离回归验证首次写入失败→明确重试成功→OpenReadAndSpeak，讲解VM测试通过。未安装该修改或执行手机存储故障验证，真实衔接仍待复验，未操作用户手机。

@@ -131,7 +131,10 @@ class SceneResponseViewModel(
 
     private fun loadTasks(chapter: FixedLearningChapter) {
         viewModelScope.launch {
-            when (val result = repository.generateTasks(chapter)) {
+            val result = try { repository.generateTasks(chapter) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { SceneTaskGenerationResult.Failed }
+            when (result) {
                 is SceneTaskGenerationResult.Ready -> {
                     mutableUiState.update {
                         it.copy(tasks = result.tasks, loading = false, captureFailed = false)
@@ -192,7 +195,10 @@ class SceneResponseViewModel(
         if ((!current.recording && !(retry && current.technicalRetryPending)) || current.submitting || current.transcribing) return
         mutableUiState.update { it.copy(recording = false, transcribing = true, captureFailed = false) }
         viewModelScope.launch {
-            when (val result = repository.transcribeResponse(task.taskId)) {
+            val result = try { repository.transcribeResponse(task.taskId) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { SpeakingTranscriptionResult.Failed }
+            when (result) {
                 is SpeakingTranscriptionResult.Ready -> {
                     transcriptRecordingId = repository.currentRecordingId()
                     mutableUiState.update {
@@ -228,11 +234,12 @@ class SceneResponseViewModel(
         viewModelScope.launch {
             if (!current.isFinalRound) {
                 when (
-                    val result = repository.trainingFeedback(
+                    val result = try { repository.trainingFeedback(
                         task.taskId,
                         current.roundIndex,
                         current.transcript.trim(),
-                    )
+                    ) } catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { SceneTrainingFeedbackResult.Failed }
                 ) {
                     is SceneTrainingFeedbackResult.Ready -> mutableUiState.update {
                         it.copy(
@@ -254,10 +261,11 @@ class SceneResponseViewModel(
                 return@launch
             }
             when (
-                val result = repository.evaluateFinalRound(
+                val result = try { repository.evaluateFinalRound(
                     task.taskId,
                     current.transcript.trim(),
-                )
+                ) } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { SceneEvaluationResult.Failed }
             ) {
                 is SceneEvaluationResult.Ready -> {
                     val candidate = result.candidate

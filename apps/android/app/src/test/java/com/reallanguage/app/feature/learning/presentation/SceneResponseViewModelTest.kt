@@ -41,6 +41,38 @@ class SceneResponseViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun supplierExceptionsReleaseControlsWithoutInventingTrainingOrFinalSuccess() = runTest(dispatcher) {
+        for (failure in listOf("generation", "transcription", "training", "evaluation")) {
+            val repository = FakeRepository()
+            if (failure == "generation") repository.failure = failure
+            val model = if (failure == "generation") SceneResponseViewModel(chapter, null, repository)
+                else createViewModel(listOf(task), repository)
+            advanceUntilIdle()
+            if (failure == "evaluation") repeat(2) {
+                respond(model, task.targetSentenceEn)
+                model.onAction(SceneResponseAction.ContinueRoundRequested)
+                advanceUntilIdle()
+            }
+            repository.failure = failure
+            if (failure != "generation") {
+                model.onAction(SceneResponseAction.StartRequested)
+                model.onAction(SceneResponseAction.FinishedRequested)
+                advanceUntilIdle()
+                if (failure != "transcription") {
+                    model.onAction(SceneResponseAction.ConfirmTranscriptRequested)
+                    advanceUntilIdle()
+                    assertEquals(task.targetSentenceEn, model.uiState.value.transcript)
+                }
+            }
+            assertFalse(model.uiState.value.loading)
+            assertFalse(model.uiState.value.submitting)
+            assertFalse(model.uiState.value.transcribing)
+            assertTrue(model.uiState.value.captureFailed)
+            assertFalse(model.uiState.value.trainingRoundCompleted)
+            assertEquals(0, repository.saves)
+        }
+    }
+
     @Test fun recordingCannotUnmutePromptOrTriggerRecognitionBeforeTheUserFinishes() = runTest(dispatcher) {
         val repository = FakeRepository()
         val model = createViewModel(listOf(task), repository)
@@ -519,13 +551,15 @@ class SceneResponseViewModelTest {
         var evaluations = 0
         var saves = 0
         var generations = 0
+        var failure: String? = null
 
-        override suspend fun generateTasks(chapter: FixedLearningChapter): SceneTaskGenerationResult { generations++; return generationResult }
+        override suspend fun generateTasks(chapter: FixedLearningChapter): SceneTaskGenerationResult { generations++; if (failure == "generation") throw java.io.IOException("interrupted"); return generationResult }
 
         override fun startCapture() = captureStarts
         override fun cancelCapture() = Unit
         override suspend fun transcribeResponse(taskId: String): SpeakingTranscriptionResult {
             transcriptions++
+            if (failure == "transcription") throw java.io.IOException("interrupted")
             transcriptionGate?.await()
             return SpeakingTranscriptionResult.Ready(
                 SpeakingTranscription(transcript, emptyList(), 0.95),
@@ -538,6 +572,7 @@ class SceneResponseViewModelTest {
             confirmedTranscript: String,
         ): SceneTrainingFeedbackResult {
             trainingRounds += roundIndex
+            if (failure == "training") throw java.io.IOException("interrupted")
             trainingGate?.await()
             return trainingResult
         }
@@ -545,7 +580,7 @@ class SceneResponseViewModelTest {
         override suspend fun evaluateFinalRound(
             taskId: String,
             confirmedTranscript: String,
-        ): SceneEvaluationResult { evaluations++; return SceneEvaluationResult.Ready(finalCandidate) }
+        ): SceneEvaluationResult { evaluations++; if (failure == "evaluation") throw java.io.IOException("interrupted"); return SceneEvaluationResult.Ready(finalCandidate) }
 
         override suspend fun saveFinalDecision(
             chapterId: String,
