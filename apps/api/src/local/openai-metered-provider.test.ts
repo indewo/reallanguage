@@ -16,6 +16,29 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("can scope target generation quality without changing other text models", async () => {
+    vi.stubEnv("OPENAI_TARGET_MODEL", "target-model");
+    try {
+      const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({ output_text: "{}" })));
+      const client = new OpenAiLocalClient("isolated-test", "ordinary-model", fetcher);
+      await client.generateJson("LEARNING_TARGET_EXTRACTION_V1", {});
+      await client.generateJson("SENTENCE_EXPLANATION_V1", {});
+      expect(JSON.parse(String(fetcher.mock.calls[0]![1].body)).model).toBe("target-model");
+      expect(JSON.parse(String(fetcher.mock.calls[1]![1].body)).model).toBe("ordinary-model");
+    } finally { vi.unstubAllEnvs(); }
+  });
+  it("uses the scoped target reviewer model with a strict independent quality schema", async () => {
+    vi.stubEnv("OPENAI_TARGET_REVIEW_MODEL", "target-review-model");
+    try {
+      const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: '{"valid":true,"issues":[]}' })));
+      await new OpenAiLocalClient("isolated-test", "ordinary-model", fetcher).generateJson("LEARNING_TARGET_QUALITY_V1", { chapters: [], targets: [] });
+      const request = JSON.parse(String(fetcher.mock.calls[0]![1].body));
+      expect(request.model).toBe("target-review-model");
+      expect(request.text.format.schema.properties.valid.type).toBe("boolean");
+      expect(request.instructions).toContain("on the scheduling results");
+      expect(request.instructions).toContain("on the team meeting");
+    } finally { vi.unstubAllEnvs(); }
+  });
   it.each(["BILINGUAL_PASSAGE_WORDING_V1", "BILINGUAL_PASSAGE_FIDELITY_V1"])("sends dialogue agent constraints for %s", async task => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: "{}" })));
     await new OpenAiLocalClient("isolated-test", "test-model", fetcher).generateJson(task, {

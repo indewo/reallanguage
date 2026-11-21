@@ -85,7 +85,23 @@ export type LearningTargetProviderCommand = Readonly<{
   requestedExpression?: RequestedTargetExpression;
   settings: ContentGenerationSettings;
   commandId: string;
+  billingOperationId?: string;
+  qualityCorrection?: Readonly<{
+    previousTargets: readonly LearningTargetCandidate[];
+    issues: readonly TargetQualityIssue[];
+  }>;
 }>;
+export type TargetQualityIssue = Readonly<{
+  targetId: string;
+  reason: string;
+  explanationZh: string;
+}>;
+export interface LearningTargetQualityReviewer {
+  review(
+    command: LearningTargetProviderCommand,
+    targets: readonly LearningTargetCandidate[],
+  ): Promise<readonly TargetQualityIssue[]>;
+}
 export interface LearningTargetProvider {
   extract(command: LearningTargetProviderCommand): Promise<
     Readonly<{
@@ -101,6 +117,17 @@ export type ExtractLearningTargetsCommand = Omit<
 
 export class InvalidLearningTargetInputError extends Error {}
 export class InvalidLearningTargetOutputError extends Error {}
+export class LearningTargetQualityError extends InvalidLearningTargetOutputError {
+  constructor(
+    public readonly previousTargets: readonly LearningTargetCandidate[],
+    public readonly issues: readonly TargetQualityIssue[],
+  ) {
+    super(
+      `Learning target quality review failed: ${[...new Set(issues.map((issue) => issue.reason).filter((reason) => ["NOT_LEXICALIZED", "CONTEXT_MEANING", "PATTERN_FUNCTION", "EXAMPLE_GRAMMAR", "EXAMPLE_MEANING", "EXAMPLE_REUSE"].includes(reason)))].join(",")}`,
+    );
+    this.name = "LearningTargetQualityError";
+  }
+}
 
 // Ordinary calendar combinations are compositional, unlike lexical uses such as "on time".
 const isCalendarCombination = (value: string): boolean =>
@@ -112,6 +139,7 @@ export class ExtractLearningTargets {
   public constructor(
     private readonly settings: ContentGenerationSettingsReader,
     private readonly provider: LearningTargetProvider,
+    private readonly reviewer?: LearningTargetQualityReviewer,
   ) {}
   public async execute(command: ExtractLearningTargetsCommand) {
     const focusIds = new Set(
@@ -249,9 +277,17 @@ export class ExtractLearningTargets {
       );
     if (command.requestedExpression && output.targets.length !== 1)
       throw new Error("Invalid requested expression result");
-    if (requested && output.targets.some((target) =>
-      target.type === "FIXED_EXPRESSION" && isCalendarCombination(target.display)))
-      throw new InvalidLearningTargetOutputError("Calendar combination is not a fixed expression");
+    if (
+      requested &&
+      output.targets.some(
+        (target) =>
+          target.type === "FIXED_EXPRESSION" &&
+          isCalendarCombination(target.display),
+      )
+    )
+      throw new InvalidLearningTargetOutputError(
+        "Calendar combination is not a fixed expression",
+      );
     if (
       requested &&
       output.targets.some(
@@ -269,7 +305,7 @@ export class ExtractLearningTargets {
       )
     )
       throw new Error("Invalid requested expression result");
-    return {
+    const result = {
       ...output,
       targets: requested
         ? output.targets.map((target) => ({
@@ -286,14 +322,55 @@ export class ExtractLearningTargets {
               .digest("hex")
               .slice(0, 32)}`,
           }))
-        : output.targets.filter((target) =>
-            target.type !== "FIXED_EXPRESSION" || !isCalendarCombination(target.display)),
-      queryableExpressions: output.queryableExpressions.filter((expression) =>
-        expression.expressionId.startsWith("word:") || !isCalendarCombination(expression.display)),
+        : output.targets.filter(
+            (target) =>
+              target.type !== "FIXED_EXPRESSION" ||
+              !isCalendarCombination(target.display),
+          ),
+      queryableExpressions: output.queryableExpressions.filter(
+        (expression) =>
+          expression.expressionId.startsWith("word:") ||
+          !isCalendarCombination(expression.display),
+      ),
       learningScopes: [
         settings.basicVocabulary,
         ...settings.purposeVocabularies,
       ],
     };
+    if (this.reviewer && result.targets.length) {
+      const words = (text: string) =>
+        text
+          .toLowerCase()
+          .replace(/[’‘]/gu, "'")
+          .match(/[\p{L}\p{N}]+(?:'[\p{L}]+)?/gu) ?? [];
+      const reusedExamples = result.targets.flatMap((target) => {
+        const example = target.candidateExample?.textEn;
+        const source = command.chapters
+          .flatMap((chapter) => chapter.sentences)
+          .find((sentence) => sentence.unitId === target.unitId)?.textEn;
+        if (!example || !source) return [];
+        const tokens = words(example);
+        return tokens.length >= 4 &&
+          ` ${words(source).join(" ")} `.includes(` ${tokens.join(" ")} `)
+          ? [
+              {
+                targetId: target.targetId,
+                reason: "EXAMPLE_REUSE",
+                explanationZh:
+                  "候选例句直接重复原重点句或其完整片段，请用不同情境的新例句。",
+              },
+            ]
+          : [];
+      });
+      if (reusedExamples.length)
+        throw new LearningTargetQualityError(result.targets, reusedExamples);
+      const issues = await this.reviewer.review(
+        { ...command, settings },
+        result.targets,
+      );
+      if (issues.length)
+        throw new LearningTargetQualityError(result.targets, issues);
+    }
+    return result;
   }
 }

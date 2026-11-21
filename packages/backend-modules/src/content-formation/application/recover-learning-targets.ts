@@ -3,6 +3,7 @@ import type { ContentGenerationSettingsReader } from "./generate-english-candida
 import {
   InvalidLearningTargetInputError,
   InvalidLearningTargetOutputError,
+  LearningTargetQualityError,
   type ExtractLearningTargets,
   type ExtractLearningTargetsCommand,
 } from "./extract-learning-targets.js";
@@ -25,27 +26,44 @@ export class RecoverLearningTargets {
   public constructor(
     private readonly strict: Pick<ExtractLearningTargets, "execute">,
     private readonly settings: ContentGenerationSettingsReader,
-    private readonly report: (event: LearningTargetRecoveryEvent) => void =
-      () => undefined,
+    private readonly report: (
+      event: LearningTargetRecoveryEvent,
+    ) => void = () => undefined,
   ) {}
 
   public async execute(command: ExtractLearningTargetsCommand) {
+    let qualityFailure: LearningTargetQualityError | undefined;
     try {
       return await this.strict.execute(command);
     } catch (error) {
       if (error instanceof InvalidLearningTargetInputError) throw error;
       if (!recoverable(error)) throw error;
+      if (error instanceof LearningTargetQualityError) qualityFailure = error;
       this.report(event("REPAIR_REQUESTED", error));
     }
 
+    await new Promise((resolve) =>
+      setTimeout(resolve, 100 + Math.floor(Math.random() * 151)),
+    );
     try {
       return await this.strict.execute({
         ...command,
         commandId: repairCommandId(command.commandId),
+        billingOperationId: command.billingOperationId ?? command.commandId,
+        ...(qualityFailure
+          ? {
+              qualityCorrection: {
+                previousTargets: qualityFailure.previousTargets,
+                issues: qualityFailure.issues,
+              },
+            }
+          : {}),
       });
     } catch (error) {
       if (error instanceof InvalidLearningTargetInputError) throw error;
       if (!recoverable(error) || command.requestedExpression) throw error;
+      if (qualityFailure || error instanceof LearningTargetQualityError)
+        throw error;
       this.report(event("SAFE_FALLBACK_USED", error));
     }
 
@@ -53,10 +71,7 @@ export class RecoverLearningTargets {
     return {
       targets: [],
       queryableExpressions: [],
-      learningScopes: [
-        current.basicVocabulary,
-        ...current.purposeVocabularies,
-      ],
+      learningScopes: [current.basicVocabulary, ...current.purposeVocabularies],
     };
   }
 }

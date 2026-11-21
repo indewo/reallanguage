@@ -46,6 +46,12 @@ export class HttpLearningTargetProvider implements LearningTargetProvider {
         "Content-Type": "application/json",
         "Idempotency-Key": command.commandId,
         "X-RealLanguage-Account-Id": command.accountId,
+        ...(command.billingOperationId
+          ? {
+              "X-RealLanguage-Operation-Id": command.billingOperationId,
+              "X-RealLanguage-Call-Type": "AUTOMATIC_RETRY",
+            }
+          : {}),
       },
       body: JSON.stringify({
         task: "LEARNING_TARGET_EXTRACTION_V1",
@@ -53,6 +59,9 @@ export class HttpLearningTargetProvider implements LearningTargetProvider {
           chapters: command.chapters,
           settings: command.settings,
           requestedExpression: command.requestedExpression ?? null,
+          ...(command.qualityCorrection
+            ? { qualityCorrection: command.qualityCorrection }
+            : {}),
         },
       }),
     });
@@ -82,8 +91,7 @@ export class HttpLearningTargetProvider implements LearningTargetProvider {
             );
           return target;
         }),
-        queryableExpressions:
-          value.queryableExpressions.map(parseExpression),
+        queryableExpressions: value.queryableExpressions.map(parseExpression),
       };
     } catch (error) {
       if (error instanceof InvalidLearningTargetProviderOutputError)

@@ -97,6 +97,7 @@ import {
   HttpChapterContextProvider,
   HttpEnglishCandidateProvider,
   HttpLearningTargetProvider,
+  HttpLearningTargetQualityReviewer,
   HttpSemanticUnitSplitProvider,
   KyselyContentGenerationSettingsReader,
   RecoverLearningTargets,
@@ -791,6 +792,10 @@ export const createProductionApiModule = (
               },
               contentMeteredFetch,
             ),
+            new HttpLearningTargetQualityReviewer(
+              { endpoint: config.contentFormation.providerEndpoint, apiKey: config.contentFormation.providerApiKey },
+              contentMeteredFetch,
+            ),
           );
           return new RecoverLearningTargets(
             strict,
@@ -1135,6 +1140,7 @@ const aiOperationLabelsZh: Readonly<Record<string, string>> = {
   ENGLISH_CANDIDATE_GENERATION_V1: "生成英语表达",
   ENGLISH_FIDELITY_CHECK_V1: "检查英语忠实度",
   LEARNING_TARGET_EXTRACTION_V1: "提取学习目标",
+  LEARNING_TARGET_QUALITY_V1: "核对学习目标质量",
   KNOWLEDGE_EXAMPLE_GENERATION_V1: "生成知识例句",
   SENTENCE_EXPLANATION_V1: "生成句子讲解",
   WORD_EXPLANATION_V1: "生成表达讲解",

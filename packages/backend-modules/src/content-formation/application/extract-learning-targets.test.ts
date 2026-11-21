@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ExtractLearningTargets } from "./extract-learning-targets.js";
+import {
+  ExtractLearningTargets,
+  LearningTargetQualityError,
+} from "./extract-learning-targets.js";
 const settings = {
   formalityLevel: 3,
   slangEnabled: false,
@@ -41,20 +44,119 @@ const target = {
   selectedByDefault: true as const,
 };
 describe("ExtractLearningTargets", () => {
-  it.each(["tomorrow morning", "Next week", "this afternoon", "to tomorrow morning", "by next week"])("omits compositional calendar suggestions without dropping real vocabulary: %s", async (display) => {
-    const app = new ExtractLearningTargets({ read: async () => settings }, { extract: async () => ({
-      targets: [target, { ...target, targetId: "calendar", display, type: "FIXED_EXPRESSION" as const }],
-      queryableExpressions: [{ expressionId: "calendar", unitId: "u1", display }],
-    }) });
-    const result = await app.execute(command);
-    expect(result.targets).toEqual([target]);
-    expect(result.queryableExpressions).toEqual([]);
+  it("rejects a copied source clause even if an independent reviewer would approve it", async () => {
+    const copied = {
+      ...target,
+      candidateExample: {
+        textEn: "I was happy after the news.",
+        textZh: "听到消息后我很高兴。",
+      },
+    };
+    let called = false;
+    const app = new ExtractLearningTargets(
+      { read: async () => settings },
+      {
+        extract: async () => ({ targets: [copied], queryableExpressions: [] }),
+      },
+      {
+        review: async () => {
+          called = true;
+          return [];
+        },
+      },
+    );
+    await expect(
+      app.execute({
+        ...command,
+        chapters: [
+          {
+            chapterId: "c1",
+            sentences: [
+              {
+                unitId: "u1",
+                textEn: copied.candidateExample.textEn,
+                textZh: copied.candidateExample.textZh,
+                isFocus: true,
+              },
+            ],
+          },
+        ],
+      }),
+    ).rejects.toMatchObject({ issues: [{ reason: "EXAMPLE_REUSE" }] });
+    expect(called).toBe(false);
   });
-  it.each(["on time", "in time", "day by day"])("keeps lexical fixed expressions: %s", async (display) => {
-    const candidate = { ...target, display, type: "FIXED_EXPRESSION" as const };
-    const app = new ExtractLearningTargets({ read: async () => settings }, { extract: async () => ({ targets: [candidate], queryableExpressions: [] }) });
-    expect((await app.execute(command)).targets).toEqual([candidate]);
+  it("blocks structurally valid targets rejected by the independent quality review", async () => {
+    const issues = [
+      {
+        targetId: "t1",
+        reason: "EXAMPLE_GRAMMAR",
+        explanationZh: "例句不自然",
+      },
+    ];
+    const app = new ExtractLearningTargets(
+      { read: async () => settings },
+      {
+        extract: async () => ({ targets: [target], queryableExpressions: [] }),
+      },
+      { review: async () => issues },
+    );
+    await expect(app.execute(command)).rejects.toBeInstanceOf(
+      LearningTargetQualityError,
+    );
   });
+  it.each([
+    "tomorrow morning",
+    "Next week",
+    "this afternoon",
+    "to tomorrow morning",
+    "by next week",
+  ])(
+    "omits compositional calendar suggestions without dropping real vocabulary: %s",
+    async (display) => {
+      const app = new ExtractLearningTargets(
+        { read: async () => settings },
+        {
+          extract: async () => ({
+            targets: [
+              target,
+              {
+                ...target,
+                targetId: "calendar",
+                display,
+                type: "FIXED_EXPRESSION" as const,
+              },
+            ],
+            queryableExpressions: [
+              { expressionId: "calendar", unitId: "u1", display },
+            ],
+          }),
+        },
+      );
+      const result = await app.execute(command);
+      expect(result.targets).toEqual([target]);
+      expect(result.queryableExpressions).toEqual([]);
+    },
+  );
+  it.each(["on time", "in time", "day by day"])(
+    "keeps lexical fixed expressions: %s",
+    async (display) => {
+      const candidate = {
+        ...target,
+        display,
+        type: "FIXED_EXPRESSION" as const,
+      };
+      const app = new ExtractLearningTargets(
+        { read: async () => settings },
+        {
+          extract: async () => ({
+            targets: [candidate],
+            queryableExpressions: [],
+          }),
+        },
+      );
+      expect((await app.execute(command)).targets).toEqual([candidate]);
+    },
+  );
   it.each([[" "], ["be", "\n"], ["\u00a0\u3000"], [""]])(
     "rejects blank structure even behind a typed provider %j",
     async (...structureParts) => {

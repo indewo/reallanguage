@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   InvalidLearningTargetInputError,
   InvalidLearningTargetOutputError,
+  LearningTargetQualityError,
   type ExtractLearningTargetsCommand,
 } from "./extract-learning-targets.js";
 import { RecoverLearningTargets } from "./recover-learning-targets.js";
@@ -37,6 +38,27 @@ const delivered = {
 };
 
 describe("RecoverLearningTargets", () => {
+  it("passes rejected quality evidence to one metered repair and never hides a repeated failure as empty success", async () => {
+    const issues = [
+      {
+        targetId: "t1",
+        reason: "NOT_LEXICALIZED",
+        explanationZh: "自由介词短语",
+      },
+    ];
+    const error = new LearningTargetQualityError([], issues);
+    const execute = vi.fn().mockRejectedValue(error);
+    const recovery = new RecoverLearningTargets(
+      { execute },
+      { read: async () => settings },
+    );
+    await expect(recovery.execute(command)).rejects.toBe(error);
+    expect(execute).toHaveBeenCalledTimes(2);
+    expect(execute.mock.calls[1]![0]).toMatchObject({
+      billingOperationId: command.commandId,
+      qualityCorrection: { previousTargets: [], issues },
+    });
+  });
   it("uses a stable independent repair delivery after semantic validation fails", async () => {
     const execute = vi
       .fn()

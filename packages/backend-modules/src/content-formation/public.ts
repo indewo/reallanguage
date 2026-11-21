@@ -45,6 +45,7 @@ export {
   HttpLearningTargetProvider,
   InvalidLearningTargetProviderOutputError,
 } from "./infrastructure/http-learning-target-provider.js";
+export { HttpLearningTargetQualityReviewer } from "./infrastructure/http-learning-target-quality-reviewer.js";
 export {
   RecoverLearningTargets,
   type LearningTargetRecoveryEvent,

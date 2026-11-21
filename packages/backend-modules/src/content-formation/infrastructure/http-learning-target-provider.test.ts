@@ -60,6 +60,29 @@ const provider = (output: unknown) => {
 };
 
 describe("HttpLearningTargetProvider source alignment", () => {
+  it("marks correction as a retry of the same billing operation", async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async () => new Response(JSON.stringify(delivery(target("happy", 7)))),
+    );
+    const service = new HttpLearningTargetProvider(
+      { endpoint: "https://test.invalid", apiKey: "test" },
+      fetcher,
+    );
+    const qualityCorrection = { previousTargets: [], issues: [] };
+    await service.extract({
+      ...command("I feel happy."),
+      billingOperationId: "root-operation",
+      qualityCorrection,
+    });
+    expect(fetcher.mock.calls[0]![1]?.headers).toMatchObject({
+      "X-RealLanguage-Operation-Id": "root-operation",
+      "X-RealLanguage-Call-Type": "AUTOMATIC_RETRY",
+    });
+    expect(
+      JSON.parse(String(fetcher.mock.calls[0]![1]?.body)).input
+        .qualityCorrection,
+    ).toEqual(qualityCorrection);
+  });
   it.each([[], [" "], ["drink", "\n"], ["\u00a0\u3000"], [1], [null], [{}]])(
     "rejects invalid provider pattern structure %j after one request",
     async (...structureParts) => {
