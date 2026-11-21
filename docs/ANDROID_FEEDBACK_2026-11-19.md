@@ -1,5 +1,11 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 计量身份排查及场景输出结构约束补齐
+
+读回MeteredProviderFetchAdapter确认Idempotency-Key原值作为operationId/commandId、完整body.input继续传入，交付身份还包含input；没有证据支持“独立命令被适配器合并为旧缓存”，先前只是排查假设。实际返回问答、改回同意后新请求47caaddc-93e0-41a3-8f54-ce9e0c96bf36失败原因是Invalid scene generation output（draftId/contentType/units数量校验），与之前重复内容失败不同。
+
+继续强化所有对话生成（非仅重生成）的角色/言语行为边界，禁止把可行性提问变承诺、建议变同意。该指令部署provider SHA256 6149e9358f50b2be4b55416c28615f40e2cb5e8ad3b596407b0456b8632c8d99，尚未获得正确内容证据。代码检查另发现generationFormat未给场景对话/文章任务配置结构schema，只用json_object；现补draftId、固定contentType、3至remainingContentBudget条unit、角色枚举/文章null及factReferences结构，兼容chat路径也会携带该schema。新增两项结构传输测试，提供器59项通过、API构建通过；此schema修复当前尚未部署上机，不宣称消除失真或全部格式错误。手机仍停在可返回问答的生成失败页，原始回答保留。
+
 ### 改答后的真实生成与重生成重复问题继续定位
 
 从失败页返回问答→上一问，最后回答勾选仍保留；将助手QA最后回答改为“建议推迟至明天上午”并提交，实际进入新的中文确认。生成却把对方的建议放到我方，并增加对方同意改期，未通过（rl-scene-delay-wrong-role-1121.png仅Temp）。未确认内容。修正对话重生成指令中“改变对话推进”的冲突要求，改为保持原回合角色/意图/事实范围，仅换自然说法，明确建议推迟不等于达成改期；API构建和提供器57项既有回归通过。已部署provider SHA256 654f8390bb5ed2633a25d14df55545fccc372ca72a973aa2adaea9254af0860e，健康ok。

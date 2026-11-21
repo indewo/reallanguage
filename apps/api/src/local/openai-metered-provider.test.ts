@@ -16,6 +16,16 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it.each(["SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1"])("supplies a bounded scene output schema for %s", async (task) => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: "{}" })));
+    const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);
+    await client.generateJson(task, { remainingContentBudget: 6 });
+    const format = JSON.parse(String(fetcher.mock.calls[0]![1].body)).text.format;
+    expect(format.type).toBe("json_schema");
+    expect(format.schema.required).toEqual(["draftId", "contentType", "units"]);
+    expect(format.schema.properties.units).toMatchObject({ minItems: 3, maxItems: 6 });
+    expect(format.schema.properties.units.items.properties.speaker).toEqual(task === "SCENE_DIALOGUE_TURN_V1" ? { type: "string", enum: ["USER", "OTHER"] } : { type: "null" });
+  });
   it("requires a reread when acoustic evidence is unintelligible even with matching ASR and high confidence", async () => {
     const fetcher = vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
