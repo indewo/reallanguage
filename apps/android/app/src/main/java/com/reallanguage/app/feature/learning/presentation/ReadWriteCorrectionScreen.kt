@@ -59,7 +59,7 @@ fun ReadWriteCorrectionScreen(
             val points = remember { mutableStateListOf<Offset?>() }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text("在纸面上抄写当前句", color = RlColor.TextSecondary, fontSize = 14.sp)
+                Text("抄写当前句 · 右侧留白可滚动", color = RlColor.TextSecondary, fontSize = 14.sp)
                 TextButton(onClick = { points.clear() }, enabled = !state.saving && points.isNotEmpty(),
                     modifier = Modifier.testTag("correction-clear")) { Text("清空重写") }
             }
