@@ -66,7 +66,6 @@ class LearningTargetScreenTest {
         composeRule.onNodeWithTag("formation_chapter_badge", useUnmergedTree = true)
             .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
         org.junit.Assert.assertEquals(1, layouts.single().lineCount)
-        org.junit.Assert.assertFalse(layouts.single().hasVisualOverflow)
         val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
         instrumentation.uiAutomation.takeScreenshot().let { bitmap ->
             java.io.File(instrumentation.targetContext.getExternalFilesDir(null), "target-two-cards.png").outputStream().use {
@@ -74,6 +73,8 @@ class LearningTargetScreenTest {
             }
             bitmap.recycle()
         }
+        val badgeLayout = layouts.single()
+        org.junit.Assert.assertFalse("Badge overflow: size=${badgeLayout.size}, paragraph=${badgeLayout.multiParagraph.width}x${badgeLayout.multiParagraph.height}", badgeLayout.hasVisualOverflow)
     }
 
     @Test fun narrowDoubleFontCategoryLabelsRemainInsideTheirIndependentRibbons() {
