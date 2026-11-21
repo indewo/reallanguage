@@ -59,6 +59,9 @@ export class LearningExplanationController {
         }),
       );
     const optional = {
+      ...(parsed.data.retryOfCommandId !== undefined
+        ? { retryOfCommandId: parsed.data.retryOfCommandId }
+        : {}),
       ...(parsed.data.lockedTargets !== undefined
         ? { lockedTargets: parsed.data.lockedTargets }
         : {}),

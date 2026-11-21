@@ -27,6 +27,7 @@ export type LearningExplanationCommand = Readonly<{
   lockedTargets?: readonly LockedExplanationTarget[] | undefined;
   requestedExpression?: PositionalExplanationExpression;
   commandId: string;
+  retryOfCommandId?: string;
 }>;
 export type LearningExplanationProviderCommand = LearningExplanationCommand &
   Readonly<{ settings: ContentGenerationSettings }>;
@@ -45,6 +46,11 @@ export class GenerateLearningExplanation {
         sentence.sentenceId === command.focusSentenceId && sentence.isFocus,
     );
     if (
+      (command.retryOfCommandId !== undefined &&
+        (!command.retryOfCommandId.trim() ||
+          command.retryOfCommandId === command.commandId ||
+          command.round !== 1 ||
+          !command.requestedExpression)) ||
       !focus ||
       command.chapter.sentences.length > 4 ||
       command.round < 1 ||

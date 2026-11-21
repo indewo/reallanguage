@@ -15,6 +15,12 @@ export class HttpLearningExplanationProvider implements LearningExplanationProvi
         "Content-Type": "application/json",
         "Idempotency-Key": command.commandId,
         "X-RealLanguage-Account-Id": command.accountId,
+        ...(command.retryOfCommandId
+          ? {
+              "X-RealLanguage-Call-Type": "USER_RETRY",
+              "X-RealLanguage-Operation-Id": command.retryOfCommandId,
+            }
+          : {}),
       },
       body: JSON.stringify({
         task: command.requestedExpression

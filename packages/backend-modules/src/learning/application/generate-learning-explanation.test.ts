@@ -41,6 +41,32 @@ describe("GenerateLearningExplanation", () => {
     requestedExpression: { expressionId: "x1", display: "happy" },
   };
 
+  it.each([
+    {
+      retryOfCommandId: command.commandId,
+      requestedExpression: expressionCommand.requestedExpression,
+    },
+    {
+      retryOfCommandId: "original",
+      round: 2,
+      existingBaseExplanationZh: "old",
+      requestedExpression: expressionCommand.requestedExpression,
+    },
+    { retryOfCommandId: "original" },
+  ])(
+    "invalid regeneration never reaches the paid provider: %j",
+    async (extra) => {
+      const generate = vi.fn();
+      const app = new GenerateLearningExplanation(
+        { read: async () => settings },
+        { generate },
+      );
+      await expect(app.execute({ ...command, ...extra })).rejects.toThrow(
+        "Invalid learning explanation input",
+      );
+      expect(generate).not.toHaveBeenCalled();
+    },
+  );
   it.each([details.expressionHintZh, null])(
     "delivers separate contextual meaning and usage with an optional useful hint: %s",
     async (expressionHintZh) => {

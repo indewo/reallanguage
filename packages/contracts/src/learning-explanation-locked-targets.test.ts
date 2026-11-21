@@ -124,3 +124,37 @@ describe("locked learning explanation context", () => {
     expect(learningExplanationResultSchema.parse(value)).toEqual(value);
   });
 });
+
+describe("explicit word explanation regeneration", () => {
+  it("keeps the original command association for an explicit new word request", () => {
+    const value = {
+      ...base,
+      requestedExpression,
+      commandId: "new-attempt",
+      retryOfCommandId: base.commandId,
+    };
+    expect(learningExplanationRequestSchema.parse(value)).toEqual(value);
+  });
+  it.each([
+    {
+      retryOfCommandId: base.commandId,
+      commandId: base.commandId,
+      requestedExpression,
+    },
+    { retryOfCommandId: "original" },
+    {
+      retryOfCommandId: "original",
+      requestedExpression,
+      round: 2,
+      existingBaseExplanationZh: "old",
+    },
+  ])(
+    "rejects an invalid regeneration before it reaches generation: %j",
+    (extra) => {
+      expect(
+        learningExplanationRequestSchema.safeParse({ ...base, ...extra })
+          .success,
+      ).toBe(false);
+    },
+  );
+});

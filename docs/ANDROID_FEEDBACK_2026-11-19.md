@@ -1,5 +1,16 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 错误词语讲解重生：服务端合同与计费关联基础（未完成验收）
+
+0a343fb后继续处理原development错误缓存。现行客户端稳定缓存键与后台commandId可防重复调用，但没有显式重新获取讲解入口，不能靠修改prompt、删缓存或自动换版本键修复旧结果。开始补充显式重生链路，本批仅完成后端基础，不把原错误结果描述成已恢复。
+
+learningExplanationRequestSchema新增可选retryOfCommandId；只允许requestedExpression存在、round=1、且新commandId不同于父命令的显式词语请求。GenerateLearningExplanation在应用层重复校验非法组合，付费provider前拒绝空父ID、相同ID、整句或后续轮次重生。controller转发通过校验的字段；HttpLearningExplanationProvider保留新commandId作为Idempotency-Key，明确携USER_RETRY与父命令X-RealLanguage-Operation-Id。普通调用无变化，不免除实际模型费用、不把新调用伪装成技术重放，不添加自动重试或供应商切换。本关联只用于同账号计量分组，未新增旧父命令存在性查询/资格证明，不能声称已经完成完整重生授权校验。
+
+新增合同允许/拒绝用例、应用层无效请求绝不触发provider用例、适配器新幂等身份/账号/手动类型/原操作关联及单次调用用例。限定测试49项通过：contracts21、backend application26+adapter2；contracts/backend/api三包tsc build通过。测试均为隔离合同与适配测试，不是真实手机重生或真实计费验收。格式化只保留当前解释schema区域及受影响文件，未批量改变无关合同。
+
+本批不部署此新合同和重生功能；公网仍使用上一批已验证的provider e08327ae，手机仍为来源诊断APK f821ea65。接续必须实现客户端显式入口、请求修订身份持久化、重复点击/中断后同请求恢复、原结果保留及成功后的显示/进度快照更新，然后实际手机重生development、重开检查并核对计费关联。原超时对账恢复属于另一问题，不能以该新请求机制绕过RECONCILIATION_REQUIRED或释放旧预留。C12及整体反馈仍未关闭。
+
+
 ### development错义来源定位与准确跨度规则部署（2026-11-21）
 
 08c9449当前分支，未覆盖无关dirty。为了区分锁定义与新生成，在HttpExplanationReadingProvider debug分支只加来源布尔标记RLMeaningSource：lockedContext/direct/related，不记录正文、词、ID、账号、token或响应。APK SHA256 f821ea6544ce5f8f5809c91a959ccc62111a5b92bccdbb3f25dadfc03ffade0c，assembleDebug通过且保留数据覆盖成功。实际恢复原QA章，先点requirements再点development，logcat对应16:10:48.737/16:10:51.336均lockedContext=true direct=false related=false；当前development仍为开发排期。故不是命中已确认目标/关联词义，而是本次词语解释生成把scheduling含义并入。没有手改当前结果、删除缓存或重新标掌握。

@@ -721,42 +721,55 @@ export const lockedExplanationTargetSchema = z
       target.sourceEvidence === null ||
       target.structureParts.length > 0,
   );
-export const learningExplanationRequestSchema = z.object({
-  chapter: z.object({
-    chapterId: z.string().min(1).max(128),
-    sentences: z.array(fixedExplanationSentenceSchema).min(1).max(4),
-  }),
-  focusSentenceId: z.string().min(1).max(128),
-  round: z.number().int().min(1).max(3),
-  existingBaseExplanationZh: z.string().min(1).optional(),
-  lockedTargets: z.array(lockedExplanationTargetSchema).optional(),
-  requestedExpression: z
-    .object({
-      expressionId: z.string().min(1).max(128),
-      display: z.string().min(1),
-      startUtf16: z
-        .number()
-        .int()
-        .nonnegative()
-        .max(Number.MAX_SAFE_INTEGER)
-        .optional(),
-      endUtf16: z
-        .number()
-        .int()
-        .positive()
-        .max(Number.MAX_SAFE_INTEGER)
-        .optional(),
-    })
-    .refine(
-      (value) =>
-        (value.startUtf16 === undefined && value.endUtf16 === undefined) ||
-        (value.startUtf16 !== undefined &&
-          value.endUtf16 !== undefined &&
-          value.endUtf16 > value.startUtf16),
-    )
-    .optional(),
-  commandId: commandIdSchema,
-});
+export const learningExplanationRequestSchema = z
+  .object({
+    chapter: z.object({
+      chapterId: z.string().min(1).max(128),
+      sentences: z.array(fixedExplanationSentenceSchema).min(1).max(4),
+    }),
+    focusSentenceId: z.string().min(1).max(128),
+    round: z.number().int().min(1).max(3),
+    existingBaseExplanationZh: z.string().min(1).optional(),
+    lockedTargets: z.array(lockedExplanationTargetSchema).optional(),
+    requestedExpression: z
+      .object({
+        expressionId: z.string().min(1).max(128),
+        display: z.string().min(1),
+        startUtf16: z
+          .number()
+          .int()
+          .nonnegative()
+          .max(Number.MAX_SAFE_INTEGER)
+          .optional(),
+        endUtf16: z
+          .number()
+          .int()
+          .positive()
+          .max(Number.MAX_SAFE_INTEGER)
+          .optional(),
+      })
+      .refine(
+        (value) =>
+          (value.startUtf16 === undefined && value.endUtf16 === undefined) ||
+          (value.startUtf16 !== undefined &&
+            value.endUtf16 !== undefined &&
+            value.endUtf16 > value.startUtf16),
+      )
+      .optional(),
+    commandId: commandIdSchema,
+    retryOfCommandId: commandIdSchema.optional(),
+  })
+  .refine(
+    (value) =>
+      value.retryOfCommandId === undefined ||
+      (value.retryOfCommandId !== value.commandId &&
+        value.round === 1 &&
+        value.requestedExpression !== undefined),
+    {
+      message:
+        "Only an explicit word explanation may be regenerated under a new command",
+    },
+  );
 export const learningExplanationResultSchema = z
   .discriminatedUnion("kind", [
     z.object({ kind: z.literal("SENTENCE"), explanationZh: z.string().min(1) }),
