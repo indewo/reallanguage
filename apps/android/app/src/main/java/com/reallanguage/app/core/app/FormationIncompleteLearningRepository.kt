@@ -37,10 +37,14 @@ class FormationIncompleteLearningRepository(
         return IncompleteLearningLoadResult.Ready(chapters.entries + pending.map { source ->
             IncompleteLearningEntry(
                 learningId = source.sourceEntryId,
-                sourceType = when (source.sourceType) {
+                sourceType = when (source.captureSourceKind) {
+                    "SCREENSHOT" -> OrdinarySourceType.SCREENSHOT
+                    "AUDIO_IMPORT" -> OrdinarySourceType.AUDIO_IMPORT
+                    else -> when (source.sourceType) {
                     SourceType.DIARY -> OrdinarySourceType.DIARY
                     SourceType.RECORDING -> OrdinarySourceType.QUICK_RECORDING
                     SourceType.AI_SCENE -> OrdinarySourceType.AI_SCENE
+                    }
                 },
                 sourceLabelZh = source.title,
                 chapterNumber = null,

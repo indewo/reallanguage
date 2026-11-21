@@ -1,3 +1,13 @@
+### 2026-11-21 截图/音频导入草稿来源显示修复（非C27识别验收）
+
+未完成列表此前仅按legacy SourceType分类，SCREENSHOT落DIARY，AUDIO_IMPORT落RECORDING。EncryptedFormationRecoveryRepository.list现在从已校验并解密的snapshot.bilingual.sourceKind读可选captureSourceKind传入列表项；FormationIncompleteLearningRepository优先保留SCREENSHOT/AUDIO_IMPORT，其他/无元数据沿用旧分类，不从标题推断。UI新增对话截图/导入音频标签，截图用图片图标，沿用现有纸签/颜色，不重设计列表。没有改变安全SourceType枚举、存储schema、恢复ID/阶段/内容或旧加密记录。
+
+新增隔离测试覆盖截图、导入音频和缺元数据旧记录并列、身份和未正式成章不变，FormationIncompleteLearningRepository7项通过，assembleDebug通过；不能用此证明音频导入真实流程。APK SHA25668b2b456ac91fa011c089ea0c055753c054954c7a01709aa31631af5748888d0，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa覆盖Success。
+
+真实OPPO首页→未完成7条→滚动到已有OCR QA草稿我们明天上午十点开会。截图rl-source-label-1121.png实看对话截图与图片图标完整，阶段仍生成学习目标/尚未确认。再点继续实际恢复原目标提取请求，显示本次请求需要核对/原文和选择已保留。这个旧504后费用状态仍未恢复，未换命令/解除计费/另生成。未新建章节、未改变掌握进度。音频导入分支本轮仅隔离测试，未真机有对应草稿；已确认成章的历史来源分类不在本修复范围。
+
+重新查看原C27 image29证实昵称/时间/图标被当短句及中文识别错字，来源标签修复不能解决这些，C27继续未验收。原聊天输入图仍缺，不把反馈结果页作为原聊天输入。页面增量：未完成列表截图来源改完并真实恢复入口实看；音频来源真实样本、OCR准确性及目标失败恢复未改完。
+
 ### 2026-11-21 A15共用学习页圆孔漏启用修复与原记录实看
 
 从首页未完成列表实际滚到原快速录音章，仍停8/9完整书写。完整书写截图rl-complete-writing-1121.png中顶部孔为横椭圆；ChapterLearningFrame默认preserveLedgerHoleAspect=false，只有朗读/共同学习个别页显式启用拆分纸面与圆孔条。将共用框架及LearningSentenceLedger默认改true，使用已有原比例圆孔素材，不重画设计、不动文字/控件布局。assembleDebug通过；此视觉默认值修改未添加镜像实现断言，用真实渲染验证。

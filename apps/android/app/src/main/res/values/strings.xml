@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="incomplete_source_screenshot">对话截图</string>
+    <string name="incomplete_source_audio_import">导入音频</string>
     <string name="app_name">RealLanguage</string>
     <string name="engineering_skeleton">RealLanguage engineering skeleton</string>
     <string name="auth_login">登录</string>

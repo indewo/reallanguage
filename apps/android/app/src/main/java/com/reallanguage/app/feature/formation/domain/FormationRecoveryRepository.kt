@@ -8,6 +8,7 @@ data class FormationRecoveryItem(
     val phase: FormationRecoveryPhase,
     val sourceType: SourceType,
     val title: String,
+    val captureSourceKind: String? = null,
 )
 
 sealed interface FormationRecoveryLoad {

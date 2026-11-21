@@ -9,6 +9,19 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class FormationIncompleteLearningRepositoryTest {
+    @Test fun captureMetadataKeepsScreenshotAndAudioImportDistinctFromTheirLegacyTypes() = runTest {
+        val items = listOf(
+            item.copy(sourceEntryId = "screenshot", captureSourceKind = "SCREENSHOT"),
+            item.copy(sourceEntryId = "import", sourceType = SourceType.RECORDING, captureSourceKind = "AUDIO_IMPORT"),
+            item.copy(sourceEntryId = "legacy"),
+        )
+        val repo = FormationIncompleteLearningRepository({ IncompleteLearningLoadResult.Ready(emptyList()) },
+            formation { FormationRecoveryList.Listed(items) })
+        val rows = (repo.loadOrdinaryLearning() as IncompleteLearningLoadResult.Ready).entries
+        assertEquals(listOf(OrdinarySourceType.SCREENSHOT, OrdinarySourceType.AUDIO_IMPORT, OrdinarySourceType.DIARY), rows.map { it.sourceType })
+        assertEquals(items.map { it.sourceEntryId }, rows.map { it.learningId })
+        assertTrue(rows.all { it.kind == ResumeLearningKind.FORMATION && it.chapterNumber == null })
+    }
     private val ordinary = IncompleteLearningEntry("chapter", OrdinarySourceType.DIARY, "已固定日记", 1, "LR-02", "基础讲解与三轮朗读", ResumeLearningKind.ORDINARY)
     private val item = FormationRecoveryItem("forming-source", 4, FormationRecoveryPhase.LEARNING_TARGET_SELECTION, SourceType.DIARY, "已确认但未固定日记")
     private fun formation(load: suspend () -> FormationRecoveryList) = object : FormationRecoveryRepository {

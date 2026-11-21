@@ -1,6 +1,6 @@
 package com.reallanguage.app.feature.home.domain
 
-enum class OrdinarySourceType { DIARY, QUICK_RECORDING, AI_SCENE }
+enum class OrdinarySourceType { DIARY, QUICK_RECORDING, AI_SCENE, SCREENSHOT, AUDIO_IMPORT }
 enum class ResumeLearningKind { ORDINARY, UNIFIED_REVIEW, FORMATION }
 
 data class IncompleteLearningEntry(

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -295,6 +296,8 @@ private fun OrdinarySourceType.visual(): IncompleteVisual = when (this) {
     OrdinarySourceType.DIARY -> IncompleteVisual(RlColor.ActionVivid, Icons.Outlined.CalendarMonth)
     OrdinarySourceType.QUICK_RECORDING -> IncompleteVisual(RlColor.Secondary, Icons.Outlined.GraphicEq)
     OrdinarySourceType.AI_SCENE -> IncompleteVisual(RlColor.NoteAccent, Icons.Outlined.AutoAwesome)
+    OrdinarySourceType.SCREENSHOT -> IncompleteVisual(RlColor.NoteAccent, Icons.Outlined.PhotoLibrary)
+    OrdinarySourceType.AUDIO_IMPORT -> IncompleteVisual(RlColor.Secondary, Icons.Outlined.GraphicEq)
 }
 
 @Composable
@@ -302,4 +305,6 @@ private fun OrdinarySourceType.label(): String = stringResource(when (this) {
     OrdinarySourceType.DIARY -> R.string.today_review_source_diary
     OrdinarySourceType.QUICK_RECORDING -> R.string.today_review_source_recording
     OrdinarySourceType.AI_SCENE -> R.string.today_review_source_ai_scene
+    OrdinarySourceType.SCREENSHOT -> R.string.incomplete_source_screenshot
+    OrdinarySourceType.AUDIO_IMPORT -> R.string.incomplete_source_audio_import
 })

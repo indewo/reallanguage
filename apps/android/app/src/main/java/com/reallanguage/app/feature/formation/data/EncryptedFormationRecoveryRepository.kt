@@ -71,7 +71,7 @@ class EncryptedFormationRecoveryRepository(
                         ?: return@withContext FormationRecoveryList.Unavailable
                     if (loaded.revision != identity.revision) return@withContext FormationRecoveryList.Unavailable
                     items += FormationRecoveryItem(loaded.snapshot.sourceEntryId, loaded.revision, loaded.snapshot.phase,
-                        loaded.snapshot.source.sourceType, loaded.snapshot.sourceTitle)
+                        loaded.snapshot.source.sourceType, loaded.snapshot.sourceTitle, loaded.snapshot.bilingual?.sourceKind)
                 }
                 // A late logout/switch must also invalidate an empty or already-decoded list.
                 val after = store.list(accountSubjectHash) as? FormationPayloadListing.Listed
