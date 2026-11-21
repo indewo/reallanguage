@@ -16,6 +16,21 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it.each([
+    ["https://dashscope.aliyuncs.com/compatible-mode/v1", "dashscope"],
+    ["https://dashscope-intl.aliyuncs.com/compatible-mode/v1", "dashscope"],
+    ["https://api.openai.com/v1", "openai"],
+    ["https://private-gateway.example.test/v1", "openai-compatible"],
+  ])("labels text receipts by endpoint vendor for %s", async (endpoint, namespace) => {
+    vi.stubEnv("OPENAI_BASE_URL", endpoint);
+    vi.stubEnv("OPENAI_MODEL", "test-model");
+    try {
+      const provider = new LocalOpenAiMeteredProvider({ generateJson: vi.fn().mockResolvedValue({}), transcribe: vi.fn() });
+      const request = command("WORD_EXPLANATION_V1");
+      const quote = await provider.quote(request);
+      expect((await provider.execute({ ...request, providerAttemptId: quote.providerAttemptId })).receipt.modelSource).toBe(`${namespace}/test-model`);
+    } finally { vi.unstubAllEnvs(); }
+  });
   it("keeps internal billing and account identity out of the scene auditor model input", async () => {
     const generateJson = vi.fn().mockResolvedValue({ decision: "PASS", issues: [] });
     const provider = new LocalOpenAiMeteredProvider({ generateJson, transcribe: vi.fn() });

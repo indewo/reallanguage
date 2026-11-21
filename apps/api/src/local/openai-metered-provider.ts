@@ -44,6 +44,11 @@ const openAiBaseUrl = (): string =>
   );
 const openAiTextModel = (): string =>
   process.env.OPENAI_MODEL ?? "gpt-5.4-mini";
+const textProviderNamespace = (): string => {
+  const host = new URL(openAiBaseUrl()).hostname.toLowerCase();
+  if (["dashscope.aliyuncs.com", "dashscope-intl.aliyuncs.com", "dashscope-us.aliyuncs.com"].includes(host)) return "dashscope";
+  return host === "api.openai.com" ? "openai" : "openai-compatible";
+};
 const textModelForTask = (task: string, fallback = openAiTextModel()): string =>
   ["SCENE_NEXT_QUESTION_V1", "SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1", "SCENE_DRAFT_FIDELITY_V1"].includes(task)
     ? process.env.OPENAI_SCENE_MODEL?.trim() || fallback
@@ -1023,7 +1028,7 @@ export class LocalOpenAiMeteredProvider implements MeteredProviderGateway {
               ? `openai/${openAiAudioChatModel()}`
               : command.task === "SPEAKING_TRANSCRIPTION_V1"
                 ? `openai/${openAiTranscribeModel()}`
-                : `openai/${textModelForTask(command.task)}`,
+                : `${textProviderNamespace()}/${textModelForTask(command.task)}`,
         providerCostMicroCny: 1,
       },
     };
