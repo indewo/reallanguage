@@ -160,7 +160,10 @@ class CompleteWritingViewModel(
                     mutableUiState.update { it.copy(saving = false) }
                     return@launch
                 }
-                when (repository.saveFinalBatch(current.chapter.chapterId, result)) {
+                val saved = try { repository.saveFinalBatch(current.chapter.chapterId, result) }
+                catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { CompleteWritingSaveResult.Failed }
+                when (saved) {
                     CompleteWritingSaveResult.Saved -> mutableUiState.update {
                         it.copy(saving = false, finalResult = result)
                     }

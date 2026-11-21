@@ -34,6 +34,31 @@ class CompleteWritingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun thrownFinalSavePreservesAnswersAndReleasesControlsForExplicitRetry() = runTest(dispatcher) {
+        var calls = 0
+        val model = createViewModel(CompleteWritingRepository { _, _ ->
+            if (++calls == 1) throw java.io.IOException("interrupted")
+            CompleteWritingSaveResult.Saved
+        })
+        moveToFinal(model)
+        model.onAction(CompleteWritingAction.FinalInputChanged("s1", first.textEn))
+        model.onAction(CompleteWritingAction.FinalInputChanged("s2", second.textEn))
+        model.onAction(CompleteWritingAction.SubmitRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.saving)
+        assertTrue(model.uiState.value.saveFailed)
+        assertNull(model.uiState.value.finalResult)
+        assertEquals(first.textEn, model.uiState.value.finalInputs["s1"])
+        assertEquals(second.textEn, model.uiState.value.finalInputs["s2"])
+        assertEquals(1, calls)
+        model.onAction(CompleteWritingAction.SubmitRequested)
+        advanceUntilIdle()
+        assertFalse(model.uiState.value.saving)
+        assertFalse(model.uiState.value.saveFailed)
+        assertTrue(model.uiState.value.finalResult != null)
+        assertEquals(2, calls)
+    }
+
     @Test fun finalAudioRegenerationTargetsTheFailedSentenceWithoutLosingAnswersOrSavingMastery() = runTest(dispatcher) {
         var saves = 0
         val model = createViewModel(CompleteWritingRepository { _, _ -> saves++; CompleteWritingSaveResult.Saved })
