@@ -180,7 +180,9 @@ internal fun EditorialProcessWorkspace(
 @Composable
 private fun ProcessStageCard(index: Int, label: String, failed: Boolean, compactCard: Boolean, modifier: Modifier) {
     val accent = if (failed) RlColor.Error else listOf(RlColor.Secondary, RlColor.ActionVivid, RlColor.Primary)[index % 3]
-    Box(modifier.testTag("process_stage_card_$index")) {
+    BoxWithConstraints(modifier.testTag("process_stage_card_$index")) {
+        val paperWidth = minOf(maxWidth, maxHeight * (1176f / 1337f))
+        Box(Modifier.width(paperWidth).height(paperWidth * (1337f / 1176f)).align(Alignment.Center)) {
         Image(painterResource(listOf(R.drawable.rl_v73_process_card_green, R.drawable.rl_v73_process_card_terracotta, R.drawable.rl_v73_process_card_blue)[index % 3]), null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         Column(Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp,
@@ -191,6 +193,7 @@ private fun ProcessStageCard(index: Int, label: String, failed: Boolean, compact
                 fontSize = if (compactCard) 13.sp else 15.sp,
                 lineHeight = if (compactCard) 18.sp else 23.sp,
                 fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        }
         }
     }
 }

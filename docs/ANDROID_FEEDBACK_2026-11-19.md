@@ -1,3 +1,7 @@
+### 2026-11-21 C05三卡文字通过但素材拉伸，继续修正
+
+c88df31主包/组件包构建覆盖后SceneGenerationScreenTest通过48.353s；实际scene-generation-layout.png查看三卡文字完整，但三张素材横向拉伸、圆形装饰变椭圆，不能据测试通过判视觉验收。ProcessStageCard改为在分配区域内按素材1176:1337等比居中，图标/文字布局跟随纸片实际边界，不再FillBounds拉伸整个宽槽。共用三卡受影响，尚待构建/真机图文复验。C05左海报在compact模式缺失仍待处理，不关闭整体。
+
 ### 2026-11-21 C05场景生成短屏仅第一阶段可见
 
 新增组件检查失败于编排中文场景不可见；scene-generation-layout.png已实看：横屏扣除safeDrawing及padding后触发compact布局，三卡被换成纵向滚动列表，首屏只有第一阶段，左海报也不显示。SceneGenerationScreen启用已有fixedStages紧凑三卡布局，避免第二/三阶段藏在滚动下方；尚待构建/复验。该布局短屏仍不显示左海报，C05左侧文案对齐不能据此关闭，需要区分正常宽屏与紧凑屏。未擅自重画素材。
