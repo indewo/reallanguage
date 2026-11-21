@@ -1,3 +1,7 @@
+### 2026-11-22 抄写检查发现次数标签溢出待定位
+
+旧HandwritingCopyScreenTest在当前手机失败46.558s：仍要求旧单行第1次/共2次及已删说明。按当前已存在的第1次换行至少2次更新预期，保留画布安全边界/完成动作，新增画线后清空启用→点清空禁用检查。测试包构建成功覆盖，复验46.679s失败于两行次数标签hasVisualOverflow/lineCount检查，不能称通过，清空后续尚未执行。已把count-layout截图放到该断言之前供下一轮定位；本批未改产品界面，不擅自缩字，B13/C15继续未验收。
+
 ### 2026-11-22 指读触控隔离手机补查
 
 ReadSpeakFingerTrackingTest中oneUnbrokenFingerPathStartsRecordingAndWaitsForRecordedConfirmation及onlyDraggingTheFocusSentenceAutomaticallyStartsTheReadingTask在PFFM10运行95.396s，两项通过。真实pointer驱动生产Screen/VM，短句逐词高亮后仍等待录完确认；拖只读背景不启动，拖焦点句才启动。录音/反馈使用替身，不读写用户SQL，不是真实朗读验收。cache/finger-display-current.png取回实看：三词高亮完整、中文/提示/底按钮完整，提示仍明确等待录完；截图存在系统栏，不能据隔离Activity判断生产沉浸状态。B14真实学习入口及完成后去文案仍待验，不整组关闭。

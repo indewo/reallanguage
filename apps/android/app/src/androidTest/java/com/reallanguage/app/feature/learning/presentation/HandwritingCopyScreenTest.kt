@@ -4,6 +4,8 @@ import android.content.pm.ActivityInfo
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -50,12 +52,13 @@ class HandwritingCopyScreenTest {
         composeRule.setContent { RlTheme { RlPaperBackground { HandwritingCopyScreen(state, actions::add) } } }
         composeRule.onNodeWithTag("handwriting-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("handwriting-canvas").assertIsDisplayed()
-        composeRule.onNodeWithText("第 1 次 / 共 2 次").assertIsDisplayed()
+        composeRule.onNodeWithText("第1次\n至少2次").assertIsDisplayed()
         val statusLayout = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
         composeRule.onNodeWithTag("handwriting-attempt-status").performSemanticsAction(
             androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult,
         ) { check(it(statusLayout)) }
-        check(statusLayout.single().lineCount == 1) { "The copy count must stay on one compact line" }
+        captureFixtureIfRequested("count-layout")
+        check(statusLayout.single().lineCount == 2 && !statusLayout.single().hasVisualOverflow) { "The complete attempt and minimum count must fit two lines without clipping" }
         val instruction = composeRule.onNodeWithTag("handwriting-instruction-note").fetchSemanticsNode().boundsInRoot
         val status = composeRule.onNodeWithTag("handwriting-attempt-status-container").fetchSemanticsNode().boundsInRoot
         check(status.top > instruction.bottom) {
@@ -81,7 +84,8 @@ class HandwritingCopyScreenTest {
             up()
         }
         captureFixtureIfRequested("edge-stroke")
-        composeRule.onNodeWithText("手写只保留在当前页面，不上传、不识别、不判错。").assertIsDisplayed()
+        composeRule.onNodeWithTag("handwriting-clear").assertIsEnabled().performClick()
+        composeRule.onNodeWithTag("handwriting-clear").assertIsNotEnabled()
         composeRule.onNodeWithText("我已写完").assertIsDisplayed().performClick()
         assert(actions == listOf(HandwritingCopyAction.WrittenFinished))
     }
