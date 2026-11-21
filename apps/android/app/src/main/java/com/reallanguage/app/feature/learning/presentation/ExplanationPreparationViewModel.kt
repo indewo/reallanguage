@@ -26,20 +26,31 @@ class ExplanationPreparationViewModel(private val repository: ExplanationPrepara
     val uiState = mutableUiState.asStateFlow()
     private val channel = Channel<ExplanationPreparationEffect>(Channel.BUFFERED)
     val effects = channel.receiveAsFlow()
+    private var navigationChosen = false
     init { load() }
     fun onAction(action: ExplanationPreparationAction) = when (action) {
         ExplanationPreparationAction.RetryRequested -> load()
-        ExplanationPreparationAction.BackRequested -> viewModelScope.launch { channel.send(ExplanationPreparationEffect.ReturnToChapter) }
+        ExplanationPreparationAction.BackRequested -> {
+            if (!navigationChosen) {
+                navigationChosen = true
+                viewModelScope.launch { channel.send(ExplanationPreparationEffect.ReturnToChapter) }
+            }
+            Unit
+        }
     }
     private fun load() {
-        if (mutableUiState.value.loading) return
+        if (mutableUiState.value.loading || navigationChosen) return
         mutableUiState.update { ExplanationPreparationUiState(loading = true) }
         viewModelScope.launch {
             val result = try { repository.prepare() }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { ExplanationPreparationResult.Failed }
+            if (navigationChosen) return@launch
             when (result) {
-                is ExplanationPreparationResult.Ready -> channel.send(ExplanationPreparationEffect.OpenExplanation(result.baseExplanationZh, result.expressions))
+                is ExplanationPreparationResult.Ready -> {
+                    navigationChosen = true
+                    channel.send(ExplanationPreparationEffect.OpenExplanation(result.baseExplanationZh, result.expressions))
+                }
                 ExplanationPreparationResult.Failed -> mutableUiState.update { ExplanationPreparationUiState(failed = true) }
             }
         }

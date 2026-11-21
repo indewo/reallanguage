@@ -6,6 +6,9 @@ import com.reallanguage.app.feature.learning.domain.SelectableExpression
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -25,6 +28,25 @@ class ExplanationPreparationViewModelTest {
 
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
+
+    @Test fun leavingDuringPreparationIgnoresLateNavigationWithoutStartingAnotherRequest() = runTest(dispatcher) {
+        val gate = CompletableDeferred<ExplanationPreparationResult>()
+        var calls = 0
+        val model = ExplanationPreparationViewModel { calls++; gate.await() }
+        val events = mutableListOf<ExplanationPreparationEffect>()
+        val observer = launch { model.effects.collect { events += it } }
+        advanceUntilIdle()
+        model.onAction(ExplanationPreparationAction.BackRequested)
+        model.onAction(ExplanationPreparationAction.BackRequested)
+        advanceUntilIdle()
+        gate.complete(ExplanationPreparationResult.Ready("迟到的讲解", emptyList()))
+        advanceUntilIdle()
+        model.onAction(ExplanationPreparationAction.RetryRequested)
+        advanceUntilIdle()
+        assertEquals(listOf(ExplanationPreparationEffect.ReturnToChapter), events)
+        assertEquals(1, calls)
+        observer.cancel()
+    }
 
     @Test fun thrownPreparationReleasesLoadingAndOnlyExplicitRetryRequestsAgain() = runTest(dispatcher) {
         var calls = 0
