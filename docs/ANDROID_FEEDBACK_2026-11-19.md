@@ -1,3 +1,17 @@
+### 2026-11-21 真机真实重生＋单次客户端丢响应故障注入验证
+
+针对0161729恢复修复，检查HttpExplanationReadingProvider不确定响应仅同command只读GET一次，不以未完成状态授权自动POST。为验证实际手机分支，临时在该provider中对DEBUG、revision存在、expression.display=development、实际POST200且通过原结构校验的响应仅一次丢弃为null；没有mock供应商/交付/响应正文/GET结果。此为客户端应用边界故障注入，不是真实物理断网，不能用来关闭所有网络故障路径。原文件先备份，SHA25633b9b47e8673b0d74ccb7e28fe17d35e06be9742dc783b1aeb81a4ecbb05c807。临时APK970a2e54ba1a8397d717da46be6e5ae0c1c290224f0c49e57008eba3e54313f3只用于本轮验证，未交付桌面/提交临时代码。
+
+真实OPPO35587acd：首页→未完成7条→原需求QA章2/9→恢复development→滚动到末尾→重新获取词语解释→实读费用确认→明确点击一次。真实POST解释200 requestIdbf2adf47-fad5-45e3-805c-bd0bdbc813be；logcat20:15:20.392 RLRecoveryProbe仅一次Dropped actual POST response once；随后真实GET deliveries/6acf416c-62eb-3e6e-b21d-782a7f379d86?kind=EXPRESSION 200 requestIde6770e25-2cb1-4c5d-b545-71a097ccabe3。UI加载结束，无获取失败提示，开发（指软件或产品的研发工作）/原自然例句保留，表达提示新结果多作不可数名词使用（旧为通常不可数），未手改内容。日志此操作一POST一GET，不据此证明供应商实际全局计费零重复。
+
+立即恢复provider原文件，源码SHA同33b9b47e…、git diff空，assembleDebug通过，正常APK SHA2565bdb022cba6c8058c98f694ff43f38f0edef7595b4d090515d29704a4187df24覆盖Success，保留签名/数据。使用PowerShell只读解压检查所有classes.dex不含RLRecoveryProbe标记，False；最初python别名不可用，未把失败当检查成功。临时代码/字段已移除，不保留故障开关。正常包重新打开实际首页→未完成7条→同QA章2/9，新提示仍恢复，截图rl-recovered-word-clean-1121.png实看完整；服务器后续仅health/refresh/settings无新解释POST/GET，证明此正常重开使用已保存结果。
+
+暂时退出保存→账号→费用页，第一次抓图仍账户转场，未作账单证据；再次截图rl-loss-recovery-bill-1121.png实看首条生成表达讲解/手动重试/dashscope qwen-plus/-0.01，余额两处97.59。仅确认此可见流水/余额，未进行充值退款，也未完成真实Token成本对账。此轮QA章仍2/9，原用户录音8/9未进入，未做我理解了/朗读/抄写/答案提交。
+
+另见原development新音频af21…在本轮自动播放已404（前次生成数小时前），未拿词语恢复成功当发音恢复；音频对象保留周期/过期后体验仍待处理。独立语义门禁未实现，表达提示不加冠词等措辞还需更广内容核验，不关闭C11/12全部语义验收。
+
+页面增量：无新增正式UI代码，词语重生响应丢失→同请求GET→本机保存→正常包重开这个实际分支已验证（明确故障注入）；物理网络丢响应、进程中断、未知费用及其他原反馈仍按索引待验。
+
 ### 2026-11-21 显式词语重生按父操作计费时只读恢复误拒修复
 
 发现RecoverLearningExplanation只用新commandId读取billing operation，而重生请求使用retryOfCommandId归组，导致真实已结算交付无匹配账目被判BILLING_UNVERIFIED。ExistingAiChargeReader新增可选只读readAttempt(accountId,providerAttemptId)；Kysely实现继续按账号归属过滤，对同一reservation核验usage operation、subject、wallet、ledger、amount、business ref，不减弱结算一致性。恢复先查原operation，只有匹配为空时，使用已鉴权、解密交付行提供的providerAttemptId查同账号调用；客户端不能传父操作或attempt绕过检查。无生成/预留/结算/写入能力新增，未改GET合同。

@@ -892,6 +892,9 @@ evidenceZh
 
 ### 11.2 `WORD_EXPLANATION_V1`
 
+2026-11-21手机补证：实际显式词语重生完成后，在客户端边界单次丢弃真实POST200响应，随后同command只读GET恢复并保存，移除临时代码后的正常包重开仍保留。此为明确标注的故障注入，不等同真实物理断网/进程中断验证；不生成替身正文，不保留故障开关。
+
+
 2026-11-21只读恢复：显式重生交付键与计费父operation可不同；GET恢复在原operation未匹配时，只能以已鉴权交付行的providerAttemptId作同账号只读账目核对，仍验证reservation/usage/ledger全链一致性及已结算。不得接受客户端提供attempt/父operation、重生或修改费用状态来恢复。真实已有development交付前后GET已核对；手机丢响应链仍待验。
 
 
