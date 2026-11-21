@@ -467,6 +467,7 @@ issues[]:
 - 输出`valid:boolean,issues:[{targetId,reason,explanationZh}]`。reason仅`NOT_LEXICALIZED/CONTEXT_MEANING/PATTERN_FUNCTION/EXAMPLE_GRAMMAR/EXAMPLE_MEANING/EXAMPLE_REUSE`；必须引用本次真实targetId，解释非空，valid当且仅当issues为空。非法审核或网络失败不当作通过。
 - 审核以`${extractionCommandId}:quality-v1`单独计量与缓存，关联原业务操作；可通过`OPENAI_TARGET_REVIEW_MODEL`独立选模型，流水记录实际模型。
 - 沿用目标提取原有一次修复上限，不叠加另一层重试。携拒绝候选和具体问题修复，修复命令稳定、标`AUTOMATIC_RETRY`、关联原操作，100–250ms抖动退避；修复后重新做结构及独立质量审核。最多两次提取、两次审核。
+- 审核只拒绝实质性错误，不因同义表述、未详解可选副词、例句增加正常可选成分而失败。NOT_LEXICALIZED仅适用于固定搭配，不否认正常WORD词目/词形；例句必须允许不同情境。现在完成时可同时描述完成动作与当前关联，进行时被动不擅加已完成结果。
 - 已发现质量问题且修复仍不合格时明确失败，不伪装为空目标成功，不改固定内容、既有词义、知识身份或用户学习记录。不得把用户手动取消不良候选当生成质量通过。
 
 ## 7. 转写与修复合同
