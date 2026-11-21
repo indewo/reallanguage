@@ -15,6 +15,14 @@ export class HttpSceneFormationProvider implements SceneFormationProvider {
         "Content-Type": "application/json",
         "Idempotency-Key": String(command.commandId),
         "X-RealLanguage-Account-Id": String(command.accountId),
+        ...(command.billingOperationId
+          ? {
+              "X-RealLanguage-Operation-Id": String(command.billingOperationId),
+            }
+          : {}),
+        ...(command.callType
+          ? { "X-RealLanguage-Call-Type": String(command.callType) }
+          : {}),
       },
       body: JSON.stringify({ task, input: command }),
     });

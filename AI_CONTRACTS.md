@@ -113,6 +113,7 @@ AI / Speech result
 | `SCENE_DIALOGUE_TURN_V1` | 生成对方台词和中文表达意图候选 | Sources | 否 | 用户确认自己的中文 |
 | `SCENE_ARTICLE_DRAFT_V1` | 根据已确认信息形成中文文章／段落 | Sources | 否 | 用户编辑并确认 |
 | `SCENE_EDIT_REVIEW_V1` | 检查用户修改后的明显缺失、矛盾或严重不通顺 | Sources | 否 | 用户处理问题 |
+| `SCENE_DRAFT_FIDELITY_V1` | 独立核对模型场景草稿与原始确认问答的事实、角色、时序和言语行为 | Sources | 否 | 仅通过的草稿进入用户确认 |
 | `SPEECH_TRANSCRIPTION_V1` | 将用户主动提交的录音转写为中文 | Sources / Media | 否 | 用户确认转写 |
 | `TRANSCRIPT_REPAIR_V1` | 只修复可确认的信息丢失或明显卡壳 | Sources | 否 | 用户接受对比结果 |
 | `CONTENT_SAFETY_CHECK_V1` | 对完整确认中文来源执行安全检查 | Safety | 决定是否允许继续形成 | 无；拦截后用户选择处理方式 |
@@ -447,6 +448,16 @@ issues[]:
 - 自然口语、省略、情绪表达、不完美标点不得成为失败理由；
 - 未通过只指出具体问题，不自动改写；
 - 不执行内容安全检查；之后仍进入统一安全流程。
+
+### 6.6 `SCENE_DRAFT_FIDELITY_V1`
+
+2026-11-21真实场景测试发现新增准备事实、角色颠倒、建议变接受及完成后变提交前。生成草稿须独立审核，不能以生成器自称保真代替。
+
+- 输入为原始确认问答及起点、内容类型和本次候选units；派生摘要、旧草稿及factReferences不得作为额外事实。
+- 输出decision为PASS或FAIL，issues含unitId、reason、explanationZh；reason限定UNSUPPORTED_FACT、ROLE_CHANGED、TEMPORAL_CHANGED、INTENT_CHANGED、CONTRADICTION。PASS必须无issues，FAIL必须有指向本草稿的具体问题；不合法输出按失败处理。
+- 审核只输出问题，不直接修改正文、不确认用户事实、不更新学习状态。无新增事实的寒暄、致谢与围绕既定目的的开放问题可保留；不为漏掉非必要背景而失败。
+- 业务允许最多一次根据审核问题修复模型候选，修复仍须通过结构和独立事实复审；再次失败明确停止。不是对用户修改稿的自动改写，6.5保持不变。
+- 每次生成、审核、修复、复审分别计量，固定尝试身份关联同一业务操作；相同输入技术重放复用已有结果，不隐形再调用供应商。
 
 ## 7. 转写与修复合同
 

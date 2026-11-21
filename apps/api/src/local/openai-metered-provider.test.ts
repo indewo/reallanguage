@@ -16,6 +16,30 @@ const command = (task: string, input: unknown = {}) => ({
 });
 
 describe("LocalOpenAiMeteredProvider", () => {
+  it("keeps internal billing and account identity out of the scene auditor model input", async () => {
+    const generateJson = vi.fn().mockResolvedValue({ decision: "PASS", issues: [] });
+    const provider = new LocalOpenAiMeteredProvider({ generateJson, transcribe: vi.fn() });
+    const request = command("SCENE_DRAFT_FIDELITY_V1", { accountId: "private-account", billingOperationId: "billing-root",
+      session: { operationId: "internal-operation", start: { kind: "TEMPLATE" }, contentType: "DIALOGUE", answers: [], collectedFacts: ["derived"] },
+      contentType: "DIALOGUE", units: [] });
+    const quote = await provider.quote(request);
+    await provider.execute({ ...request, providerAttemptId: quote.providerAttemptId });
+    expect(generateJson).toHaveBeenCalledWith("SCENE_DRAFT_FIDELITY_V1", {
+      session: { start: { kind: "TEMPLATE" }, contentType: "DIALOGUE", answers: [] }, contentType: "DIALOGUE", units: [],
+    });
+  });
+  it("sends original scene answers and candidate units to an independently constrained factual review", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ output_text: JSON.stringify({ decision: "PASS", issues: [] }) })));
+    const client = new OpenAiLocalClient("isolated-test", "test-model", fetcher);
+    const input = { session: { answers: [{ questionZh: "对方如何回应？", answerZh: "完成后同步项目组" }] },
+      units: [{ unitId: "u1", speaker: "USER", textZh: "提交前群发给所有人" }] };
+    await client.generateJson("SCENE_DRAFT_FIDELITY_V1", input);
+    const request = JSON.parse(String(fetcher.mock.calls[0]![1].body));
+    expect(JSON.parse(request.input).input).toEqual(input);
+    expect(request.text.format.schema.properties.decision.enum).toEqual(["PASS", "FAIL"]);
+    expect(request.instructions).toContain("Independently audit");
+    expect(request.instructions).toContain("temporal order");
+  });
   it("uses a scoped scene model and reports that model without changing other text tasks", async () => {
     vi.stubEnv("OPENAI_SCENE_MODEL", "scene-quality-model");
     try {
@@ -1237,6 +1261,7 @@ describe("LocalOpenAiMeteredProvider", () => {
     "SCENE_DIALOGUE_TURN_V1",
     "SCENE_ARTICLE_DRAFT_V1",
     "SCENE_EDIT_REVIEW_V1",
+    "SCENE_DRAFT_FIDELITY_V1",
   ])(
     "fails closed for %s instead of returning fixed generated content",
     async (task) => {

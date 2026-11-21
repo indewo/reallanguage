@@ -1154,4 +1154,5 @@ const aiOperationLabelsZh: Readonly<Record<string, string>> = {
   SCENE_DIALOGUE_TURN_V1: "生成场景对话",
   SCENE_ARTICLE_DRAFT_V1: "生成场景文章",
   SCENE_EDIT_REVIEW_V1: "审核场景编辑",
+  SCENE_DRAFT_FIDELITY_V1: "核对场景事实",
 };

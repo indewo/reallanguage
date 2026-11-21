@@ -25,7 +25,8 @@ export class MeteredProviderFetchAdapter {
       throw new Error("Metered provider request metadata is incomplete");
     const output = await this.attempts.execute({
       accountId,
-      operationId: commandId,
+      operationId:
+        headers.get("X-RealLanguage-Operation-Id")?.trim() || commandId,
       operationLabelZh,
       commandId,
       task,

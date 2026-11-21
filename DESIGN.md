@@ -1,5 +1,11 @@
 # RealLanguage — Detailed Design
 
+### 2026-11-21 场景候选事实审核增量
+
+场景生成最多执行生成→独立事实审核→一次修复→复审，不能无限循环。根生成沿用现有命令身份；审核子命令为`:fidelity-v1:0/1`，修复为`:fidelity-repair-v1`并标记AUTOMATIC_RETRY，均关联根生成业务操作。修复前100–250毫秒随机退避；结构/引用异常、余额不足或审核异常不触发修复。每次真实调用独立预留、收费及交付缓存；技术重放不重复消费。部署须同时更新生成应用、HTTP场景适配器、计量适配器、任务标签和提供器。
+
+OPENAI_SCENE_MODEL可单独配置场景追问/生成/事实审核，私有配置不进仓库。当前联调每次1分预留及providerCostMicroCny占位仍不是供应商实际token成本核算，费用验收另列。此处记录实现边界，不代表内容质量已验收；真实手机结果见docs/ANDROID_FEEDBACK_2026-11-19.md。
+
 > 文档版本：v1.0  
 > 产品事实来源基线：v1.26（2026-08-31）  
 > 上游技术基线：`ARCHITECTURE.md` v1.1、`DATA_MODEL.md` v1.1、`AI_CONTRACTS.md` v1.1  

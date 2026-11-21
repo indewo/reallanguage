@@ -6,21 +6,180 @@ import {
   ReviewSceneEdit,
 } from "./scene-formation.js";
 
+// Existing generation-shape tests isolate the independent semantic reviewer.
+const generationWithIsolatedFidelityPass = (
+  provider: ConstructorParameters<typeof GenerateSceneDraft>[0],
+  settings?: ConstructorParameters<typeof GenerateSceneDraft>[1],
+) =>
+  new GenerateSceneDraft(
+    {
+      execute: (task, input) =>
+        task === "SCENE_DRAFT_FIDELITY_V1"
+          ? Promise.resolve({ decision: "PASS", issues: [] })
+          : provider.execute(task, input),
+    },
+    settings,
+  );
+
+describe("scene draft factual gate", () => {
+  const units = [
+    {
+      unitId: "u1",
+      speaker: "USER",
+      textZh: "我周五完成报告。",
+      factReferences: [],
+    },
+    {
+      unitId: "u2",
+      speaker: "OTHER",
+      textZh: "完成后同步项目组。",
+      factReferences: [],
+    },
+    {
+      unitId: "u3",
+      speaker: "USER",
+      textZh: "提交前群发给所有人。",
+      factReferences: [],
+    },
+  ];
+  const command = {
+    accountId: "account",
+    commandId: "root",
+    task: "SCENE_DIALOGUE_TURN_V1" as const,
+    session: {
+      operationId: "operation",
+      start: {
+        kind: "DIRECT_DESCRIPTION" as const,
+        description: "确认报告时间",
+      },
+      contentType: "DIALOGUE" as const,
+      answers: [{ questionId: "q1", answerZh: "完成后同步项目组" }],
+      collectedFacts: [],
+      missingNonBlockingFacts: [],
+    },
+    remainingContentBudget: 6,
+  };
+  const fail = {
+    decision: "FAIL",
+    issues: [
+      {
+        unitId: "u3",
+        reason: "TEMPORAL_CHANGED",
+        explanationZh: "完成后不等于提交前。",
+      },
+    ],
+  };
+  it("repairs once under distinct metered identities and only returns the reviewed correction", async () => {
+    const repaired = units.map((unit) =>
+      unit.unitId === "u3"
+        ? { ...unit, textZh: "明白，完成后同步项目组。" }
+        : unit,
+    );
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce({
+        draftId: "model",
+        contentType: "DIALOGUE",
+        units,
+      })
+      .mockResolvedValueOnce(fail)
+      .mockResolvedValueOnce({
+        draftId: "repair",
+        contentType: "DIALOGUE",
+        units: repaired,
+      })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
+    const result = await new GenerateSceneDraft({ execute }).execute(command);
+    expect(result.units).toEqual(repaired);
+    expect(execute.mock.calls.map((call) => call[1].commandId)).toEqual([
+      "root",
+      "root:fidelity-v1:0",
+      "root:fidelity-repair-v1",
+      "root:fidelity-v1:1",
+    ]);
+    expect(execute.mock.calls[2]?.[1]).toMatchObject({
+      billingOperationId: "root",
+      callType: "AUTOMATIC_RETRY",
+      fidelityIssues: fail.issues,
+      previousUnits: units,
+    });
+  });
+  it("fails after one unsuccessful repair without returning the unchecked draft or looping", async () => {
+    const repaired = units.map((unit) => ({
+      ...unit,
+      textZh: unit.textZh + "嗯",
+    }));
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce({
+        draftId: "model",
+        contentType: "DIALOGUE",
+        units,
+      })
+      .mockResolvedValueOnce(fail)
+      .mockResolvedValueOnce({
+        draftId: "repair",
+        contentType: "DIALOGUE",
+        units: repaired,
+      })
+      .mockResolvedValueOnce(fail);
+    await expect(
+      new GenerateSceneDraft({ execute }).execute(command),
+    ).rejects.toThrow("failed factual fidelity");
+    expect(execute).toHaveBeenCalledTimes(4);
+  });
+  it("rejects a contradictory PASS with issues instead of trusting the label", async () => {
+    const execute = vi
+      .fn()
+      .mockResolvedValueOnce({
+        draftId: "model",
+        contentType: "DIALOGUE",
+        units,
+      })
+      .mockResolvedValueOnce({ ...fail, decision: "PASS" });
+    await expect(
+      new GenerateSceneDraft({ execute }).execute(command),
+    ).rejects.toThrow("Inconsistent scene fidelity");
+    expect(execute).toHaveBeenCalledTimes(2);
+  });
+});
+
 describe("scene formation application boundary", () => {
   it("does not promote derived summary claims into confirmed generation facts", async () => {
     const execute = vi.fn().mockResolvedValue(null);
-    await expect(new GenerateSceneDraft({ execute }).execute({
-      accountId: "account", commandId: "command", task: "SCENE_DIALOGUE_TURN_V1",
-      remainingContentBudget: 10,
-      session: {
-        operationId: "operation", start: { kind: "TEMPLATE", templateId: "work", titleZh: "工作沟通", scopeZh: "确认时间" },
-        contentType: "DIALOGUE",
-        answers: [{ questionId: "response", questionZh: "对方如何回应时间安排？", answerZh: "同意该时间安排" }],
-        collectedFacts: ["对方已协调好资源"], missingNonBlockingFacts: [],
-      },
-    })).rejects.toThrow();
-    expect(execute.mock.calls[0]?.[1].session.collectedFacts).toEqual(["对方如何回应时间安排？：同意该时间安排"]);
-    expect(execute.mock.calls[0]?.[1].session.answers[0].answerZh).toBe("同意该时间安排");
+    await expect(
+      generationWithIsolatedFidelityPass({ execute }).execute({
+        accountId: "account",
+        commandId: "command",
+        task: "SCENE_DIALOGUE_TURN_V1",
+        remainingContentBudget: 10,
+        session: {
+          operationId: "operation",
+          start: {
+            kind: "TEMPLATE",
+            templateId: "work",
+            titleZh: "工作沟通",
+            scopeZh: "确认时间",
+          },
+          contentType: "DIALOGUE",
+          answers: [
+            {
+              questionId: "response",
+              questionZh: "对方如何回应时间安排？",
+              answerZh: "同意该时间安排",
+            },
+          ],
+          collectedFacts: ["对方已协调好资源"],
+          missingNonBlockingFacts: [],
+        },
+      }),
+    ).rejects.toThrow();
+    expect(execute.mock.calls[0]?.[1].session.collectedFacts).toEqual([
+      "对方如何回应时间安排？：同意该时间安排",
+    ]);
+    expect(execute.mock.calls[0]?.[1].session.answers[0].answerZh).toBe(
+      "同意该时间安排",
+    );
   });
   it("owns draft identity so repeated model IDs cannot reopen an old review screen", async () => {
     const provider = {
@@ -63,7 +222,7 @@ describe("scene formation application boundary", () => {
       },
       remainingContentBudget: 10,
     };
-    const app = new GenerateSceneDraft(provider);
+    const app = generationWithIsolatedFidelityPass(provider);
     const first = await app.execute(base);
     const retry = await app.execute(base);
     const regenerated = await app.execute({ ...base, commandId: "second" });
@@ -102,7 +261,7 @@ describe("scene formation application boundary", () => {
       purposeVocabularies: ["IELTS_TOEFL"],
       styleReference: "natural short dialogue",
     });
-    await new GenerateSceneDraft({ execute }, { read }).execute({
+    await generationWithIsolatedFidelityPass({ execute }, { read }).execute({
       accountId: "account",
       commandId: "command",
       task: "SCENE_DIALOGUE_TURN_V1",
@@ -153,7 +312,7 @@ describe("scene formation application boundary", () => {
       ],
     });
     await expect(
-      new GenerateSceneDraft({ execute }).execute({
+      generationWithIsolatedFidelityPass({ execute }).execute({
         accountId: "account",
         commandId: "command",
         task: "SCENE_DIALOGUE_TURN_V1",
@@ -215,7 +374,7 @@ describe("scene formation application boundary", () => {
       previousUnits,
     };
     await expect(
-      new GenerateSceneDraft({ execute }).execute(command),
+      generationWithIsolatedFidelityPass({ execute }).execute(command),
     ).rejects.toThrow("Scene regeneration repeated previous content");
     execute.mockResolvedValue({
       draftId: "new",
@@ -227,7 +386,7 @@ describe("scene formation application boundary", () => {
       ],
     });
     await expect(
-      new GenerateSceneDraft({ execute }).execute(command),
+      generationWithIsolatedFidelityPass({ execute }).execute(command),
     ).resolves.toMatchObject({ draftId: expect.stringMatching(/^scene-/u) });
     expect(execute).toHaveBeenLastCalledWith(
       "SCENE_ARTICLE_DRAFT_V1",
@@ -508,7 +667,7 @@ describe("scene formation application boundary", () => {
       remainingContentBudget: 10,
       stepIndex: 0,
     });
-    await new GenerateSceneDraft({ execute }).execute({
+    await generationWithIsolatedFidelityPass({ execute }).execute({
       accountId: "a",
       commandId: "c2",
       task: "SCENE_ARTICLE_DRAFT_V1",
@@ -594,7 +753,7 @@ describe("scene formation application boundary", () => {
       }),
     };
     await expect(
-      new GenerateSceneDraft(provider).execute({
+      generationWithIsolatedFidelityPass(provider).execute({
         accountId: "account",
         commandId: "command",
         task: "SCENE_ARTICLE_DRAFT_V1",

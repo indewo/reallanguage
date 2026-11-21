@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomInt } from "node:crypto";
 import type {
   ContentGenerationSettings,
   ContentGenerationSettingsReader,
@@ -267,62 +267,144 @@ export class GenerateSceneDraft {
         ? `${answer.questionZh.trim()}：${answer.answerZh}`
         : answer.answerZh,
     );
-    const value = record(
-      await this.provider.execute(command.task, {
-        ...command,
-        session: { ...providerSession, collectedFacts: confirmedAnswerFacts },
-        ...(generationSettings === undefined
-          ? {}
-          : { settings: generationSettings }),
-        minimumOutputUnits: 3,
-      }),
-    );
-    if (
-      !strings(value, ["draftId", "contentType"]) ||
-      value.contentType !== command.session.contentType ||
-      !Array.isArray(value.units) ||
-      value.units.length < 3 ||
-      value.units.length > command.remainingContentBudget
-    )
-      throw new Error("Invalid scene generation output");
-    const units = value.units.map(parseUnit);
-    const maximumUnitCodePoints =
-      command.session.contentType === "DIALOGUE" ? 48 : 80;
-    if (
-      units.some(
-        (unit) => Array.from(unit.textZh.trim()).length > maximumUnitCodePoints,
+    const generateCandidate = async (
+      attempt: number,
+      fidelityIssues: readonly SceneFidelityIssue[] = [],
+      previousUnits = command.previousUnits,
+    ) => {
+      const value = record(
+        await this.provider.execute(command.task, {
+          ...command,
+          ...(attempt === 0
+            ? {}
+            : {
+                commandId: `${command.commandId}:fidelity-repair-v1`,
+                billingOperationId: command.commandId,
+                callType: "AUTOMATIC_RETRY",
+                previousUnits,
+                fidelityIssues,
+              }),
+          session: { ...providerSession, collectedFacts: confirmedAnswerFacts },
+          ...(generationSettings === undefined
+            ? {}
+            : { settings: generationSettings }),
+          minimumOutputUnits: 3,
+        }),
+      );
+      if (
+        !strings(value, ["draftId", "contentType"]) ||
+        value.contentType !== command.session.contentType ||
+        !Array.isArray(value.units) ||
+        value.units.length < 3 ||
+        value.units.length > command.remainingContentBudget
       )
-    )
-      throw new Error("Scene unit is too long for focused learning");
-    const normalizedContent = (items: readonly SceneUnitPayload[]) =>
-      items
-        .map((unit) =>
-          unit.textZh.normalize("NFKC").replace(/[\s\p{P}\p{S}]/gu, ""),
+        throw new Error("Invalid scene generation output");
+      const units = value.units.map(parseUnit);
+      const maximumUnitCodePoints =
+        command.session.contentType === "DIALOGUE" ? 48 : 80;
+      if (
+        units.some(
+          (unit) =>
+            Array.from(unit.textZh.trim()).length > maximumUnitCodePoints,
         )
-        .join("");
-    if (
-      command.previousUnits?.length &&
-      normalizedContent(units) === normalizedContent(command.previousUnits)
-    )
-      throw new Error("Scene regeneration repeated previous content");
-    if (
-      value.contentType === "ARTICLE"
-        ? units.some((unit) => unit.speaker !== null)
-        : units.some((unit) => unit.speaker === null) ||
-          !units.some((unit) => unit.speaker === "USER") ||
-          !units.some((unit) => unit.speaker === "OTHER")
-    )
-      throw new Error("Invalid scene generation output");
+      )
+        throw new Error("Scene unit is too long for focused learning");
+      const normalizedContent = (items: readonly SceneUnitPayload[]) =>
+        items
+          .map((unit) =>
+            unit.textZh.normalize("NFKC").replace(/[\s\p{P}\p{S}]/gu, ""),
+          )
+          .join("");
+      if (
+        previousUnits?.length &&
+        normalizedContent(units) === normalizedContent(previousUnits)
+      )
+        throw new Error("Scene regeneration repeated previous content");
+      if (
+        value.contentType === "ARTICLE"
+          ? units.some((unit) => unit.speaker !== null)
+          : units.some((unit) => unit.speaker === null) ||
+            !units.some((unit) => unit.speaker === "USER") ||
+            !units.some((unit) => unit.speaker === "OTHER")
+      )
+        throw new Error("Invalid scene generation output");
+      if (new Set(units.map((unit) => unit.unitId)).size !== units.length)
+        throw new Error("Duplicate scene unit identity");
+      return {
+        contentType: value.contentType as "DIALOGUE" | "ARTICLE",
+        units,
+      };
+    };
+    let candidate = await generateCandidate(0);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const review = parseSceneFidelityReview(
+        await this.provider.execute("SCENE_DRAFT_FIDELITY_V1", {
+          accountId: command.accountId,
+          commandId: `${command.commandId}:fidelity-v1:${attempt}`,
+          billingOperationId: command.commandId,
+          session: { ...providerSession, collectedFacts: confirmedAnswerFacts },
+          contentType: candidate.contentType,
+          units: candidate.units,
+        }),
+        candidate.units,
+      );
+      if (review.decision === "PASS") break;
+      if (attempt === 1)
+        throw new Error("Scene draft failed factual fidelity review");
+      // One bounded corrective attempt; never immediately hammer a supplier.
+      await new Promise((resolve) => setTimeout(resolve, 100 + randomInt(151)));
+      candidate = await generateCandidate(1, review.issues, candidate.units);
+    }
     return {
       draftId: `scene-${createHash("sha256")
         .update(JSON.stringify([command.accountId, command.commandId]))
         .digest("hex")
         .slice(0, 32)}`,
-      contentType: value.contentType as "DIALOGUE" | "ARTICLE",
-      units,
+      ...candidate,
     };
   }
 }
+
+type SceneFidelityIssue = Readonly<{
+  unitId: string;
+  reason:
+    | "UNSUPPORTED_FACT"
+    | "ROLE_CHANGED"
+    | "TEMPORAL_CHANGED"
+    | "INTENT_CHANGED"
+    | "CONTRADICTION";
+  explanationZh: string;
+}>;
+const parseSceneFidelityReview = (
+  raw: unknown,
+  units: readonly SceneUnitPayload[],
+) => {
+  const value = record(raw);
+  if (
+    !Array.isArray(value.issues) ||
+    !["PASS", "FAIL"].includes(String(value.decision))
+  )
+    throw new Error("Invalid scene fidelity review");
+  const issues = value.issues.map((rawIssue): SceneFidelityIssue => {
+    const issue = record(rawIssue);
+    if (
+      !strings(issue, ["unitId", "reason", "explanationZh"]) ||
+      !units.some((unit) => unit.unitId === issue.unitId) ||
+      ![
+        "UNSUPPORTED_FACT",
+        "ROLE_CHANGED",
+        "TEMPORAL_CHANGED",
+        "INTENT_CHANGED",
+        "CONTRADICTION",
+      ].includes(String(issue.reason))
+    )
+      throw new Error("Invalid scene fidelity issue");
+    return issue as SceneFidelityIssue;
+  });
+  if ((value.decision === "PASS") !== (issues.length === 0))
+    throw new Error("Inconsistent scene fidelity decision");
+  return { decision: value.decision as "PASS" | "FAIL", issues };
+};
 
 export class ReviewSceneEdit {
   public constructor(private readonly provider: SceneFormationProvider) {}

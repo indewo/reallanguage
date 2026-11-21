@@ -3,6 +3,32 @@ import { describe, expect, it, vi } from "vitest";
 import { MeteredProviderFetchAdapter } from "./metered-provider-fetch-adapter.js";
 
 describe("MeteredProviderFetchAdapter", () => {
+  it("keeps the business operation while separately metering an automatic repair attempt", async () => {
+    const execute = vi.fn().mockResolvedValue({});
+    const adapter = new MeteredProviderFetchAdapter(
+      { execute },
+      { SCENE_DIALOGUE_TURN_V1: "生成场景对话" },
+    );
+    await adapter.fetch("https://example.test", {
+      headers: {
+        "Idempotency-Key": "root:repair",
+        "X-RealLanguage-Account-Id": "account",
+        "X-RealLanguage-Operation-Id": "root",
+        "X-RealLanguage-Call-Type": "AUTOMATIC_RETRY",
+      },
+      body: JSON.stringify({
+        task: "SCENE_DIALOGUE_TURN_V1",
+        input: { fidelityIssues: [] },
+      }),
+    });
+    expect(execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        operationId: "root",
+        commandId: "root:repair",
+        callType: "AUTOMATIC_RETRY",
+      }),
+    );
+  });
   it("converts existing provider requests into metered attempts", async () => {
     const execute = vi.fn().mockResolvedValue({ units: [] });
     const adapter = new MeteredProviderFetchAdapter(
