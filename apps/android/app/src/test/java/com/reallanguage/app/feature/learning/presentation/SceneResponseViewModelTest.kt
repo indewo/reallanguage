@@ -41,6 +41,24 @@ class SceneResponseViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun recordingCannotUnmutePromptOrTriggerRecognitionBeforeTheUserFinishes() = runTest(dispatcher) {
+        val repository = FakeRepository()
+        val model = createViewModel(listOf(task), repository)
+        advanceUntilIdle()
+        model.onAction(SceneResponseAction.AudioToggled)
+        assertTrue(model.uiState.value.audioMuted)
+        model.onAction(SceneResponseAction.StartRequested)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.recording)
+        model.onAction(SceneResponseAction.AudioToggled)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.audioMuted)
+        assertTrue(model.uiState.value.recording)
+        assertEquals(0, repository.transcriptions)
+        assertEquals(0, repository.evaluations)
+        assertEquals(0, repository.saves)
+    }
+
     @Test fun acceptedEvaluationRestoresAndRetriesOnlyThePendingLocalSave() = runTest(dispatcher) {
         val store = MemoryProgress()
         val repository = FakeRepository(saveResult = SceneResponseSaveResult.Failed)

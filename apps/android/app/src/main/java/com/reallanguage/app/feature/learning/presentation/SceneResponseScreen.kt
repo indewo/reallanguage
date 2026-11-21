@@ -141,7 +141,7 @@ fun SceneResponseScreen(state: SceneResponseUiState, onExit: (() -> Unit)? = nul
             Row(if (compact) Modifier.fillMaxWidth() else Modifier.weight(.58f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 LearningAction(stringResource(if (state.audioMuted) R.string.learning_pronounce else R.string.scene_response_play_previous),
                     { onAction(SceneResponseAction.AudioToggled) }, Modifier.weight(1f),
-                    enabled = !state.submitting && !state.transcribing && !state.technicalRetryPending && !state.technicalRetryBlocked)
+                    enabled = !state.recording && !state.submitting && !state.transcribing && !state.technicalRetryPending && !state.technicalRetryBlocked)
                 LearningAction(stringResource(R.string.read_speak_retry), { onAction(SceneResponseAction.RetryRequested) }, Modifier.weight(.7f),
                     enabled = !state.loading && !state.submitting && !state.transcribing && !state.technicalRetryBlocked)
                 LearningAction(mainLabel, { onAction(mainAction) }, Modifier.weight(1.2f)

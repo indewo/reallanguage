@@ -140,7 +140,7 @@ fun PatternSpeakingScreen(
         footer = {
             OutlinedButton(
                 onClick = { onAction(PatternSpeakingAction.AudioToggled) },
-                enabled = !state.submitting,
+                enabled = !state.recording && !state.submitting,
                 modifier = Modifier.weight(1f).heightIn(min = 48.dp),
             ) {
                 Text(stringResource(if (state.audioMuted) R.string.learning_pronounce else R.string.learning_mute))

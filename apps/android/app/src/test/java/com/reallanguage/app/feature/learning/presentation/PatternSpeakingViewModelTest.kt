@@ -38,6 +38,23 @@ class PatternSpeakingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun recordingReadingCannotUnmuteItsExampleOrProduceResponseFeedback() = runTest(dispatcher) {
+        val repository = FakeRepository()
+        val model = createViewModel(listOf(pattern), repository)
+        advanceUntilIdle()
+        model.onAction(PatternSpeakingAction.AudioToggled)
+        assertTrue(model.uiState.value.audioMuted)
+        model.onAction(PatternSpeakingAction.StartReadingRequested("e1"))
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.recording)
+        model.onAction(PatternSpeakingAction.AudioToggled)
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.audioMuted)
+        assertTrue(model.uiState.value.recording)
+        assertTrue(model.uiState.value.completedReadingExampleIds.isEmpty())
+        assertEquals(0, repository.responseCalls)
+    }
+
     @Test fun generationExceptionCanBeExplicitlyRetriedWithoutCompletingPattern() = runTest(dispatcher) {
         val repository = FakeRepository().apply { generationThrows = true }
         val model = createViewModel(listOf(pattern), repository)

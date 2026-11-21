@@ -90,7 +90,7 @@ class SceneResponseViewModel(
                 send(SceneResponseEffect.ReturnToCompleteWriting)
             }
             SceneResponseAction.AudioToggled -> mutableUiState.update {
-                it.copy(audioMuted = !it.audioMuted)
+                if (it.recording) it else it.copy(audioMuted = !it.audioMuted)
             }
             SceneResponseAction.StartRequested -> startCapture()
             SceneResponseAction.FinishedRequested -> finishResponse()

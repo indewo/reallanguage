@@ -37,6 +37,21 @@ const feedbackItems = [
 ] as const;
 
 describe("GenerateReadingFeedback", () => {
+  it("compares smart apostrophes without changing the delivered recognition text", async () => {
+    const transcript = "I’d like to learn English.";
+    const result = await new GenerateReadingFeedback({ generate: vi.fn().mockResolvedValue({
+      feedbackZh: "识别文本覆盖整句。", feedbackItems, transcript, feedbackConfidence: .9, action: "CONTINUE",
+    }) }).execute({ ...command, targetTextEn: "I'd like to learn English." });
+    expect(result.contentComplete).toBe(true);
+    expect(result.transcript).toBe(transcript);
+  });
+
+  it("never declares empty normalized evidence complete", async () => {
+    const result = await new GenerateReadingFeedback({ generate: vi.fn().mockResolvedValue({
+      feedbackZh: "录音证据不足。", feedbackItems, transcript: "…", feedbackConfidence: 0, action: "REPEAT_FOR_CLARITY",
+    }) }).execute({ ...command, targetTextEn: "…" });
+    expect(result.contentComplete).toBe(false);
+  });
   it("derives content completeness deterministically from the transcript", async () => {
     const generate = vi.fn().mockResolvedValue({
       feedbackZh: "内容完整，注意连读节奏。",

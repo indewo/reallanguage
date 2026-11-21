@@ -62,8 +62,8 @@ export class GenerateReadingFeedback {
       ];
       throw new Error(`Invalid reading feedback output (${invalidFields.join(", ")})`);
     }
-    const contentComplete =
-      normalize(output.transcript) === normalize(command.targetTextEn);
+    const recognizedWords = normalize(output.transcript);
+    const contentComplete = Boolean(recognizedWords) && recognizedWords === normalize(command.targetTextEn);
     return {
       feedbackZh: output.feedbackZh,
       feedbackItems,
@@ -78,6 +78,7 @@ export class GenerateReadingFeedback {
 const normalize = (value: string): string =>
   value
     .normalize("NFKC")
+    .replace(/[‘’]/gu, "'")
     .toLocaleLowerCase("en-US")
     .replace(/[^a-z0-9']+/g, " ")
     .trim();

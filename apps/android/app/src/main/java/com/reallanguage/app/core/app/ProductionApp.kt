@@ -4034,7 +4034,7 @@ private fun ReviewSceneAbilityRoute(
         if (granted && permit?.invoke() == true && capturePolicy.isAllowed()) response.onAction(SceneResponseAction.StartRequested)
     }
     LaunchedEffect(state.taskIndex, state.roundIndex, state.audioMuted, state.tasks) {
-        if (state.audioMuted) speaker.stop() else state.currentTask?.let { task ->
+        if (state.audioMuted || state.recording || state.submitting || state.transcribing) speaker.stop() else state.currentTask?.let { task ->
             val prompt = buildList { task.backgroundEn?.let(::add); addAll(task.contextLines.map { it.textEn }) }.joinToString(" ")
             if (prompt.isNotBlank()) speaker.start(prompt, speechRate = 0.9f)
         }
@@ -4056,6 +4056,7 @@ private fun ReviewSceneAbilityRoute(
     SceneResponseScreen(state) { action ->
         if (!capturePolicy.isAllowed()) return@SceneResponseScreen
         if (action == SceneResponseAction.StartRequested) {
+            speaker.stop()
             if (state.technicalRetryPending) {
                 response.onAction(action)
                 return@SceneResponseScreen
@@ -4272,7 +4273,7 @@ private fun SceneResponseRoute(
         }
     }
     LaunchedEffect(state.taskIndex, state.roundIndex, state.audioMuted, state.tasks) {
-        if (state.audioMuted) {
+        if (state.audioMuted || state.recording || state.submitting || state.transcribing) {
             speaker.stop()
         } else {
             state.currentTask?.let { task ->
@@ -4297,6 +4298,7 @@ private fun SceneResponseRoute(
     SceneResponseScreen(state, onExit = onExit) { action ->
         if (!capturePolicy.isAllowed()) return@SceneResponseScreen
         if (action == SceneResponseAction.StartRequested) {
+            speaker.stop()
             if (state.technicalRetryPending) { response.onAction(action); return@SceneResponseScreen }
             val permit = graph.connectionGate.interactionPermit() ?: return@SceneResponseScreen
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
@@ -4419,7 +4421,7 @@ private fun PatternSpeakingReadyRoute(
         }
     }
     LaunchedEffect(state.audioMuted, state.stage, state.responseIndex, state.examples) {
-        if (state.audioMuted) speaker.stop()
+        if (state.audioMuted || state.recording || state.submitting) speaker.stop()
         else state.currentResponseExample?.targetResponseEn
             ?.let { speaker.start(it, speechRate = 0.82f) }
     }
@@ -4437,6 +4439,7 @@ private fun PatternSpeakingReadyRoute(
             is PatternSpeakingAction.StartReadingRequested,
             PatternSpeakingAction.StartResponseRequested,
             -> {
+                speaker.stop()
                 if (state.technicalRetryPending) {
                     patterns.onAction(action)
                     return@PatternSpeakingScreen
@@ -4451,7 +4454,7 @@ private fun PatternSpeakingReadyRoute(
                 }
             }
             PatternSpeakingAction.PronounceRequested -> {
-                if (state.technicalRetryPending || state.technicalRetryBlocked || state.submitting) return@PatternSpeakingScreen
+                if (state.recording || state.technicalRetryPending || state.technicalRetryBlocked || state.submitting) return@PatternSpeakingScreen
                 state.currentResponseExample?.targetResponseEn?.let { speaker.start(it) }
                 patterns.onAction(action)
             }

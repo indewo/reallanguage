@@ -96,7 +96,7 @@ class PatternSpeakingViewModel(
                 PatternSpeakingEffect.ReturnToFullSentenceSpeaking,
             )
             PatternSpeakingAction.AudioToggled -> mutableUiState.update {
-                it.copy(audioMuted = !it.audioMuted)
+                if (it.recording) it else it.copy(audioMuted = !it.audioMuted)
             }
             PatternSpeakingAction.PronounceRequested -> Unit
             is PatternSpeakingAction.StartReadingRequested -> startReading(action.exampleId)
