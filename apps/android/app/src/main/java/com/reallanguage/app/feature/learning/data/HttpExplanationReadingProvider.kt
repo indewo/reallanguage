@@ -45,6 +45,14 @@ class HttpExplanationReadingProvider(
     private var resolvedContext: LockedExplanationContext? = null
     private val expressionLock = Mutex()
     private fun isCurrentOwner() = runtime.accountId == ownerAccountId && runtime.accountEpoch == ownerEpoch && runtime.accessToken != null
+    override suspend fun initialSubject(sentenceId: String): com.reallanguage.app.feature.learning.domain.InitialExplanationSubject? {
+        if (sentenceId != focusSentenceId || !isCurrentOwner()) return null
+        val targets = readLockedContext()?.targets.orEmpty()
+        if (targets.any { it.type != LearningTargetType.PATTERN }) return null
+        val pattern = targets.firstOrNull { it.type == LearningTargetType.PATTERN } ?: return null
+        check(isCurrentOwner())
+        return com.reallanguage.app.feature.learning.domain.InitialExplanationSubject(pattern.display, pattern.explanationZh)
+    }
     override suspend fun prepare(): ExplanationPreparationResult {
         return try {
             val context = readLockedContext()

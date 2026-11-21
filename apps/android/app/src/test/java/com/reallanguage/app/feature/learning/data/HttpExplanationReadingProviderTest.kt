@@ -18,6 +18,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HttpExplanationReadingProviderTest {
+    @Test fun `pattern-only initial card reads fixed meaning without requesting vocabulary explanation`() = runTest {
+        val runtime = SessionRuntime().apply { update("token", "first") }
+        val transport = RecordingExplanationTransport(HttpResponse(200, "response"))
+        val target = com.reallanguage.app.feature.learning.domain.LockedExplanationTarget("p1",
+            com.reallanguage.app.feature.formation.domain.LearningTargetType.PATTERN, "felt + adjective", "过去的感受",
+            listOf("felt", "adjective"), null, null)
+        val provider = HttpExplanationReadingProvider(transport, runtime, chapter, "s1", "cmd",
+            lockedContext = { com.reallanguage.app.feature.learning.domain.LockedExplanationContext("c1", "s1", chapter.sentences.first().textEn, listOf(target)) })
+        assertEquals(com.reallanguage.app.feature.learning.domain.InitialExplanationSubject("felt + adjective", "过去的感受"), provider.initialSubject("s1"))
+        assertNull(transport.request)
+        runtime.update("other-token", "other")
+        assertNull(provider.initialSubject("s1"))
+    }
     private val chapter = FixedLearningChapter(
         "c1",
         1,

@@ -1,5 +1,8 @@
 package com.reallanguage.app.feature.learning.domain
 
+/** Read-only initial card content; a pattern here is not a vocabulary occurrence. */
+data class InitialExplanationSubject(val display: String, val meaningZh: String)
+
 data class SelectableExpression(
     val expressionId: String,
     val display: String,
@@ -54,6 +57,7 @@ sealed interface ExplanationContentResult {
 }
 
 interface ExplanationReadingProvider {
+    suspend fun initialSubject(sentenceId: String): InitialExplanationSubject? = null
     /** Read-only validation against the current locked sentence; never generates or charges. */
     suspend fun validateSavedExpression(sentenceId: String, explanation: ExpressionExplanation): Boolean = true
 

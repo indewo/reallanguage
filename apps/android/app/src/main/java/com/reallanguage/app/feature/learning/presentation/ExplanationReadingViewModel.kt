@@ -244,6 +244,8 @@ class ExplanationReadingViewModel(
         mutableUiState.update { it.copy(loading = true, progressFailed = false) }
         viewModelScope.launch {
             try {
+                val initialSubject = provider.initialSubject(mutableUiState.value.currentFocusSentenceId)
+                mutableUiState.update { it.copy(initialSubject = initialSubject) }
                 voicePreferencesProvider?.let { provider ->
                     val preferences = checkNotNull(provider.load())
                     val automatic = preferences.voiceEnabled && preferences.autoPlayEnabled

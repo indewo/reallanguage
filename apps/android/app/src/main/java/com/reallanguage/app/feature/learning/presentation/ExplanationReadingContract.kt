@@ -24,8 +24,21 @@ data class ExplanationReadingUiState(
     val autoExplanationSuppressed: Boolean = false,
     val voiceEnabled: Boolean = true,
     val speechRate: Float = 1f,
+    val initialSubject: com.reallanguage.app.feature.learning.domain.InitialExplanationSubject? = null,
 ) {
     val threeReadsCompleted: Boolean get() = completedReadCount >= 3
+}
+
+internal fun ExplanationReadingUiState.cardSubject(): com.reallanguage.app.feature.learning.domain.InitialExplanationSubject? {
+    val activeId = activeExpressionId ?: selectedExpression?.expressionId
+    if (activeId != null) return expressions.firstOrNull { it.expressionId == activeId }?.let { expression ->
+        val selected = selectedExpression?.takeIf { it.expressionId == activeId }
+        com.reallanguage.app.feature.learning.domain.InitialExplanationSubject(expression.display,
+            selected?.contextualMeaningZh ?: selected?.explanationZh ?: expression.lockedMeaningZh.orEmpty())
+    }
+    return initialSubject ?: expressions.firstOrNull { !it.lockedMeaningZh.isNullOrBlank() }?.let {
+        com.reallanguage.app.feature.learning.domain.InitialExplanationSubject(it.display, requireNotNull(it.lockedMeaningZh))
+    }
 }
 
 sealed interface ExplanationReadingAction {

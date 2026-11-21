@@ -25,6 +25,31 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ExplanationReadingViewModelTest {
+    @Test fun patternOnlyInitialSubjectSurvivesReopenAndDoesNotSelectAnUnrelatedWord() = runTest {
+        val subject = com.reallanguage.app.feature.learning.domain.InitialExplanationSubject("once + clause", "一旦……")
+        val base = provider()
+        val source = object : ExplanationReadingProvider by base {
+            override suspend fun initialSubject(sentenceId: String) = subject
+        }
+        val store = object : com.reallanguage.app.feature.learning.domain.LearningProgressStore {
+            override suspend fun read(): Map<String, String>? = null
+            override suspend fun write(values: Map<String, String>) = true
+        }
+        val first = createViewModel(source, store)
+        advanceUntilIdle()
+        assertEquals(subject, first.uiState.value.cardSubject())
+        assertNull(first.uiState.value.activeExpressionId)
+        val reopened = createViewModel(source, store)
+        advanceUntilIdle()
+        assertEquals(subject, reopened.uiState.value.cardSubject())
+        reopened.onAction(ExplanationReadingAction.ExpressionRequested("x1"))
+        advanceUntilIdle()
+        assertEquals("expressed", reopened.uiState.value.cardSubject()?.display)
+        assertEquals(subject, reopened.uiState.value.initialSubject)
+    }
+    @Test fun noLockedSubjectDoesNotPretendTheFirstWordIsTheTeachingSubject() {
+        assertNull(ExplanationReadingUiState(chapter, "s1", "基础讲解", expressions = listOf(SelectableExpression("x1", "Okay", 0, 4))).cardSubject())
+    }
     @Test fun retryingUnderstoodSaveResumesTheRequestedReadSpeakTransition() = runTest {
         var writable = true
         val store = object : com.reallanguage.app.feature.learning.domain.LearningProgressStore {
