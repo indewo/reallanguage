@@ -301,7 +301,17 @@ private fun HighlightedEnglishSentence(
 
 @Composable
 private fun LearningTargetCards(state: LearningTargetUiState, onAction: (LearningTargetAction) -> Unit, wide: Boolean) {
-    if (state.currentTargets.isEmpty()) return
+    if (state.currentTargets.isEmpty()) {
+        Text(
+            "本句暂无默认学习目标。你可以点选英文中的词语，或继续。",
+            modifier = Modifier.fillMaxWidth().padding(vertical = 18.dp).testTag("learning_targets_empty"),
+            color = RlColor.Ink,
+            fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+        )
+        return
+    }
     if (wide) {
         BoxWithConstraints(Modifier.fillMaxWidth()) {
         val columns = if (maxWidth >= 590.dp) 3 else 2
