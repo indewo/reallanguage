@@ -1,3 +1,17 @@
+### 2026-11-21 听写恢复提示修正、C17实际核对与检查游标撤回
+
+本轮先读ScreenshotOcr实现和原C27 image29；原附件是错误识别结果页而非输入聊天图，未取得原图前不改猜词规则或宣称OCR修复。本轮无OCR代码修改。
+
+原快速录音章从8/9完整书写左上返回→已有第5次整句会说→音频听写，实际恢复旧输入gghh、incorrect及两项提示。截图rl-dictation-reopen-1121.png/rl-dictation-scroll-1121.png实看：原C17 image18整排固定标点按钮已不存在；输入框末尾仅原终止标点只读显示，未当成整排输入栏。向上滚动可看全输入框，已静音居中、底发音/提示/提交固定。未改输入。该宽屏页面补C17移除工具栏证据，原奶茶句未重放；不代替C18全部布局/尺寸验收。
+
+新发现恢复错误状态长期显示正在进入跟读跟写，实际无自动跳转。仅改audio_dictation_incorrect为本次听写有误，提交后进入跟读跟写订正。assembleDebug通过，APK SHA256289e38309fae5d71fde29e0c650018948a48801bbbd83fc51e1dbd44af4179d0，原证书9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa覆盖Success。新版真实恢复后uiautomator读到新文案且完整一行；本轮没有留新版该状态截图，旧截图只证明布局/旧问题，不冒作新版视觉全验。未添加只复述文案的测试。
+
+再提交既有gghh一次，仅本地原比较及跳转，进入读写订正页，顶部完整原句/中文，订正提示communicate/professors、返回/发音/我已写完可见；未画笔/清空/点我已写完，不伪造实际抄写。该不同词项实际入口能到达不等于C16原order卡死和完成交互已通过。另见该页旧发音失败，未重生/另花费用。
+
+重要副作用及撤回：返回前序页会按既有规范更新learning_checkpoints的续学游标（LearningBackNavigation明确应返回前一实际页，不能擅改为归档回顾），因此本轮检查把原LR-08临时移到LR-05/correction；之前所谓不改变掌握记录不代表游标未变。已有结果/答案未被改写。停止主App后，用一次性本机instrumentation在SQLite事务中严格匹配唯一未完成LR-05 correction游标，按检查前实证仅恢复module_id=LR-08及同focus step_id；恰好更新1行，无答案/评估/通过标记/余额/章状态变更。该操作是撤回本轮检查，不是产品验收测试，不能把instrumentation OK1算验收通过。临时helper源文件随后删除，重新构建并覆盖测试APK移除helper，未提交此操作工具。实际重开首页→未完成7条→原录音条，确认仍8/9完整书写。以后查看前序步骤必须记录并恢复本轮检查游标，不能将其冒称无副作用。
+
+页面增量：听写恢复错误提示文案改完并在实际新版UI树读回；C17当前宽屏实际工具栏移除有截图；C16订正页入口仅部分证据，完成/原order仍待验。OCR和其余原问题仍按原清单未验收。
+
 ### 2026-11-21 截图/音频导入草稿来源显示修复（非C27识别验收）
 
 未完成列表此前仅按legacy SourceType分类，SCREENSHOT落DIARY，AUDIO_IMPORT落RECORDING。EncryptedFormationRecoveryRepository.list现在从已校验并解密的snapshot.bilingual.sourceKind读可选captureSourceKind传入列表项；FormationIncompleteLearningRepository优先保留SCREENSHOT/AUDIO_IMPORT，其他/无元数据沿用旧分类，不从标题推断。UI新增对话截图/导入音频标签，截图用图片图标，沿用现有纸签/颜色，不重设计列表。没有改变安全SourceType枚举、存储schema、恢复ID/阶段/内容或旧加密记录。

@@ -206,7 +206,7 @@
     <string name="audio_dictation_empty">请先输入完整英文。</string>
     <string name="audio_dictation_correct">本次听写内容正确。</string>
     <string name="audio_dictation_continue">继续</string>
-    <string name="audio_dictation_incorrect">本次听写需要订正，正在进入跟读跟写。</string>
+    <string name="audio_dictation_incorrect">本次听写有误，提交后进入跟读跟写订正。</string>
     <string name="audio_dictation_save_failed">保存失败，请重新提交当前答案。</string>
     <string name="learning_audio_failed">语音播放失败，请点“发音”再试。</string>
     <string name="read_write_correction_title">跟读跟写</string>
