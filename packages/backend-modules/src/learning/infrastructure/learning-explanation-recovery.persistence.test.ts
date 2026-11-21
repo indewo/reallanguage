@@ -111,6 +111,37 @@ beforeEach(async () => {
 });
 afterEach(async () => database.destroy());
 describe("read-only historical explanation recovery using real isolated SQL and ciphertext", () => {
+  const saveGroupedRegeneration = async (settled = true) => {
+    await billing().reserve({ accountId, providerAttemptId, operationId: "parent-explanation",
+      operationLabelZh: "生成表达讲解", callType: "USER_RETRY", maximumChargeFen: 80 });
+    const grouped = { ...identity, request: { ...identity.request, operationId: "parent-explanation", callType: "USER_RETRY" } };
+    await delivery().claim(grouped);
+    await delivery().complete(grouped, { output, receipt });
+    if (settled) await billing().settle(receipt);
+  };
+  it("recovers a regeneration billed under its parent using only its account-scoped delivery attempt", async () => {
+    await saveGroupedRegeneration();
+    const reader = new KyselyExistingAiChargeReader(database);
+    expect(await reader.readOperation(accountId, commandId)).toEqual([]);
+    expect(await reader.readAttempt(otherAccount, providerAttemptId)).toEqual([]);
+    const before = await snapshot();
+    expect(await recover()).toMatchObject({ status: "COMPLETED", result: output });
+    expect(await recover(otherAccount)).toEqual({ status: "NO_DELIVERY" });
+    expect(await snapshot()).toEqual(before);
+  });
+  it("does not treat a parent-grouped reservation as settled", async () => {
+    await saveGroupedRegeneration(false);
+    const before = await snapshot();
+    expect(await recover()).toEqual({ status: "PENDING_SETTLEMENT" });
+    expect(await snapshot()).toEqual(before);
+  });
+  it("still rejects a grouped attempt whose usage operation disagrees with its reservation", async () => {
+    await saveGroupedRegeneration();
+    await sql`update billing.ai_usage_charges set operation_id='incorrect-operation' where provider_attempt_id=${providerAttemptId}`.execute(database);
+    const before = await snapshot();
+    expect(await recover()).toEqual({ status: "BILLING_UNVERIFIED" });
+    expect(await snapshot()).toEqual(before);
+  });
   it("recovers the settled legacy result in a fresh instance without settings or any write", async () => {
     await save();
     const before = await snapshot();

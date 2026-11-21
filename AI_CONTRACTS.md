@@ -892,6 +892,9 @@ evidenceZh
 
 ### 11.2 `WORD_EXPLANATION_V1`
 
+2026-11-21只读恢复：显式重生交付键与计费父operation可不同；GET恢复在原operation未匹配时，只能以已鉴权交付行的providerAttemptId作同账号只读账目核对，仍验证reservation/usage/ledger全链一致性及已结算。不得接受客户端提供attempt/父operation、重生或修改费用状态来恢复。真实已有development交付前后GET已核对；手机丢响应链仍待验。
+
+
 2026-11-21后续：词语生成模型依次使用OPENAI_EXPLANATION_MODEL、OPENAI_TARGET_REVIEW_MODEL、普通模型，空白视未配置；供应商请求及receipt保持同一路由，整句不受影响。公网qwen-plus实际development重生后已正确区分单词开发与组合开发排期，并重开保留；这是该样本证据，独立语义门禁及所有旧缓存验收尚未完成。
 
 

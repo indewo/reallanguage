@@ -1,3 +1,15 @@
+### 2026-11-21 显式词语重生按父操作计费时只读恢复误拒修复
+
+发现RecoverLearningExplanation只用新commandId读取billing operation，而重生请求使用retryOfCommandId归组，导致真实已结算交付无匹配账目被判BILLING_UNVERIFIED。ExistingAiChargeReader新增可选只读readAttempt(accountId,providerAttemptId)；Kysely实现继续按账号归属过滤，对同一reservation核验usage operation、subject、wallet、ledger、amount、business ref，不减弱结算一致性。恢复先查原operation，只有匹配为空时，使用已鉴权、解密交付行提供的providerAttemptId查同账号调用；客户端不能传父操作或attempt绕过检查。无生成/预留/结算/写入能力新增，未改GET合同。
+
+真实隔离PGlite+加密交付27项通过，新增父操作USER_RETRY已结算恢复/他账号不可读/快照无写入、未结算仍PENDING_SETTLEMENT、usage operation损坏拒绝。controller11项通过，backend/api构建通过。测试不替代手机失联流程。
+
+实际已有development交付只读复验：用专用诊断deviceId登录测试账号（不注销手机），短暂停止服务后只复制PGlite到.local-data/recovery-probe-20261121-1950-db，立即重启原服务；只打开副本查询当前账号最新已结算、父operation不同于command的WORD交付元数据，未并发打开活库。选中的真实commandId4a151c7d-83b0-3675-9996-344e41c90fdc。公网GET /learning/explanations/deliveries/... ?kind=EXPRESSION，部署前status=BILLING_UNVERIFIED，requestId0b6e9d3d-aa86-4723-9f15-b76181124f24；部署后同账号/同command/同只读GET返回COMPLETED、词义开发（指软件或产品的研发工作），requestId5740c168-3f71-4f4d-b061-615f6024fa6b。与手机上次实际结果相同，没有新POST解释或模型重生。此为真实服务端已有交付恢复证据，不冒称手机丢响应→GET→缓存完整流程已跑通。
+
+仅部署2模块并备份.local-data/charge-reader-before-grouped-recovery-20261121.js和explanation-recovery-before-grouped-20261121.js。本机/远程SHA均：reader14d32728fae983108243bb712da80ee8734cbf0cecf214495a000f0327c72f87；recover dc614ace45c6f6bfc6216e650a88e273ef594206075afdb6eaec7169346ef15a。重启健康实际ok requestIdbb6bd4d7-2914-4b94-bf1f-2e11cc1bb303。私有临时副本已关闭/删除并检查不存在，不提交数据库或凭证。诊断会话结束时误用DELETE /auth/sessions得到404（正确路由/current），该命令内存凭证随进程结束未保留；不得称已成功撤销该短期会话，不为清理它改活库/重置用户密码。原手机会话未注销。
+
+页面增量：本批无界面变更/无APK变更。原C08目标提取旧未知费用请求、A01原音频、词语独立语义门禁和手机断网恢复仍未验收；此修复只关闭已发现的父操作分组查账误拒缺陷。
+
 ### 2026-11-21 听写恢复提示修正、C17实际核对与检查游标撤回
 
 本轮先读ScreenshotOcr实现和原C27 image29；原附件是错误识别结果页而非输入聊天图，未取得原图前不改猜词规则或宣称OCR修复。本轮无OCR代码修改。

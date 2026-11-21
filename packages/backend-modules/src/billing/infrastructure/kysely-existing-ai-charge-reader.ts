@@ -9,8 +9,15 @@ export class KyselyExistingAiChargeReader implements ExistingAiChargeReader {
     accountId: string,
     operationId: string,
   ): Promise<readonly ExistingAiChargeAttempt[]> {
+    return this.read(accountId, { operationId });
+  }
+  public async readAttempt(accountId: string, providerAttemptId: string): Promise<readonly ExistingAiChargeAttempt[]> {
+    return this.read(accountId, { providerAttemptId });
+  }
+  private async read(accountId: string, filter: { operationId: string } | { providerAttemptId: string }): Promise<readonly ExistingAiChargeAttempt[]> {
     const result = await sql<{
       provider_attempt_id: string;
+      reservation_operation: string;
       status: ExistingAiChargeAttempt["status"];
       model_source: string | null;
       provider_cost_micro_cny: string | null;
@@ -27,7 +34,7 @@ export class KyselyExistingAiChargeReader implements ExistingAiChargeReader {
       business_ref_id: string | null;
       business_ref_type: string | null;
       entry_type: string | null;
-    }>`select r.provider_attempt_id,r.status,r.billing_subject_id,r.wallet_id,
+    }>`select r.provider_attempt_id,r.operation_id as reservation_operation,r.status,r.billing_subject_id,r.wallet_id,
       u.model_source,u.provider_cost_micro_cny,u.charged_fen,u.operation_id as usage_operation,
       u.billing_subject_id as usage_subject,u.wallet_id as usage_wallet,
       l.ledger_entry_id as ledger_id,l.amount_fen as ledger_amount,
@@ -37,7 +44,9 @@ export class KyselyExistingAiChargeReader implements ExistingAiChargeReader {
       join billing.billing_subjects s on s.billing_subject_id=r.billing_subject_id
       left join billing.ai_usage_charges u on u.provider_attempt_id=r.provider_attempt_id
       left join billing.ledger_entries l on l.ledger_entry_id=u.ledger_entry_id
-      where s.user_id=${accountId} and r.operation_id=${operationId}
+      where s.user_id=${accountId} and ${"operationId" in filter
+        ? sql`r.operation_id=${filter.operationId}`
+        : sql`r.provider_attempt_id=${filter.providerAttemptId}`}
       order by r.provider_attempt_id`.execute(this.database);
     return result.rows.map((row) => {
       const cost =
@@ -56,7 +65,7 @@ export class KyselyExistingAiChargeReader implements ExistingAiChargeReader {
         Number.isSafeInteger(charged) &&
         charged > 0 &&
         Number(row.ledger_amount) === -charged &&
-        row.usage_operation === operationId &&
+        row.usage_operation === row.reservation_operation &&
         row.usage_subject === row.billing_subject_id &&
         row.usage_wallet === row.wallet_id &&
         row.ledger_subject === row.billing_subject_id &&

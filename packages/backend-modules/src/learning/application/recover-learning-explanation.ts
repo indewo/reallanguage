@@ -63,9 +63,16 @@ export class RecoverLearningExplanation {
     if (stored.status !== "COMPLETED") return stored;
     const envelope = record(stored.result);
     const receipt = record(envelope?.receipt);
-    const matching = attempts.filter(
+    let matching = attempts.filter(
       (value) => value.providerAttemptId === stored.providerAttemptId,
     );
+    // Explicit regenerations use a new delivery key but group their charge
+    // under the original operation. Only the authenticated delivery may supply
+    // an attempt ID; never accept a parent/attempt ID from the recovery caller.
+    if (matching.length === 0 && this.charges.readAttempt) {
+      matching = (await this.charges.readAttempt(command.accountId, stored.providerAttemptId))
+        .filter((value) => value.providerAttemptId === stored.providerAttemptId);
+    }
     if (
       !receipt ||
       matching.length !== 1 ||

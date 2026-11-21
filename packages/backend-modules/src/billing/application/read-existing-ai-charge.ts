@@ -6,6 +6,11 @@ export type ExistingAiChargeAttempt = Readonly<{
   providerCostMicroCny: number | null;
 }>;
 export interface ExistingAiChargeReader {
+  /** Account-scoped lookup for deliveries grouped under a parent operation. */
+  readAttempt?(
+    accountId: string,
+    providerAttemptId: string,
+  ): Promise<readonly ExistingAiChargeAttempt[]>;
   readOperation(
     accountId: string,
     operationId: string,
