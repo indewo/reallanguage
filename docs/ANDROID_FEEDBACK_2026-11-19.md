@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 原生录音启动失败资源所有权修正
+
+检查AndroidMediaRecorderReadSpeakCapture.start发现recorder赋值在apply初始化完成后，output也在prepare/start后才登记；若初始化抛异常，release可能看不到已创建的录音器和输出文件。改为创建后立即登记recorder/output，再配置、prepare和start，使既有失败清理能释放实例并删除本次临时文件；不删除既有录音或学习记录。公网assembleDebug通过。未引入假录音测试冒充硬件故障，也未覆盖手机或实际触发MediaRecorder初始化失败；麦克风释放及文件删除真实故障路径仍待验收，未操作用户手机。
+
 ### 恢复格式损坏边界与测试环境复核
 
 本机wsl.exe存在但wsl --list --quiet提示需安装WSL，无可用Linux发行版；docker命令不可用。未安装系统组件或放宽生产目录fsync。为补查可独立运行的记录格式边界，新增直接codec回归：拒绝0/4/Int.MAX_VALUE未知版本，以及不同位置截断的v3识别记录；正常原记录仍可准确恢复。4项纯格式测试通过。这不执行加密文件落盘/目录持久化，不替代此前19项文件测试中14项Windows失败，后者仍待Linux/实际Android文件故障边界验证。未操作用户手机。

@@ -518,12 +518,16 @@ class AndroidMediaRecorderReadSpeakCapture(
         val directory = accountLearningAttemptsDirectory(applicationContext.filesDir, accountId).apply { mkdirs() }
         val destination = File(directory, "${UUID.randomUUID()}.m4a")
         return try {
-            recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val created = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 MediaRecorder(applicationContext)
             } else {
                 @Suppress("DEPRECATION")
                 MediaRecorder()
-            }.apply {
+            }
+            // Register ownership before setup: prepare/start may throw after creating a file or acquiring the microphone.
+            recorder = created
+            output = destination
+            created.apply {
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
@@ -531,7 +535,6 @@ class AndroidMediaRecorderReadSpeakCapture(
                 prepare()
                 start()
             }
-            output = destination
             true
         } catch (_: Exception) {
             release(deleteOutput = true)
