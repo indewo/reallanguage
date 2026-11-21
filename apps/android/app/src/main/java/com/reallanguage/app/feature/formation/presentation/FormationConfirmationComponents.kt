@@ -17,6 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
@@ -77,10 +80,14 @@ internal fun FormationFrameChapterBadge(text: String, pageWidth: Dp, pageHeight:
         contentAlignment = Alignment.Center,
     ) {
         val badgeFontSize = minOf(maxWidth.value / 4.6f, maxHeight.value / 1.4f, 17f)
+        val density = LocalDensity.current
+        val style = TextStyle(fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Medium,
+            fontSize = badgeFontSize.sp, lineHeight = (badgeFontSize * 1.25f).sp, letterSpacing = 0.sp)
+        val measured = rememberTextMeasurer().measure(text, style, softWrap = false, maxLines = 1)
+        val fit = minOf(1f, with(density) { maxWidth.toPx() } / measured.size.width.coerceAtLeast(1),
+            with(density) { maxHeight.toPx() } / measured.size.height.coerceAtLeast(1)) * .96f
         Text(text, Modifier.testTag("formation_chapter_badge"), color = Color.White,
-            fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Medium,
-            fontSize = badgeFontSize.sp,
-            lineHeight = (badgeFontSize * 1.25f).sp,
+            style = style.copy(fontSize = (badgeFontSize * fit).sp, lineHeight = (badgeFontSize * fit * 1.25f).sp),
             maxLines = 1, textAlign = TextAlign.Center)
     }
 }
