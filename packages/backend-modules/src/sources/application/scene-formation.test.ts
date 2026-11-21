@@ -7,6 +7,21 @@ import {
 } from "./scene-formation.js";
 
 describe("scene formation application boundary", () => {
+  it("does not promote derived summary claims into confirmed generation facts", async () => {
+    const execute = vi.fn().mockResolvedValue(null);
+    await expect(new GenerateSceneDraft({ execute }).execute({
+      accountId: "account", commandId: "command", task: "SCENE_DIALOGUE_TURN_V1",
+      remainingContentBudget: 10,
+      session: {
+        operationId: "operation", start: { kind: "TEMPLATE", templateId: "work", titleZh: "工作沟通", scopeZh: "确认时间" },
+        contentType: "DIALOGUE",
+        answers: [{ questionId: "response", questionZh: "对方如何回应时间安排？", answerZh: "同意该时间安排" }],
+        collectedFacts: ["对方已协调好资源"], missingNonBlockingFacts: [],
+      },
+    })).rejects.toThrow();
+    expect(execute.mock.calls[0]?.[1].session.collectedFacts).toEqual(["对方如何回应时间安排？：同意该时间安排"]);
+    expect(execute.mock.calls[0]?.[1].session.answers[0].answerZh).toBe("同意该时间安排");
+  });
   it("owns draft identity so repeated model IDs cannot reopen an old review screen", async () => {
     const provider = {
       execute: vi.fn().mockResolvedValue({

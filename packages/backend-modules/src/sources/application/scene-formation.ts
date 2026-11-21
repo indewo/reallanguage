@@ -260,10 +260,17 @@ export class GenerateSceneDraft {
         : command.session;
     const generationSettings: ContentGenerationSettings | undefined =
       await this.settings?.read(command.accountId);
+    // Model summaries and rejected drafts are not additional user facts.
+    // Retain each answer's question so a bare agreement keeps its exact scope.
+    const confirmedAnswerFacts = command.session.answers.map((answer) =>
+      answer.questionZh?.trim()
+        ? `${answer.questionZh.trim()}：${answer.answerZh}`
+        : answer.answerZh,
+    );
     const value = record(
       await this.provider.execute(command.task, {
         ...command,
-        session: providerSession,
+        session: { ...providerSession, collectedFacts: confirmedAnswerFacts },
         ...(generationSettings === undefined
           ? {}
           : { settings: generationSettings }),
