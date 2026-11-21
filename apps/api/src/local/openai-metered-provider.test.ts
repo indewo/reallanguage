@@ -54,6 +54,9 @@ describe("LocalOpenAiMeteredProvider", () => {
     expect(request.text.format.schema.properties.decision.enum).toEqual(["PASS", "FAIL"]);
     expect(request.instructions).toContain("Independently audit");
     expect(request.instructions).toContain("temporal order");
+    expect(request.instructions).toContain("Audit specificity as well as contradictions");
+    expect(request.instructions).toContain("下周初");
+    expect(request.instructions).toContain("王经理");
   });
   it("uses a scoped scene model and reports that model without changing other text tasks", async () => {
     vi.stubEnv("OPENAI_SCENE_MODEL", "scene-quality-model");
