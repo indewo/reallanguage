@@ -60,7 +60,7 @@ fun HandwritingCopyScreen(
         renderWorkspacePaper = false,
         leftPanelContent = {
             Box(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp)
+                modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
                     .testTag("handwriting-instruction-note"),
             ) {
                 Image(
@@ -84,7 +84,7 @@ fun HandwritingCopyScreen(
             Surface(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
                     .widthIn(max = 96.dp)
-                    .requiredHeightIn(min = 44.dp)
+                    .requiredHeightIn(min = 48.dp)
                     .padding(top = RlSpace.Space4, bottom = 2.dp)
                     .testTag("handwriting-attempt-status-container"),
                 color = RlColor.Primary.copy(alpha = .82f),
