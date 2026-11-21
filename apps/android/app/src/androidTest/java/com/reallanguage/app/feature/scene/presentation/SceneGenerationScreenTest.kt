@@ -34,6 +34,8 @@ class SceneGenerationScreenTest {
         }
         composeRule.onNodeWithTag("scene-generation-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("scene-generation-progress").assertIsDisplayed()
+        composeRule.onNodeWithText("项目延期").assertIsDisplayed()
+        composeRule.onNodeWithText("形式 · 对话").assertIsDisplayed()
         java.io.File(composeRule.activity.filesDir, "scene-generation-layout.png").outputStream().use {
             composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
         }

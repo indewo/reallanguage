@@ -53,6 +53,7 @@ internal fun EditorialProcessWorkspace(
     RlPaperBackground(modifier) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 16.dp, vertical = 8.dp)) {
             val compact = maxWidth < 640.dp || maxHeight < 330.dp || LocalDensity.current.fontScale > 1.35f
+            val showCompactArtwork = artwork != null && maxWidth >= 640.dp && LocalDensity.current.fontScale <= 1.35f
             val stageScrollState = rememberScrollState()
             val heading: @Composable ColumnScope.() -> Unit = {
                 Text(title, modifier = Modifier.fillMaxWidth(), color = if (failed) RlColor.Error else Color(0xFF934019),
@@ -90,8 +91,14 @@ internal fun EditorialProcessWorkspace(
             if (compact) {
                 Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (fixedStages) {
+                        Row(Modifier.fillMaxWidth().weight(1f), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        if (showCompactArtwork && artwork != null) {
+                            Box(Modifier.weight(.70f).fillMaxHeight().testTag("process_context_panel")) {
+                                artwork(Modifier.matchParentSize())
+                            }
+                        }
                         EditorialSheet(
-                            Modifier.fillMaxWidth().weight(1f),
+                            Modifier.weight(1.30f).fillMaxHeight(),
                             contentPadding = 8.dp,
                             contentSpacing = 3.dp,
                             contentModifier = Modifier.fillMaxSize().testTag("process_stage_panel"),
@@ -114,6 +121,7 @@ internal fun EditorialProcessWorkspace(
                                     )
                                 }
                             }
+                        }
                         }
                     } else {
                         Column(

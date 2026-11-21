@@ -43,11 +43,11 @@ internal fun SceneSummaryPoster(topic: String, type: String, detail: String?, mo
         val natural = density.fontScale > 1.35f || height < 290.dp || topicHeight > height * .09f || detailHeight > height * .115f
         if (natural) {
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Image(painterResource(R.drawable.rl_v73_scene_type_dialogue), null, Modifier.fillMaxWidth().height(260.dp), contentScale = ContentScale.Fit)
+                Image(painterResource(R.drawable.rl_v73_scene_type_dialogue), null, Modifier.fillMaxWidth().height(minOf(260.dp, height * .45f)), contentScale = ContentScale.Fit)
                 EditorialSheet(contentPadding = 16.dp, contentSpacing = 8.dp) {
-                    Text(topic, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, color = RlColor.Ink, fontSize = 18.sp, lineHeight = 28.sp)
-                    Text("形式 · $type", fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontSize = 15.sp, lineHeight = 24.sp)
-                    detail?.let { Text("补充 · $it", fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontSize = 15.sp, lineHeight = 24.sp) }
+                    Text(topic, Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, color = RlColor.Ink, fontSize = 18.sp, lineHeight = 28.sp)
+                    Text("形式 · $type", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontSize = 15.sp, lineHeight = 24.sp)
+                    detail?.let { Text("补充 · $it", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontSize = 15.sp, lineHeight = 24.sp) }
                 }
             }
         } else {
