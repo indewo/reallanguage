@@ -40,7 +40,7 @@ fun EditorialCompactAction(
                 .padding(horizontal = 12.dp, vertical = 6.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text(text, color = if (!enabled) RlColor.TextSecondary else if (primary) Color.White else RlColor.Ink,
+            Text(text, modifier = Modifier.fillMaxWidth(), color = if (!enabled) RlColor.TextSecondary else if (primary) Color.White else RlColor.Ink,
                 fontFamily = EditorialFont.Serif, fontWeight = FontWeight.SemiBold,
                 fontSize = 15.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
         }
