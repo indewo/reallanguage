@@ -58,7 +58,7 @@ class HandwritingCopyScreenTest {
             androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult,
         ) { check(it(statusLayout)) }
         captureFixtureIfRequested("count-layout")
-        check(statusLayout.single().lineCount == 2 && !statusLayout.single().hasVisualOverflow) { "The complete attempt and minimum count must fit two lines without clipping" }
+        check(statusLayout.single().lineCount == 2 && !statusLayout.single().hasVisualOverflow) { "Attempt label: lines=${statusLayout.single().lineCount}, size=${statusLayout.single().size}, paragraph=${statusLayout.single().multiParagraph.width}x${statusLayout.single().multiParagraph.height}, widthOverflow=${statusLayout.single().didOverflowWidth}, heightOverflow=${statusLayout.single().didOverflowHeight}" }
         val instruction = composeRule.onNodeWithTag("handwriting-instruction-note").fetchSemanticsNode().boundsInRoot
         val status = composeRule.onNodeWithTag("handwriting-attempt-status-container").fetchSemanticsNode().boundsInRoot
         check(status.top > instruction.bottom) {

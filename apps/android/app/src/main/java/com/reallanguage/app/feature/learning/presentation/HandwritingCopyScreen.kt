@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -82,6 +83,7 @@ fun HandwritingCopyScreen(
             Spacer(Modifier.weight(1f))
             Surface(
                 modifier = Modifier.align(Alignment.CenterHorizontally)
+                    .widthIn(max = 96.dp)
                     .requiredHeightIn(min = 44.dp)
                     .padding(top = RlSpace.Space4, bottom = 2.dp)
                     .testTag("handwriting-attempt-status-container"),
@@ -91,7 +93,7 @@ fun HandwritingCopyScreen(
                 Text(
                     if (state.copyInProgress) "第${state.confirmedCopyCount + 1}次\n至少2次"
                     else "已完成${state.confirmedCopyCount}次\n至少2次",
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 5.dp)
                         .testTag("handwriting-attempt-status"),
                     color = RlColor.OnPrimary,
                     maxLines = 2,
