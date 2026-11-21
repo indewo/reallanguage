@@ -41,6 +41,36 @@ class SceneResponseViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun finalSaveExceptionsKeepPassAndFailCandidatesWithoutRepeatingEvaluation() = runTest(dispatcher) {
+        for (decision in listOf(SceneEvaluationDecision.PASS, SceneEvaluationDecision.FAIL)) {
+            val repository = FakeRepository(finalCandidate = passingCandidate.copy(decision = decision))
+            val model = createViewModel(listOf(task), repository)
+            repeat(2) {
+                respond(model, task.targetSentenceEn)
+                model.onAction(SceneResponseAction.ContinueRoundRequested)
+                advanceUntilIdle()
+            }
+            repository.failure = "save"
+            respond(model, task.targetSentenceEn)
+            if (decision == SceneEvaluationDecision.FAIL) {
+                model.onAction(SceneResponseAction.StopPractisingRequested)
+                advanceUntilIdle()
+            }
+            assertTrue(model.uiState.value.saveFailed)
+            assertFalse(model.uiState.value.submitting)
+            assertFalse(model.uiState.value.completed)
+            assertEquals(decision, model.uiState.value.finalDecision)
+            assertEquals(task.targetSentenceEn, model.uiState.value.transcript)
+            assertEquals(1, repository.evaluations)
+            repository.failure = null
+            model.onAction(SceneResponseAction.RetryRequested)
+            advanceUntilIdle()
+            assertTrue(model.uiState.value.completed)
+            assertEquals(1, repository.evaluations)
+            assertEquals(2, repository.saves)
+        }
+    }
+
     @Test fun supplierExceptionsReleaseControlsWithoutInventingTrainingOrFinalSuccess() = runTest(dispatcher) {
         for (failure in listOf("generation", "transcription", "training", "evaluation")) {
             val repository = FakeRepository()
@@ -586,7 +616,7 @@ class SceneResponseViewModelTest {
             chapterId: String,
             sentenceId: String,
             decision: SceneEvaluationDecision,
-        ): SceneResponseSaveResult { saves++; return saveResult }
+        ): SceneResponseSaveResult { saves++; if (failure == "save") throw java.io.IOException("interrupted"); return saveResult }
     }
 
     companion object {

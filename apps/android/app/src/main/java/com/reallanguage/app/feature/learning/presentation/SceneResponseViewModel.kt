@@ -303,11 +303,12 @@ class SceneResponseViewModel(
     private suspend fun savePassAndAdvance(task: FixedSceneResponseTask) {
         if (!saveProgress()) { mutableUiState.update { it.copy(submitting = false, saveFailed = true) }; return }
         when (
-            repository.saveFinalDecision(
+            try { repository.saveFinalDecision(
                 mutableUiState.value.chapter.chapterId,
                 task.sentenceId,
                 SceneEvaluationDecision.PASS,
-            )
+            ) } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { SceneResponseSaveResult.Failed }
         ) {
             SceneResponseSaveResult.Saved -> advanceTask()
             SceneResponseSaveResult.Failed -> mutableUiState.update {
@@ -323,11 +324,12 @@ class SceneResponseViewModel(
         viewModelScope.launch {
             if (!saveProgress()) { mutableUiState.update { it.copy(submitting = false, saveFailed = true) }; return@launch }
             when (
-                repository.saveFinalDecision(
+                try { repository.saveFinalDecision(
                     current.chapter.chapterId,
                     task.sentenceId,
                     SceneEvaluationDecision.FAIL,
-                )
+                ) } catch (cancelled: CancellationException) { throw cancelled }
+                catch (_: Exception) { SceneResponseSaveResult.Failed }
             ) {
                 SceneResponseSaveResult.Saved -> advanceTask(
                     SceneResponseEffect.ArchiveWrongAndContinue,

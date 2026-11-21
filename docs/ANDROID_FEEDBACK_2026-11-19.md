@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 场景回应最终保存异常不重复评价
+
+savePassAndAdvance和用户明确不再练后的saveFailureAndContinue调用saveFinalDecision未捕获抛出异常，可能使submitting持续锁住。补充取消传播及其他异常进入既有Failed状态，保留原PASS/FAIL候选、转录和轮次；明确重试只保存原判断，不重新评价原音。新增隔离回归覆盖PASS和FAIL两条路径，首次IOException后未完成/解锁/保留候选，重试成功后评价调用仍1次、保存2次。24项场景VM测试通过；未安装此修改或跑真实场景最终保存/归档闭环，不能据测试关闭原反馈，未操作用户手机。
+
 ### 场景回应四类供应商异常解锁
 
 generateTasks、transcribeResponse、trainingFeedback、evaluateFinalRound原调用未捕获抛出异常，可能使loading/transcribing/submitting保持锁定。补充取消继续传播，其他异常进入各自既有Failed分支，保留转录、任务/轮次和仓库提供的原请求重试资格，不伪造训练完成或最终通过。新增隔离测试分别在生成、转录、训练反馈及第3轮评价抛IOException，核对按钮状态释放、已转录内容保持、无最终保存。23项场景VM测试通过；未安装本修改或进行真实场景录音、供应商中断及归档验证，不据此关闭场景真实流程。用户无需操作，未触碰手机。
