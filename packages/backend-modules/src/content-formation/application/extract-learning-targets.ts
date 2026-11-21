@@ -102,6 +102,12 @@ export type ExtractLearningTargetsCommand = Omit<
 export class InvalidLearningTargetInputError extends Error {}
 export class InvalidLearningTargetOutputError extends Error {}
 
+// Ordinary calendar combinations are compositional, unlike lexical uses such as "on time".
+const isCalendarCombination = (value: string): boolean =>
+  /^(?:(?:tomorrow|yesterday|today)\s+(?:morning|afternoon|evening|night)|(?:this|next|last)\s+(?:morning|afternoon|evening|week|month|year|monday|tuesday|wednesday|thursday|friday|saturday|sunday))$/i.test(
+    value.trim().replace(/\s+/g, " "),
+  );
+
 export class ExtractLearningTargets {
   public constructor(
     private readonly settings: ContentGenerationSettingsReader,
@@ -243,6 +249,9 @@ export class ExtractLearningTargets {
       );
     if (command.requestedExpression && output.targets.length !== 1)
       throw new Error("Invalid requested expression result");
+    if (requested && output.targets.some((target) =>
+      target.type === "FIXED_EXPRESSION" && isCalendarCombination(target.display)))
+      throw new InvalidLearningTargetOutputError("Calendar combination is not a fixed expression");
     if (
       requested &&
       output.targets.some(
@@ -277,7 +286,10 @@ export class ExtractLearningTargets {
               .digest("hex")
               .slice(0, 32)}`,
           }))
-        : output.targets,
+        : output.targets.filter((target) =>
+            target.type !== "FIXED_EXPRESSION" || !isCalendarCombination(target.display)),
+      queryableExpressions: output.queryableExpressions.filter((expression) =>
+        expression.expressionId.startsWith("word:") || !isCalendarCombination(expression.display)),
       learningScopes: [
         settings.basicVocabulary,
         ...settings.purposeVocabularies,

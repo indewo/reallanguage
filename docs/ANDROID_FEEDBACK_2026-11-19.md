@@ -1,5 +1,13 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 普通日历组合过滤已真实复验，单句提取另有失败待查
+
+前次所谓“第二章”不准确：实际是同一第1章里的第2个重点句，点继续切换重点句，顶部仍为第1章。新例句“They are rescheduling the conference due to bad weather.”语法正确，但tomorrow morning仍被当固定搭配，说明指令未阻止误分类。
+
+ExtractLearningTargets新增窄范围普通日历组合识别（tomorrow/yesterday/today加时段、this/next/last加日历单位/星期），在完成原有源证据/结构/身份校验之后，排除默认FIXED_EXPRESSION建议和普通短语候选；不改WORD、原英语、解释、知识库或用户已固定记录，不影响on time/in time/day by day等词汇用法。主动请求误分类日历搭配明确拒绝，不静默换分类。新增6项保留/排除回归，本文件29项通过、backend-modules/API构建通过。部署extract-learning-targets.js，本机/服务器SHA256一致302947345c89e63a7d9059be7da5e9b72015ebcb26ed68d5b3d70ddb0001ed5f，健康ok。
+
+实际手机返回选句，仅选建议改期一句后提取：接口e7b64fb8-8479-4058-b93c-990a7a3808f8返回200但客户端显示提取失败（rl-target-calendar-filtered-1121.png实际为失败页，文件名不代表通过）；该客户端拒绝原因仍待查，不能以HTTP200判通过。返回后恢复选前两句，实际进入目标页，第一句scheduled/on time及原例句仍在，点继续到第2重点句：只显示rescheduling与正确例句，不再有tomorrow morning卡，截图rl-target-calendar-removed-1121.png已查看。该窄范围过滤真实通过，不扩大为单句失败或全部提取流程已关闭；现场停在第2重点句目标页，尚未固定。
+
 ### 改期不再断言达成协议，真实进入目标提取后发现例句错误
 
 调整对话生成允许同一角色的不同已确认意图连续成句，三句下限不应由虚构结局补足；提供器60项及API构建通过，部署SHA256 a53ed2359e21806a6ef732b6a9d1574409489d26d9c8b2df2360b7fa2c0ccb05。手机重新生成实际保留“建议推迟”，最后询问明天上午几点，未再断言接受改期（rl-scene-delay-open-question-1121.png已查看）。该问句是围绕已确认目的的未定追问，非已经发生/达成的新事实；仍不能由一次结果断言全部语义正确，日期today的推断及其他分支仍待核对。

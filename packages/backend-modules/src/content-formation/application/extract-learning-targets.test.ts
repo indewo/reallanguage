@@ -41,6 +41,20 @@ const target = {
   selectedByDefault: true as const,
 };
 describe("ExtractLearningTargets", () => {
+  it.each(["tomorrow morning", "Next week", "this afternoon"])("omits compositional calendar suggestions without dropping real vocabulary: %s", async (display) => {
+    const app = new ExtractLearningTargets({ read: async () => settings }, { extract: async () => ({
+      targets: [target, { ...target, targetId: "calendar", display, type: "FIXED_EXPRESSION" as const }],
+      queryableExpressions: [{ expressionId: "calendar", unitId: "u1", display }],
+    }) });
+    const result = await app.execute(command);
+    expect(result.targets).toEqual([target]);
+    expect(result.queryableExpressions).toEqual([]);
+  });
+  it.each(["on time", "in time", "day by day"])("keeps lexical fixed expressions: %s", async (display) => {
+    const candidate = { ...target, display, type: "FIXED_EXPRESSION" as const };
+    const app = new ExtractLearningTargets({ read: async () => settings }, { extract: async () => ({ targets: [candidate], queryableExpressions: [] }) });
+    expect((await app.execute(command)).targets).toEqual([candidate]);
+  });
   it.each([[" "], ["be", "\n"], ["\u00a0\u3000"], [""]])(
     "rejects blank structure even behind a typed provider %j",
     async (...structureParts) => {
