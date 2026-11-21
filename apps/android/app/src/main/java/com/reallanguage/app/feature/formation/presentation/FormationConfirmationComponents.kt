@@ -76,9 +76,11 @@ internal fun FormationFrameChapterBadge(text: String, pageWidth: Dp, pageHeight:
             .width(pageWidth * .099f).height(pageHeight * .095f),
         contentAlignment = Alignment.Center,
     ) {
+        val badgeFontSize = minOf(maxWidth.value / 4.6f, maxHeight.value / 1.4f, 17f)
         Text(text, Modifier.testTag("formation_chapter_badge"), color = Color.White,
             fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Medium,
-            fontSize = (maxWidth.value / 4.6f).coerceAtMost(17f).sp,
+            fontSize = badgeFontSize.sp,
+            lineHeight = (badgeFontSize * 1.25f).sp,
             maxLines = 1, textAlign = TextAlign.Center)
     }
 }
