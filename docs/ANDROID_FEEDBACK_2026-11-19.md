@@ -1,3 +1,7 @@
+### 2026-11-21 章节纸签布局宽度修复复验通过
+
+在实际字体测量之外，将FormationFrameChapterBadge Text.fillMaxWidth，使居中段落与文字布局框共用纸签宽度；保留完整文字和原hasVisualOverflow检查。主包/测试包构建、保留数据覆盖成功，同一twoReferenceCardsKeepExamplesInsidePaperAndShareTheAvailableRow手机隔离检查通过47.907s，包含双卡例句在纸内、尺寸/对齐及纸签单行无溢出。此前143px文字框与238px段落不一致未再报告。该结果仅覆盖本组件样本，不将全部B04/C07或真实原章节入口关闭。
+
 ### 2026-11-21 纸签溢出现场数值与截图
 
 5b2a8fb主包/测试包构建覆盖后仍失败。将截图移到断言前并输出数值，保持原hasVisualOverflow断言：size143x70、paragraph238x70，实际报告为宽度，不是此前推测的高度。target-two-cards.png已查看：双卡例句完整、纸签第1章肉眼完整；需要继续核对语义节点对应/布局测量与实际渲染差异，不再按高度猜修。该截图是独立组件且未配置生产沉浸式窗口，顶部状态栏不作生产页结论。B04/侧签整体仍未验收。

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -86,7 +87,7 @@ internal fun FormationFrameChapterBadge(text: String, pageWidth: Dp, pageHeight:
         val measured = rememberTextMeasurer().measure(text, style, softWrap = false, maxLines = 1)
         val fit = minOf(1f, with(density) { maxWidth.toPx() } / measured.size.width.coerceAtLeast(1),
             with(density) { maxHeight.toPx() } / measured.size.height.coerceAtLeast(1)) * .96f
-        Text(text, Modifier.testTag("formation_chapter_badge"), color = Color.White,
+        Text(text, Modifier.fillMaxWidth().testTag("formation_chapter_badge"), color = Color.White,
             style = style.copy(fontSize = (badgeFontSize * fit).sp, lineHeight = (badgeFontSize * fit * 1.25f).sp),
             maxLines = 1, textAlign = TextAlign.Center)
     }
