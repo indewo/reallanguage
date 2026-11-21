@@ -139,7 +139,7 @@ fun ScreenshotImportScreen(
             }
             HorizontalDivider(color = RlColor.Border.copy(alpha = .75f), thickness = .7.dp)
             if (recognized != null) {
-                Text("请检查对话正文，可移除姓名、时间、界面符号并修正识别错字。",
+                Text("请核对正文，去除界面昵称、时间戳和按钮文字；保留对话里实际表达的姓名和时间，并修正识别错字。",
                     color = RlColor.TextSecondary, fontSize = 14.sp,
                     modifier = Modifier.padding(vertical = 8.dp))
                 com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(

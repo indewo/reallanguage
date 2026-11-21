@@ -185,7 +185,7 @@ private fun VocabularyBookHeader(state: VocabularyBookUiState, onAction: (Vocabu
             IconButton(
                 { onAction(VocabularyBookAction.ReturnHomeRequested) },
                 Modifier.size(if (compact) 40.dp else 48.dp).testTag("vocabulary-book-back"),
-            ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = RlColor.Ink) }
+            ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回首页", tint = RlColor.Ink) }
             Spacer(Modifier.width(if (compact) 2.dp else 18.dp))
             VerticalDivider(Modifier.height(34.dp), color = RlColor.Divider)
             Text(

@@ -55,7 +55,7 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
                 bottom = if (compact) 18.dp else if (detailVisible) 12.dp else 26.dp)) {
             Box(Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                 IconButton(onBack, Modifier.align(Alignment.CenterStart).size(48.dp).testTag("ledger-back")) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
+                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回首页", tint = RlColor.Ink)
                 }
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("句式本", color = RlColor.Ink, fontFamily = EditorialFont.Serif,

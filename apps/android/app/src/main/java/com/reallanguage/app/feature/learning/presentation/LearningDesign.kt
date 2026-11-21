@@ -130,6 +130,7 @@ internal fun LearningHeading(
     onBack: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
     onExit: (() -> Unit)? = null,
+    backContentDescription: String = "返回",
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val exitAction = onExit ?: LocalLearningExitAction.current
@@ -157,7 +158,7 @@ internal fun LearningHeading(
                     contentAlignment = Alignment.CenterStart,
                 ) {
                     onBack?.let { callback -> IconButton(onClick = callback) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink, modifier = Modifier.size(25.dp))
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, backContentDescription, tint = RlColor.Ink, modifier = Modifier.size(25.dp))
                     } }
                 }
                 Column(Modifier.weight(1f).padding(vertical = 3.dp), horizontalAlignment = Alignment.CenterHorizontally) {

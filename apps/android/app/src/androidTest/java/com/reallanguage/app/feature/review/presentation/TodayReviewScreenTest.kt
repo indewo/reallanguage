@@ -2,6 +2,7 @@ package com.reallanguage.app.feature.review.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -37,7 +38,7 @@ class TodayReviewScreenTest {
     private fun verifyReturnHome(state: TodayReviewUiState) {
         val actions = mutableListOf<TodayReviewAction>()
         composeRule.setContent { RlTheme { TodayReviewScreen(state, actions::add) } }
-        composeRule.onNodeWithText("返回首页").assertIsDisplayed().performClick()
+        composeRule.onNodeWithContentDescription("返回首页").assertIsDisplayed().performClick()
         assertEquals(listOf(TodayReviewAction.ReturnHomeRequested), actions)
         if (state.deferredByDailyLimit) {
             val instrumentation = InstrumentationRegistry.getInstrumentation()

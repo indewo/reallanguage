@@ -32,7 +32,7 @@ fun TodayReviewScreen(state: TodayReviewUiState, onAction: (TodayReviewAction) -
     LearningPage {
         Column(Modifier.fillMaxSize().padding(horizontal = 26.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            LearningHeading(stringResource(R.string.today_review_title), onBack = { onAction(TodayReviewAction.ReturnHomeRequested) })
+            LearningHeading(stringResource(R.string.today_review_title), onBack = { onAction(TodayReviewAction.ReturnHomeRequested) }, backContentDescription = "返回首页")
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 when {
@@ -88,14 +88,10 @@ fun TodayReviewScreen(state: TodayReviewUiState, onAction: (TodayReviewAction) -
                     } })
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)) {
-                if (!state.loading && !state.loadFailed && state.chapters.isNotEmpty()) {
-                    LearningAction(stringResource(R.string.today_review_start),
-                        { onAction(TodayReviewAction.StartCurrentChapterRequested) },
-                        Modifier.weight(1f).testTag("today-review-start"), enabled = state.currentChapter != null, primary = true)
-                }
-                LearningAction(stringResource(R.string.review_return_home),
-                    { onAction(TodayReviewAction.ReturnHomeRequested) }, Modifier.width(136.dp))
+            if (!state.loading && !state.loadFailed && state.chapters.isNotEmpty()) {
+                LearningAction(stringResource(R.string.today_review_start),
+                    { onAction(TodayReviewAction.StartCurrentChapterRequested) },
+                    Modifier.fillMaxWidth().testTag("today-review-start"), enabled = state.currentChapter != null, primary = true)
             }
         }
     }
