@@ -187,7 +187,7 @@ private fun ProcessStageCard(index: Int, label: String, failed: Boolean, compact
             top = if (compactCard) 7.dp else 28.dp, bottom = if (compactCard) 7.dp else 22.dp), horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(if (compactCard) 10.dp else 23.dp, Alignment.CenterVertically)) {
             Icon(processStageIcon(label), null, tint = accent, modifier = Modifier.size(if (compactCard) 27.dp else 42.dp))
-            Text(label, color = accent, fontFamily = EditorialFont.Serif,
+            Text(label, modifier = if (compactCard) Modifier.offset(y = 8.dp) else Modifier, color = accent, fontFamily = EditorialFont.Serif,
                 fontSize = if (compactCard) 13.sp else 15.sp,
                 lineHeight = if (compactCard) 18.sp else 23.sp,
                 fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
