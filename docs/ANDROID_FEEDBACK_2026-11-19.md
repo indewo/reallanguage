@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 恢复格式损坏边界与测试环境复核
+
+本机wsl.exe存在但wsl --list --quiet提示需安装WSL，无可用Linux发行版；docker命令不可用。未安装系统组件或放宽生产目录fsync。为补查可独立运行的记录格式边界，新增直接codec回归：拒绝0/4/Int.MAX_VALUE未知版本，以及不同位置截断的v3识别记录；正常原记录仍可准确恢复。4项纯格式测试通过。这不执行加密文件落盘/目录持久化，不替代此前19项文件测试中14项Windows失败，后者仍待Linux/实际Android文件故障边界验证。未操作用户手机。
+
 ### 后台学习应用层组合回归
 
 基于be61657执行packages/backend-modules/src/learning/application全部测试及apps/api/src/local/openai-metered-provider.test.ts，10文件163项通过，命令正常退出。覆盖范围是现有应用层用例和提供器隔离回归，不包含真实录音、供应商内容准确性、数据库归档实际流程或Windows目录fsync文件测试，未据此关闭待验项目。未变更后台配置或用户数据，未操作手机；本轮无新代码缺陷，记录检查证据供后续验收。

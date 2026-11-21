@@ -9,6 +9,20 @@ import org.junit.Test
 
 /** Pure format checks; these do not substitute for encrypted file persistence on the phone. */
 class FullSpeakingRecoveryCodecTest {
+    @Test fun unknownVersionsAndTruncatedRecognitionCannotBecomeRecoveredFeedback() {
+        val snapshot = FullSpeakingRecoverySnapshot("recording", FullSpeakingRecoveryPhase.TrainingDelivered,
+            training = ReadingFeedback("反馈", ReadingFeedbackAction.CONTINUE, transcript = "recognized words"))
+        val bytes = FullSpeakingRecoveryCodec.encode(snapshot)
+        for (version in listOf(0, 4, Int.MAX_VALUE)) {
+            val changed = bytes.copyOf()
+            java.nio.ByteBuffer.wrap(changed).putInt(4, version)
+            assertThrows(IllegalArgumentException::class.java) { FullSpeakingRecoveryCodec.decode(changed) }
+        }
+        for (length in listOf(1, 8, bytes.size - 1, bytes.size - 8)) {
+            assertThrows(Exception::class.java) { FullSpeakingRecoveryCodec.decode(bytes.copyOf(length)) }
+        }
+        assertEquals(snapshot, FullSpeakingRecoveryCodec.decode(bytes))
+    }
     @Test fun recognitionRoundTripsExactlyIncludingEmptyAndUnknownLegacyText() {
         for (transcript in listOf(null, "", "I'd like to learn English—future university life. café 😀")) {
             val snapshot = FullSpeakingRecoverySnapshot("recording", FullSpeakingRecoveryPhase.TrainingDelivered,
