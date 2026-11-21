@@ -60,7 +60,7 @@ fun HandwritingCopyScreen(
         renderWorkspacePaper = false,
         leftPanelContent = {
             Box(
-                modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
+                modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp)
                     .testTag("handwriting-instruction-note"),
             ) {
                 Image(
