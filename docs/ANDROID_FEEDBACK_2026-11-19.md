@@ -1,5 +1,9 @@
 # 2026-11-19 用户反馈与增量验证
 
+### 剩余章节读取异常与重复加载
+
+ChapterSelectionViewModel加载未捕获repository异常，且loading在线程启动后设置，存在一直等待及快速重试重复读取风险。改为同步设置loading，取消继续传播、其他异常映射既有Failed，允许明确重试，不改ArchivedChapter/FixedSource边界，不生成或自动选择章节。6项单元测试通过，新增IOException后无章节臆造、解除等待、双击重试只有一次新读取且保持同一原边界。未安装修改，也未跑真实归档后章节选择流程，归档与多章节验收仍未关闭；遵照用户要求未操作手机。
+
 ### 近期异常恢复组合检查与候选包
 
 基于源码944a3f2，组合执行CompleteWriting(18)、LearningExit(5)、HandwritingCopy(7)、ExplanationPreparation(4)、SceneResponse(22)、PatternSpeaking(34)，共90项单元测试0失败；同次assembleDebug公网参数构建成功。原证书SHA256仍9693a929e3619fe2a737d942a85fb36b45f062764ea7b349dc1981e7312ec8fa；本地apps/android/app/build/outputs/apk/debug/app-debug.apk SHA256 338be739d16273ee5739a92793fc20c512ead107d5892cc15fd7e06635466ded。未覆盖用户手机或旧桌面APK，未提交二进制/私钥。这是单元回归及候选构建证据，不是场景、书写、归档真实全流程通过；此前Windows目录持久化14项失败不在本次筛选范围内，没有据90项通过抹除该限制。

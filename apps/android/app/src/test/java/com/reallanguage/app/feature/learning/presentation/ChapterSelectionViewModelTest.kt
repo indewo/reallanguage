@@ -29,6 +29,28 @@ class ChapterSelectionViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun thrownLoadReleasesWaitingAndRapidRetriesKeepTheSameSourceBoundary() = runTest(dispatcher) {
+        val boundary = ChapterSelectionBoundary.ArchivedChapter("c1")
+        val calls = mutableListOf<ChapterSelectionBoundary>()
+        val model = ChapterSelectionViewModel(boundary, ChapterSelectionRepository {
+            calls += it
+            if (calls.size == 1) throw java.io.IOException("interrupted")
+            ChapterSelectionLoadResult.Ready("source-1", chapters)
+        })
+        model.onAction(ChapterSelectionAction.RetryLoadRequested)
+        advanceUntilIdle()
+        assertEquals(listOf(boundary), calls)
+        assertEquals(false, model.uiState.value.loading)
+        assertEquals(true, model.uiState.value.loadFailed)
+        assertEquals(emptyList<RemainingChapterSummary>(), model.uiState.value.chapters)
+        model.onAction(ChapterSelectionAction.RetryLoadRequested)
+        model.onAction(ChapterSelectionAction.RetryLoadRequested)
+        advanceUntilIdle()
+        assertEquals(listOf(boundary, boundary), calls)
+        assertEquals(chapters, model.uiState.value.chapters)
+        assertEquals(false, model.uiState.value.loadFailed)
+    }
+
     @Test
     fun selectingARemainingChapterOpensOnlyThatChapter() = runTest(dispatcher) {
         val viewModel = viewModel()

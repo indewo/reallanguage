@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 class ChapterSelectionViewModel(
     private val boundary: ChapterSelectionBoundary,
@@ -44,9 +45,12 @@ class ChapterSelectionViewModel(
 
     private fun load() {
         if (mutableUiState.value.loading) return
+        mutableUiState.value = mutableUiState.value.copy(loading = true, loadFailed = false)
         viewModelScope.launch {
-            mutableUiState.value = mutableUiState.value.copy(loading = true, loadFailed = false)
-            when (val result = repository.loadRemaining(boundary)) {
+            val result = try { repository.loadRemaining(boundary) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { ChapterSelectionLoadResult.Failed }
+            when (result) {
                 is ChapterSelectionLoadResult.Ready -> mutableUiState.value = ChapterSelectionUiState(
                     sourceId = result.sourceId,
                     chapters = result.chapters,
