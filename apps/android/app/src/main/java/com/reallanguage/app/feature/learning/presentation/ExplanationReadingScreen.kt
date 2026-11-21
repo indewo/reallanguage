@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.Icons
@@ -89,22 +91,23 @@ fun ExplanationReadingScreen(
             val subject = state.cardSubject()
             val phrase = subject?.display
                 ?: stringResource(R.string.explanation_reading_title)
-            Box(Modifier.fillMaxSize().testTag("explanation_expression_card_content")) {
+            BoxWithConstraints(Modifier.fillMaxSize().testTag("explanation_expression_card_content"), contentAlignment = Alignment.Center) {
+              val shortCard = maxHeight < 100.dp
               Column(
-                  Modifier.fillMaxSize().padding(top = 4.dp, bottom = 8.dp, end = 12.dp),
-                  verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+                  Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(end = 12.dp),
+                  verticalArrangement = Arrangement.spacedBy(if (shortCard) 2.dp else 6.dp),
                   horizontalAlignment = Alignment.CenterHorizontally,
               ) {
                 Text(
                     phrase,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("explanation_expression_card_display"),
                     textAlign = TextAlign.Center,
                     color = RlColor.OnPrimary,
                     style = MaterialTheme.typography.displaySmall.copy(
                         fontFamily = EditorialFont.Serif,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 21.sp,
-                        lineHeight = 25.sp,
+                        fontSize = if (shortCard) 17.sp else 21.sp,
+                        lineHeight = if (shortCard) 20.sp else 25.sp,
                     ),
                 )
                 val explanationText = subject?.meaningZh?.takeIf { it.isNotBlank() }
@@ -113,14 +116,14 @@ fun ExplanationReadingScreen(
                     else null
                 explanationText?.let { Text(
                     it,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().testTag("explanation_expression_card_meaning"),
                     textAlign = TextAlign.Center,
                     color = RlColor.OnPrimary.copy(alpha = .86f),
-                    style = if (state.selectedExpression == null) {
-                        MaterialTheme.typography.bodyMedium
-                    } else {
-                        MaterialTheme.typography.titleMedium.copy(fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 19.sp)
-                    },
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = EditorialFont.Serif,
+                        fontSize = if (shortCard) 12.sp else 15.sp,
+                        lineHeight = if (shortCard) 16.sp else 19.sp,
+                    ),
                 ) }
               }
             }

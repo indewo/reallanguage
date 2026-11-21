@@ -107,7 +107,7 @@ fun LearningTargetScreen(
                     Column(
                         Modifier.fillMaxSize().verticalScroll(targetScroll)
                             .padding(top = if (shortScreen) 2.dp else 5.dp)
-                            .padding(start = horizontalContentInset, end = horizontalContentInset),
+                            .padding(start = horizontalContentInset, end = horizontalContentInset + 32.dp),
                         verticalArrangement = Arrangement.spacedBy(if (shortScreen) 6.dp else 10.dp),
                     ) {
                         LearningSentencePanel(state, onAction, Modifier.fillMaxWidth().heightIn(min = if (shortScreen) 52.dp else 66.dp))
