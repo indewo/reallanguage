@@ -143,7 +143,7 @@ private fun IncompleteBookStatistics(count: Int?, modifier: Modifier) {
                 Text(count?.toString() ?: "—", Modifier.fillMaxWidth(), color = Color.White,
                     style = MaterialTheme.typography.displaySmall.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 34.sp, lineHeight = 42.sp),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Text(if (count == null) "数量待确认" else "个进行中", Modifier.fillMaxWidth(), color = Color.White.copy(alpha = .82f),
+                Text(if (count == null) "数量待确认" else "进行中", Modifier.fillMaxWidth(), color = Color.White.copy(alpha = .82f),
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 18.sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                 }
             }

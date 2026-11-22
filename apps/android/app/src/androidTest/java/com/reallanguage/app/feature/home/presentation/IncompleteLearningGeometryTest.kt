@@ -111,7 +111,7 @@ class IncompleteLearningGeometryTest {
         // these tolerances verify its regional placement, not its missing texture/stamp fidelity.
         assertTrue("Blue book must start near the original x84/y176: $ink", ink.left in 70f..105f && ink.top in 166f..191f)
         assertTrue("Blue book must retain the original large scale: $ink", ink.right in 573f..615f && ink.bottom in 750f..789f)
-        listOf("继续你的表达", "3", "个进行中").forEach(::assertVisibleTextOnActualBluePaper)
+        listOf("继续你的表达", "3", "进行中").forEach(::assertVisibleTextOnActualBluePaper)
         composeRule.onNodeWithTag("incomplete-book-scroll-indicator").assertDoesNotExist()
     }
 
