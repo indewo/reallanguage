@@ -84,7 +84,15 @@ class AccountLogoutVisibilityTest {
         assertWholeTextInRegion("邮箱已验证", "account-passport-artwork")
 
         val emailNode = compose.onNodeWithText(email, useUnmergedTree = true).performScrollTo().assertIsDisplayed()
-        assertWholeTextInRegion(email, "account-info-section")
+        val emailLayouts = mutableListOf<TextLayoutResult>()
+        emailNode.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(emailLayouts) }
+        assertEquals(email, emailLayouts.single().layoutInput.text.text)
+        assertEquals("Long addresses remain on one horizontally scrollable line", 1, emailLayouts.single().lineCount)
+        val emailScroll = compose.onNodeWithTag("account-email-scroll")
+        val horizontal = emailScroll.fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.HorizontalScrollAxisRange]
+        assertTrue("The complete long address must be reachable", horizontal.maxValue() > 0f)
+        emailScroll.performTouchInput { swipeLeft() }
+        compose.waitUntil(5_000) { horizontal.value() > 0f }
         val labelBottom = compose.onNodeWithText("邮箱", useUnmergedTree = true)
             .fetchSemanticsNode().boundsInRoot.bottom
         assertTrue("The email value must start below its label", emailNode.fetchSemanticsNode().boundsInRoot.top >= labelBottom)

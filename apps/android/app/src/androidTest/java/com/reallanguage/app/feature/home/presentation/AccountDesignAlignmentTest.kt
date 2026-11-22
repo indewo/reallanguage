@@ -36,6 +36,7 @@ class AccountDesignAlignmentTest {
         val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
         compose.onNodeWithText(email).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { check(it(layouts)) }
         assertEquals(email, layouts.single().layoutInput.text.text)
+        assertEquals(1, layouts.single().lineCount)
         assertFalse(layouts.single().hasVisualOverflow)
         val label = compose.onNodeWithText("邮箱").fetchSemanticsNode().boundsInRoot
         assertTrue(compose.onNodeWithText(email).fetchSemanticsNode().boundsInRoot.top >= label.bottom)

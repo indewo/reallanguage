@@ -32,6 +32,12 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -125,6 +131,22 @@ fun LearningTargetScreen(
             }
             if (wide && !largeText) LearningTargetTabs(Modifier.align(Alignment.CenterEnd).padding(end = pageWidth * .045f))
             if (wide && !largeText) FormationFrameChapterBadge("第 $chapterNumber 章", pageWidth, pageHeight)
+            }
+        }
+        if (state.generating) Box(
+            Modifier.fillMaxSize().background(RlColor.Ink.copy(alpha = .12f))
+                .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {}
+                .testTag("learning-target-generation-loading"),
+            contentAlignment = Alignment.Center,
+        ) {
+            Surface(color = RlColor.PaperWarm, shape = RoundedCornerShape(8.dp), shadowElevation = 4.dp) {
+                Row(Modifier.padding(24.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(Modifier.size(28.dp), color = RlColor.Secondary, strokeWidth = 3.dp)
+                    Column(Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+                        Text("正在生成学习目标…", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 17.sp)
+                        Text("正在整理词义与用法，请稍候", color = RlColor.TextSecondary, fontSize = 13.sp)
+                    }
+                }
             }
         }
     }

@@ -32,6 +32,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.constrainHeight
@@ -77,7 +80,9 @@ private fun AccountLedgerPage(state: AccountUiState, onAction: (AccountAction) -
                 Column(Modifier.weight(1f)) {
                     Text("邮箱", fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 16.sp)
                     androidx.compose.foundation.text.selection.SelectionContainer {
-                        Text(state.account.email, Modifier.fillMaxWidth(), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp)
+                        Text(state.account.email, Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).testTag("account-email-scroll"),
+                            color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp,
+                            maxLines = 1, softWrap = false)
                     }
                 }
             }
@@ -93,8 +98,8 @@ private fun AccountLedgerPage(state: AccountUiState, onAction: (AccountAction) -
 @Composable
 private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier.testTag("account-passport-artwork"), contentAlignment = Alignment.Center) {
-        val width = minOf(maxWidth, maxHeight * (1119f / 1385f))
-        val height = width * (1385f / 1119f)
+        val width = minOf(maxWidth, maxHeight * (1123f / 1401f))
+        val height = width * (1401f / 1123f)
         val density = LocalDensity.current
         Box(Modifier.width(width).height(height)) {
             Image(painterResource(R.drawable.rl_account_passport_design_20261122), null, Modifier.matchParentSize(), contentScale = ContentScale.Fit)
@@ -106,9 +111,13 @@ private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier
                 Text("RealLanguage 学习账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif,
                     fontSize = with(density) { (width * .055f).toSp() }, lineHeight = with(density) { (width * .08f).toSp() }, textAlign = TextAlign.Center)
             }
-            Box(Modifier.offset(x = width * .235f, y = height * .775f).width(width * .53f).height(height * .1f), contentAlignment = Alignment.Center) {
+            // Measured green label bounds in the actual 1123 × 1401 transparent artwork.
+            Box(Modifier.offset(x = width * (264f / 1123f), y = height * (1072f / 1401f))
+                .width(width * (586f / 1123f)).height(height * (136f / 1401f)).testTag("account-verification-badge"), contentAlignment = Alignment.Center) {
                 Text("邮箱已验证", color = Color.White, fontFamily = EditorialFont.Serif,
-                    fontSize = with(density) { (width * .06f).toSp() }, lineHeight = with(density) { (width * .09f).toSp() })
+                    fontSize = with(density) { (width * .06f).toSp() },
+                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.Both)))
             }
         }
     }

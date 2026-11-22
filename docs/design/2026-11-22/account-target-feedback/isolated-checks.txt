@@ -1,0 +1,7 @@
+com.reallanguage.app.feature.home.presentation.AccountLogoutVisibilityTest:.....
+com.reallanguage.app.feature.home.presentation.AccountDesignAlignmentTest:.
+com.reallanguage.app.feature.formation.presentation.LearningTargetLoadingFeedbackTest:.
+
+Time: 14.566
+
+OK (7 tests)
