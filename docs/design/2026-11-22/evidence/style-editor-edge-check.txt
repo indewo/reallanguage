@@ -1,0 +1,5 @@
+com.reallanguage.app.feature.settings.presentation.SettingsDesignAlignmentTest:.
+
+Time: 5.778
+
+OK (1 test)

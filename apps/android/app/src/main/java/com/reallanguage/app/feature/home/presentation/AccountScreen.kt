@@ -8,6 +8,10 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.Logout
 import androidx.compose.material.icons.outlined.AlternateEmail
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.FormatListBulleted
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.MicNone
@@ -41,129 +45,83 @@ import kotlin.math.ceil
 fun AccountScreen(state: AccountUiState, onAction: (AccountAction) -> Unit) {
     BackHandler { onAction(AccountAction.ReturnHomeRequested) }
     RlPaperBackground(showCornerCollage = false) {
-        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
-            val wide = maxWidth >= 700.dp && LocalDensity.current.fontScale <= 1.35f
-            val bookHeight = (maxHeight - 42.dp).coerceAtLeast(300.dp)
-            Column(Modifier.fillMaxSize().padding(top = 54.dp).padding(horizontal = if (wide) 24.dp else 16.dp, vertical = 8.dp)
-                .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (wide) Box(Modifier.fillMaxWidth()) {
-                  Row(Modifier.fillMaxWidth().padding(top = 26.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    AccountPassportArtwork(state.account?.email, Modifier.weight(.78f).height(bookHeight))
-                    AccountLedgerPage(state, onAction, Modifier.weight(1.35f).heightIn(min = bookHeight))
-                    Box(Modifier.width(48.dp).align(Alignment.CenterVertically).clickable(role = Role.Button) { onAction(AccountAction.ReturnHomeRequested) }.testTag("account-return-home"), contentAlignment = Alignment.Center) {
-                        Box(Modifier.width(31.dp), contentAlignment = Alignment.Center) {
-                            Image(painterResource(R.drawable.rl_olive_torn_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                            Text("返\n回\n首\n页", Modifier.padding(vertical = 14.dp), textAlign = TextAlign.Center, color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp)
-                        }
+        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 20.dp)) {
+            val passportHeight = (maxHeight - 90.dp).coerceAtLeast(180.dp)
+            val wide = maxWidth >= 640.dp && LocalDensity.current.fontScale <= 1.35f
+            Column(Modifier.fillMaxSize()) {
+                EditorialPageHeader("账号", { onAction(AccountAction.ReturnHomeRequested) })
+                Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (wide) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                        AccountPassportArtwork(state.account?.email, Modifier.weight(.7f).height(passportHeight))
+                        AccountLedgerPage(state, onAction, Modifier.weight(1.6f))
+                    } else {
+                        AccountPassportArtwork(state.account?.email, Modifier.fillMaxWidth().height(240.dp))
+                        AccountLedgerPage(state, onAction, Modifier.fillMaxWidth())
                     }
-                  }
-                } else {
-                    AccountPassportArtwork(state.account?.email, Modifier.fillMaxWidth().height(315.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)))
-                    AccountLedgerPage(state, onAction, Modifier.fillMaxWidth())
-                    TextButton({ onAction(AccountAction.ReturnHomeRequested) }, Modifier.fillMaxWidth().testTag("account-return-home")) { Text("返回首页") }
                 }
             }
-            Box(Modifier.fillMaxWidth().background(RlColor.PaperWarm).padding(horizontal = 24.dp, vertical = 4.dp)) {
-                AccountPageHeading { onAction(AccountAction.ReturnHomeRequested) }
-            }
         }
     }
 }
-
-@Composable
-private fun AccountPageHeading(onBack: () -> Unit) {
-    Box(Modifier.fillMaxWidth().heightIn(min = 44.dp)) {
-        IconButton(onBack, Modifier.align(Alignment.CenterStart)) {
-            Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-        }
-        Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Image(painterResource(R.drawable.rl_v73_pattern_botanical_v2), null, Modifier.size(27.dp).graphicsLayer(scaleX = -1f), colorFilter = ColorFilter.tint(RlColor.TextSecondary))
-            Text(stringResource(R.string.account_title), color = RlColor.Ink, fontFamily = EditorialFont.Serif,
-                fontWeight = FontWeight.Bold, fontSize = 27.sp, lineHeight = 34.sp)
-                Image(painterResource(R.drawable.rl_v73_pattern_botanical_v2), null, Modifier.size(27.dp), colorFilter = ColorFilter.tint(RlColor.TextSecondary))
-            }
-            Image(editorialUnderlinePainter(), null, Modifier.width(78.dp).height(5.dp), contentScale = ContentScale.FillBounds)
-        }
-    }
-}
-
 @Composable
 private fun AccountLedgerPage(state: AccountUiState, onAction: (AccountAction) -> Unit, modifier: Modifier = Modifier) {
-    Box(modifier) {
-        Image(painterResource(R.drawable.rl_account_ledger_page), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        Column(Modifier.fillMaxWidth().layout { measurable, constraints ->
-            val content = measurable.measure(constraints.copy(minHeight = 0))
-            // The stacked-sheet artwork has a ragged/shadowed lower 10%. Keep
-            // the entire last action above it, including when large text grows.
-            val paperHeight = ceil((content.height + 12.dp.toPx()) / .90f).toInt()
-            layout(content.width, constraints.constrainHeight(paperHeight)) { content.placeRelative(0, 0) }
-        }.padding(start = 30.dp, end = 58.dp, top = 24.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            when {
-                state.loading -> CircularProgressIndicator(Modifier.align(Alignment.CenterHorizontally))
-                state.loadFailed -> OutlinedButton({ onAction(AccountAction.RetryLoadRequested) }, Modifier.align(Alignment.CenterHorizontally)) { Text(stringResource(R.string.diary_retry)) }
-                state.account != null -> {
-                    BillingLabel("账号信息", RlColor.Primary)
-                    Row(Modifier.fillMaxWidth().border(.5.dp, RlColor.Border).padding(horizontal = 12.dp, vertical = 8.dp).testTag("account-info-section"), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.AlternateEmail, null, Modifier.size(18.dp), tint = RlColor.Ink)
-                        Text("邮箱", Modifier.weight(.4f), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp)
-                        Text(state.account.email, Modifier.weight(1f), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp, color = RlColor.Ink)
+    Column(modifier.editorialPaper().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Surface(color = Color(0xFFE8DDB7), shape = RoundedCornerShape(20.dp)) {
+            Text("账号信息", Modifier.padding(horizontal = 12.dp, vertical = 2.dp), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.Bold)
+        }
+        when {
+            state.loading -> CircularProgressIndicator()
+            state.loadFailed -> OutlinedButton({ onAction(AccountAction.RetryLoadRequested) }) { Text(stringResource(R.string.diary_retry)) }
+            state.account != null -> Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag("account-info-section"), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Icon(Icons.Outlined.Email, null, Modifier.size(20.dp), tint = RlColor.Ink)
+                Column(Modifier.weight(1f)) {
+                    Text("邮箱", fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 16.sp)
+                    androidx.compose.foundation.text.selection.SelectionContainer {
+                        Text(state.account.email, Modifier.fillMaxWidth(), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp)
                     }
                 }
             }
-            BillingLabel("本机数据", RlColor.Secondary)
-            AccountActionRow(Icons.Outlined.MicNone, stringResource(R.string.account_local_recordings), "查看与删除保存在本机的录音", Modifier.testTag("account-recordings")) { onAction(AccountAction.LocalRecordingsRequested) }
-            BillingLabel("AI 服务", RlColor.NoteAccent)
-            AccountActionRow(Icons.Outlined.CreditCard, "AI 费用与记录", "查看使用记录与余额", Modifier.testTag("account-billing")) { onAction(AccountAction.BillingRequested) }
-            OutlinedButton({ onAction(AccountAction.LogoutRequested) }, Modifier.fillMaxWidth().heightIn(min = 42.dp).testTag("account-logout"), enabled = !state.loggingOut, shape = RlShape.Small, border = BorderStroke(.7.dp, RlColor.Ink)) {
-                Icon(Icons.AutoMirrored.Outlined.Logout, null, Modifier.size(18.dp), tint = RlColor.Ink)
-                Text("  " + stringResource(if (state.loggingOut) R.string.account_logging_out else R.string.account_logout), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 16.sp, color = RlColor.Ink)
-            }
-            if (state.error == AccountError.LOGOUT_FAILED) Text(stringResource(R.string.account_logout_failed), color = RlColor.Error)
-            HorizontalDivider(color = RlColor.Border)
-            BillingLabel("账号与数据", RlColor.ActionVivid)
-            AccountActionRow(Icons.Outlined.DeleteOutline, stringResource(R.string.account_delete), "将按流程确认并处理账号数据", Modifier.testTag("account-delete"), RlColor.Error) { onAction(AccountAction.DeleteAccountRequested) }
         }
+        HorizontalDivider(color = RlColor.Border)
+        AccountActionRow(Icons.Outlined.FormatListBulleted, "AI 费用与记录", "查看使用记录与余额", Modifier.testTag("account-billing")) { onAction(AccountAction.BillingRequested) }
+        AccountActionRow(Icons.Outlined.MicNone, stringResource(R.string.account_local_recordings), "查看与管理本机保留的录音", Modifier.testTag("account-recordings")) { onAction(AccountAction.LocalRecordingsRequested) }
+        AccountActionRow(Icons.AutoMirrored.Outlined.Logout, stringResource(if (state.loggingOut) R.string.account_logging_out else R.string.account_logout), "", Modifier.testTag("account-logout"), enabled = !state.loggingOut) { onAction(AccountAction.LogoutRequested) }
+        if (state.error == AccountError.LOGOUT_FAILED) Text(stringResource(R.string.account_logout_failed), color = RlColor.Error)
+        AccountActionRow(Icons.Outlined.DeleteOutline, stringResource(R.string.account_delete), "将按流程确认并处理账号数据", Modifier.testTag("account-delete"), RlColor.Error) { onAction(AccountAction.DeleteAccountRequested) }
     }
 }
-
 @Composable
 private fun AccountPassportArtwork(email: String?, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier.testTag("account-passport-artwork"), contentAlignment = Alignment.Center) {
-        val bookHeight = maxHeight
-        val bookWidth = maxWidth
-        Image(painterResource(R.drawable.rl_v73_account_passport), null, Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
-        Column(Modifier.fillMaxSize().padding(start = bookWidth * .16f, end = bookWidth * .1f, top = bookHeight * .075f, bottom = bookHeight * .09f), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("RealLanguage", color = Color.White, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 28.sp)
-            Text("PERSONAL PASSPORT", color = Color.White.copy(alpha = .8f), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 9.sp, lineHeight = 14.sp, letterSpacing = 1.sp)
-            Image(painterResource(R.drawable.rl_v73_account_avatar), "账号默认头像插画", Modifier.padding(top = 8.dp).height(bookHeight * .32f).aspectRatio(.8f), contentScale = ContentScale.Fit)
-        }
-        // These two blank printed labels are part of the cover artwork. Anchor the
-        // native text to their measured image regions, not to leftover Column space.
-        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .27f, y = bookHeight * .65f)
-            .width(bookWidth * .59f).height(bookHeight * .12f), contentAlignment = Alignment.Center) {
-            Text("RealLanguage 学习账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
-        }
-        Box(Modifier.align(Alignment.TopStart).offset(x = bookWidth * .385f, y = bookHeight * .78f)
-            .width(bookWidth * .38f).height(bookHeight * .085f), contentAlignment = Alignment.Center) {
-            Text("邮箱已验证", color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp, textAlign = TextAlign.Center)
+        val width = minOf(maxWidth, maxHeight * (1119f / 1385f))
+        val height = width * (1385f / 1119f)
+        val density = LocalDensity.current
+        Box(Modifier.width(width).height(height)) {
+            Image(painterResource(R.drawable.rl_account_passport_design_20261122), null, Modifier.matchParentSize(), contentScale = ContentScale.Fit)
+            Box(Modifier.offset(x = width * .05f, y = height * .08f).width(width * .9f).height(height * .17f), contentAlignment = Alignment.Center) {
+                Text("RealLanguage", color = Color.White, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
+                    fontSize = with(density) { (width * .083f).toSp() }, lineHeight = with(density) { (width * .12f).toSp() })
+            }
+            Box(Modifier.offset(x = width * .14f, y = height * .62f).width(width * .73f).height(height * .11f), contentAlignment = Alignment.Center) {
+                Text("RealLanguage 学习账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif,
+                    fontSize = with(density) { (width * .055f).toSp() }, lineHeight = with(density) { (width * .08f).toSp() }, textAlign = TextAlign.Center)
+            }
+            Box(Modifier.offset(x = width * .235f, y = height * .775f).width(width * .53f).height(height * .1f), contentAlignment = Alignment.Center) {
+                Text("邮箱已验证", color = Color.White, fontFamily = EditorialFont.Serif,
+                    fontSize = with(density) { (width * .06f).toSp() }, lineHeight = with(density) { (width * .09f).toSp() })
+            }
         }
     }
 }
-
 @Composable
-private fun AccountActionRow(icon: ImageVector, title: String, supporting: String, modifier: Modifier = Modifier, tint: Color = RlColor.Ink, onClick: () -> Unit) {
-    Row(modifier.fillMaxWidth().heightIn(min = 48.dp).background(if (tint == RlColor.Error) RlColor.ActionVivid.copy(alpha = .13f) else Color.Transparent).border(.5.dp, RlColor.Border).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Icon(icon, null, Modifier.size(21.dp), tint = tint)
-        BoxWithConstraints(Modifier.weight(1f)) {
-            if (maxWidth >= 260.dp && LocalDensity.current.fontScale <= 1.35f) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                Text(title, Modifier.weight(.45f), color = tint, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp, lineHeight = 20.sp)
-                Text(supporting, Modifier.weight(.55f), color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp, lineHeight = 15.sp)
-            } else Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                Text(title, color = tint, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp, lineHeight = 20.sp)
-                Text(supporting, color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp, lineHeight = 15.sp)
-            }
+private fun AccountActionRow(icon: ImageVector, title: String, supporting: String, modifier: Modifier = Modifier, tint: Color = RlColor.Ink, enabled: Boolean = true, onClick: () -> Unit) {
+    Row(modifier.fillMaxWidth().heightIn(min = 40.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Icon(icon, null, Modifier.size(20.dp), tint = tint)
+        Column(Modifier.weight(1f)) {
+            Text(title, color = tint, fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold)
+            if (supporting.isNotBlank()) Text(supporting, color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 11.sp, lineHeight = 15.sp)
         }
-        Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, Modifier.size(20.dp), tint = tint)
+        if (supporting.isNotBlank()) Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, Modifier.size(18.dp), tint = tint)
     }
+    HorizontalDivider(color = RlColor.Border.copy(alpha = .6f))
 }

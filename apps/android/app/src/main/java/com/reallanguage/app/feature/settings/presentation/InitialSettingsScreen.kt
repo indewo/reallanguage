@@ -1892,7 +1892,7 @@ private fun InitialSettingsStep.title(): String = stringResource(
 )
 
 @Composable
-private fun BasicVocabulary.label(): String = stringResource(
+internal fun BasicVocabulary.label(): String = stringResource(
     when (this) {
         BasicVocabulary.PRIMARY_SCHOOL -> R.string.settings_retired_vocabulary_pool
         BasicVocabulary.JUNIOR_HIGH -> R.string.settings_junior_high

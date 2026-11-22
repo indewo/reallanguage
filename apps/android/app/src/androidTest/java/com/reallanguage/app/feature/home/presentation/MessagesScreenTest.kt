@@ -39,7 +39,7 @@ class MessagesScreenTest {
             actions::add,
         ) } }
         composeRule.onNodeWithTag("messages-mark-all-read").assertIsNotEnabled()
-        composeRule.onNodeWithTag("messages-return-home").performClick()
+        composeRule.onNodeWithTag("editorial-page-back").performClick()
         assertEquals(listOf(MessagesAction.ReturnHomeRequested), actions)
     }
 
@@ -56,12 +56,13 @@ class MessagesScreenTest {
             RlTheme { MessagesScreen(MessagesUiState(messages = messages, loading = false), actions::add) }
         }
 
-        composeRule.onNodeWithTag("messages-inbox-artwork").assertIsDisplayed()
-        composeRule.onNodeWithTag("messages-filter").assertIsDisplayed()
+        composeRule.onNodeWithText("全部消息").assertIsDisplayed()
+        composeRule.onNodeWithText("未读消息").assertIsDisplayed()
+        composeRule.onNodeWithText("已读消息").assertIsDisplayed()
         composeRule.onAllNodesWithTag("message-row", useUnmergedTree = true).assertCountEquals(4)
         composeRule.onNodeWithTag("messages-open-m1").performClick()
         composeRule.onNodeWithTag("messages-mark-all-read").performClick()
-        composeRule.onNodeWithTag("messages-return-home").performClick()
+        composeRule.onNodeWithTag("editorial-page-back").performClick()
 
         assertEquals(
             listOf(

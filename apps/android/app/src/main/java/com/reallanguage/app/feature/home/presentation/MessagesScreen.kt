@@ -1,6 +1,9 @@
 package com.reallanguage.app.feature.home.presentation
 
 import androidx.activity.compose.BackHandler
+import com.reallanguage.app.core.designsystem.editorialPaper
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -10,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -88,289 +92,55 @@ import kotlin.math.roundToInt
 fun MessagesScreen(state: MessagesUiState, onAction: (MessagesAction) -> Unit) {
     BackHandler { onAction(MessagesAction.ReturnHomeRequested) }
     var filter by remember { mutableStateOf(MessageFilter.ALL) }
-    val filtered = state.messages.filter {
-        filter == MessageFilter.ALL || filter == MessageFilter.READ && it.read || filter == MessageFilter.UNREAD && !it.read
-    }
-    RlPaperBackground {
-        BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
-            val density = LocalDensity.current
-            val availableWidth = maxWidth
-            val availableHeight = maxHeight
-            if (availableWidth < 700.dp || availableHeight < 340.dp || density.fontScale > 1.35f) {
-                Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        IconButton({ onAction(MessagesAction.ReturnHomeRequested) }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink) }
-                        Text(stringResource(R.string.messages_title), Modifier.weight(1f), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 23.sp, lineHeight = 31.sp)
-                        MessageFilterMenu(filter, { filter = it })
-                    }
-                    Column(Modifier.fillMaxWidth().weight(1f).verticalScroll(rememberScrollState()).testTag("messages-scroll-list"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        if (state.markAllReadFailed) Text(stringResource(R.string.messages_mark_read_failed), color = RlColor.Error, modifier = Modifier.testTag("messages-mark-read-failed"))
-                        if (state.loadFailed) {
-                            Text(stringResource(R.string.messages_count_unconfirmed), color = RlColor.TextSecondary, modifier = Modifier.testTag("messages-count-unconfirmed"))
-                            OutlinedButton({ onAction(MessagesAction.RetryRequested) }) { Text(stringResource(R.string.diary_retry)) }
-                        }
-                        if (state.loading) Text(stringResource(R.string.messages_loading))
-                        else if (filtered.isEmpty() && !state.loadFailed) Text(stringResource(R.string.messages_empty))
-                        filtered.forEach { MessageRow(it, state.unavailableMessageId == it.messageId, true, 8.dp, onAction) }
-                    }
-                    MessagesFooter(state, onAction, availableWidth, true)
-                }
-                return@BoxWithConstraints
-            }
-            // A shorter wide viewport still has enough horizontal room for the
-            // reference row. Stacking its metadata would consume *more* height.
-            val compact = availableWidth < 840.dp || density.fontScale > 1.15f
-            var headerHeight by remember { mutableStateOf(0.dp) }
-            val filterWidth = minOf(if (compact) 180.dp else 148.dp, availableWidth * .3f)
-            Box(Modifier.fillMaxWidth().padding(horizontal = RlSpace.Space24, vertical = RlSpace.Space8)
-                .onSizeChanged { headerHeight = with(density) { it.height.toDp() } }) {
-                IconButton(
-                    onClick = { onAction(MessagesAction.ReturnHomeRequested) },
-                    modifier = Modifier.align(Alignment.CenterStart),
-                ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = RlColor.Ink) }
-                Column(Modifier.align(Alignment.Center).padding(horizontal = filterWidth)
-                    .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        stringResource(R.string.messages_title),
-                        color = RlColor.Ink,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 27.sp, lineHeight = 36.sp,
-                        ),
-                    )
-                    Text("学习进度与审核通知", Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
-                        style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-                }
-                MessageFilterMenu(filter = filter, onSelected = { filter = it },
-                    modifier = Modifier.align(Alignment.CenterEnd).width(filterWidth))
-            }
-            // The source-image regions are measured against the safe canvas, not
-            // hardcoded phone pixels. Extra font/keyboard height expands the header
-            // and leaves one controlled scrolling list above the persistent actions.
-            val listLeft = availableWidth * (670f / 1831f)
-            val listRight = availableWidth - availableWidth * (60f / 1831f)
-            val listTop = maxOf(availableHeight * (163f / 859f), headerHeight + 8.dp)
-            val contentBottom = availableHeight - 16.dp
-            // Preserve the 64dp reference row at the no-cutout size. If system
-            // insets reduce the height, spend less vertical whitespace while
-            // keeping the same text and the 48dp open-action hit area. Content
-            // may still grow naturally; long messages stay in the local list.
-            val referenceRowHeight = ((contentBottom - listTop - 60.dp - 15.dp) / 4f)
-                .coerceIn(48.dp, 64.dp)
-            val rowVerticalPadding = (referenceRowHeight - 48.dp) / 2f
-            val artworkTop = if (compact) listTop else availableHeight * (94f / 859f)
-            val unreadCount = if (state.messages.isNotEmpty() || !state.loading && !state.loadFailed)
-                state.messages.count { !it.read } else null
-            MessagesArtwork(
-                unreadCount = unreadCount,
-                loading = state.loading,
-                modifier = Modifier.offset(x = availableWidth * (16f / 1831f), y = artworkTop)
-                    .width(availableWidth * (630f / 1831f))
-                    .height((availableHeight - 36.dp - artworkTop).coerceAtLeast(1.dp)),
-            )
-            Column(
-                modifier = Modifier.offset(x = listLeft, y = listTop).width((listRight - listLeft).coerceAtLeast(1.dp))
-                    .height((contentBottom - listTop).coerceAtLeast(1.dp)),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                    Column(
-                        modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
-                            .testTag("messages-scroll-list"),
-                        verticalArrangement = Arrangement.spacedBy(5.dp),
-                    ) {
-                        if (state.markAllReadFailed) Text(
-                            stringResource(R.string.messages_mark_read_failed),
-                            color = RlColor.Error,
-                            modifier = Modifier.testTag("messages-mark-read-failed"),
-                        )
-                        if (state.loadFailed) {
-                            Text(stringResource(R.string.messages_count_unconfirmed), color = RlColor.TextSecondary,
-                                modifier = Modifier.fillMaxWidth().testTag("messages-count-unconfirmed"))
-                            OutlinedButton(onClick = { onAction(MessagesAction.RetryRequested) }) {
-                                Text(stringResource(R.string.diary_retry))
-                            }
-                        } else if (state.loading && state.messages.isNotEmpty()) {
-                            Text(stringResource(R.string.messages_loading))
-                        }
-                        when {
-                            state.messages.isEmpty() && (state.loading || state.loadFailed) -> Unit
-                            filtered.isEmpty() -> Text(stringResource(R.string.messages_empty))
-                            else -> filtered.forEach { message ->
-                                MessageRow(message, state.unavailableMessageId == message.messageId, compact, rowVerticalPadding, onAction)
+    val filtered = state.messages.filter { filter == MessageFilter.ALL || filter == MessageFilter.READ && it.read || filter == MessageFilter.UNREAD && !it.read }
+    RlPaperBackground(showCornerCollage = false) {
+        Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            com.reallanguage.app.core.designsystem.EditorialPageHeader("消息", { onAction(MessagesAction.ReturnHomeRequested) })
+            Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                Column(Modifier.weight(.55f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    MessageFilter.entries.forEach { item ->
+                        val count = state.messages.count { item == MessageFilter.ALL || item == MessageFilter.READ && it.read || item == MessageFilter.UNREAD && !it.read }
+                        Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).editorialPaper(if (filter == item) Color(0xFF6B7044) else Color(0xFFF1E9DC)).clickable { filter = item }.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(item.label, Modifier.weight(1f), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 16.sp, color = if (filter == item) Color.White else RlColor.Ink)
+                            Surface(color = RlColor.ActionVivid, shape = CircleShape, modifier = Modifier.size(24.dp)) {
+                                Box(contentAlignment = Alignment.Center) { Text(if (state.loadFailed || state.loading && state.messages.isEmpty()) "—" else count.toString(), color = Color.White, fontSize = 13.sp) }
                             }
                         }
                     }
-                    MessagesFooter(state, onAction, availableWidth, compact)
-            }
-        }
-    }
-}
-
-@Composable
-private fun MessagesFooter(state: MessagesUiState, onAction: (MessagesAction) -> Unit, canvasWidth: Dp, compact: Boolean) {
-    Row(Modifier.fillMaxWidth().padding(start = if (compact) 0.dp else canvasWidth * (30f / 1831f)),
-        horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else canvasWidth * (40f / 1831f)),
-        verticalAlignment = Alignment.CenterVertically) {
-        OutlinedButton(
-            onClick = { onAction(MessagesAction.MarkAllReadRequested) },
-            enabled = !state.loading && !state.markingAllRead,
-            modifier = (if (compact) Modifier.weight(1f) else Modifier.width(canvasWidth * (414f / 1831f)))
-                .heightIn(min = 48.dp).messagePaper().messageInsetOutline(RlColor.Border)
-                .testTag("messages-mark-all-read"),
-            shape = RlShape.Small,
-            border = BorderStroke(1.dp, RlColor.Border),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = RlColor.Ink),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-        ) {
-            Icon(Icons.Outlined.CheckCircle, null,
-                Modifier.size(24.dp).testTag("messages-read-check-circle-icon"))
-            Text("  全部标为已读", Modifier.weight(1f), textAlign = TextAlign.Center)
-        }
-        Button(
-            onClick = { onAction(MessagesAction.ReturnHomeRequested) },
-            modifier = (if (compact) Modifier.weight(1f) else Modifier.width(canvasWidth * (373f / 1831f)))
-                .heightIn(min = 48.dp).messageInsetOutline(RlColor.PaperWarm)
-                .testTag("messages-return-home"),
-            shape = RlShape.Input,
-            colors = ButtonDefaults.buttonColors(containerColor = RlColor.Primary, contentColor = RlColor.OnPrimary),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-        ) {
-            Icon(Icons.Outlined.Home, null, Modifier.size(24.dp).testTag("messages-home-icon"))
-            Text("返回首页", Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
-        }
-    }
-}
-
-@Composable
-private fun MessageFilterMenu(filter: MessageFilter, onSelected: (MessageFilter) -> Unit, modifier: Modifier = Modifier) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(modifier) {
-        OutlinedButton(
-            onClick = { expanded = true },
-            modifier = Modifier.testTag("messages-filter"),
-            shape = RlShape.Small,
-            border = BorderStroke(1.dp, RlColor.Border),
-        ) {
-            Icon(Icons.Outlined.FilterList, null, modifier = Modifier.size(18.dp))
-            Text("  ${filter.label}")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            MessageFilter.entries.forEach { item ->
-                DropdownMenuItem(
-                    text = { Text(item.label) },
-                    onClick = {
-                        onSelected(item)
-                        expanded = false
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MessageRow(message: AppMessage, unavailable: Boolean, compact: Boolean, verticalPadding: Dp, onAction: (MessagesAction) -> Unit) {
-    val visual = message.visual()
-    Box(
-        modifier = Modifier.fillMaxWidth().messagePaper(bottomPaintOutset = 4.dp).testTag("message-row"),
-    ) {
-        if (compact) {
-            Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                    MessageKindIcon(visual)
-                    Text(message.summaryZh, Modifier.weight(1f), color = RlColor.Ink,
-                        style = MaterialTheme.typography.titleSmall.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold))
                 }
-                message.relatedContentLabelZh?.let {
-                    Text(it, Modifier.fillMaxWidth(), color = RlColor.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                }
-                if (unavailable) MessageUnavailableLabel()
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(message.formattedTime(), Modifier.weight(1f), color = RlColor.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                    MessageStatus(visual)
-                    MessageOpenButton(message, onAction)
+                Column(Modifier.weight(2f).fillMaxHeight().editorialPaper().verticalScroll(rememberScrollState()).padding(16.dp).testTag("messages-scroll-list"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (state.markAllReadFailed) Text(stringResource(R.string.messages_mark_read_failed), Modifier.testTag("messages-mark-read-failed"), color = RlColor.Error)
+                    if (state.loadFailed) {
+                        Text(stringResource(R.string.messages_count_unconfirmed))
+                        OutlinedButton({ onAction(MessagesAction.RetryRequested) }) { Text(stringResource(R.string.diary_retry)) }
+                    }
+                    if (state.loading) Text(stringResource(R.string.messages_loading))
+                    else if (filtered.isEmpty() && !state.loadFailed) Text(stringResource(R.string.messages_empty), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 14.sp, lineHeight = 21.sp)
+                    filtered.forEach { EditorialMessageRow(it, state.unavailableMessageId == it.messageId, onAction) }
                 }
             }
-        } else Row(
-            modifier = Modifier.heightIn(min = 48.dp + verticalPadding * 2f)
-                .padding(horizontal = RlSpace.Space12, vertical = verticalPadding),
-            horizontalArrangement = Arrangement.spacedBy(RlSpace.Space12),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            MessageKindIcon(visual)
-            Column(Modifier.weight(1f)) {
-                Text(
-                    message.summaryZh,
-                    Modifier.fillMaxWidth(),
-                    color = RlColor.Ink,
-                    style = MaterialTheme.typography.titleSmall.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold),
-                )
-                message.relatedContentLabelZh?.let {
-                    Text(it, Modifier.fillMaxWidth(), color = RlColor.TextSecondary, style = MaterialTheme.typography.bodySmall)
-                }
-                if (unavailable) MessageUnavailableLabel()
-            }
-            Text(message.formattedTime(), Modifier.width(78.dp).drawBehind {
-                // Use the existing inter-column gap without moving either text
-                // column or consuming the action's touch target.
-                val x = -6.dp.toPx()
-                val halfHeight = 19.dp.toPx()
-                drawLine(RlColor.Border, Offset(x, size.height / 2 - halfHeight),
-                    Offset(x, size.height / 2 + halfHeight), strokeWidth = .75.dp.toPx())
-            }, color = RlColor.TextSecondary, style = MaterialTheme.typography.bodySmall)
-            MessageStatus(visual)
-            MessageOpenButton(message, onAction)
+            OutlinedButton({ onAction(MessagesAction.MarkAllReadRequested) }, enabled = !state.loading && !state.markingAllRead,
+                shape = RlShape.Small, border = BorderStroke(.6.dp, RlColor.Border),
+                modifier = Modifier.align(Alignment.End).heightIn(min = 36.dp).testTag("messages-mark-all-read")) { Text("全部标为已读", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 14.sp, fontWeight = FontWeight.Normal) }
+            androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
         }
     }
 }
-
 @Composable
-private fun Modifier.messagePaper(bottomPaintOutset: Dp = 0.dp): Modifier {
-    val paper = ImageBitmap.imageResource(R.drawable.rl_torn_heading_label)
-    return drawBehind {
-        // Display the blank independent asset's paper and its existing shadow,
-        // excluding only outer transparent padding. The source file is untouched.
-        // Its tear proportions are not an exact match for the reference row.
-        // The source's lower shadow/transparent padding must not consume the
-        // text's paper area on short rows. Paint into the existing 5dp row gap;
-        // preserve the row hit box, its text layout, and the full torn edge.
-        drawImage(paper, srcOffset = IntOffset(64, 128), srcSize = IntSize(1936, 484),
-            dstSize = IntSize(size.width.roundToInt(), (size.height + bottomPaintOutset.toPx()).roundToInt()),
-            filterQuality = FilterQuality.Medium)
-    }
-}
-
-private fun Modifier.messageInsetOutline(color: Color): Modifier = drawWithContent {
-    drawContent()
-    val inset = 3.dp.toPx()
-    drawRoundRect(color, topLeft = Offset(inset, inset),
-        size = Size((size.width - 2 * inset).coerceAtLeast(0f), (size.height - 2 * inset).coerceAtLeast(0f)),
-        cornerRadius = CornerRadius(3.dp.toPx()), style = Stroke(.75.dp.toPx()))
-}
-
-@Composable
-private fun MessageKindIcon(visual: MessageVisual) {
-    if (visual.seal != null) {
-        Image(painterResource(visual.seal), null, Modifier.size(42.dp))
-        return
-    }
-    Surface(shape = CircleShape, color = visual.color.copy(alpha = .18f), modifier = Modifier.size(42.dp)) {
-        Box(contentAlignment = Alignment.Center) {
-            Icon(visual.icon, null, tint = visual.color, modifier = Modifier.size(24.dp))
+private fun EditorialMessageRow(message: AppMessage, unavailable: Boolean, onAction: (MessagesAction) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp).testTag("message-row"), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+        Surface(color = if (message.read) Color.Transparent else RlColor.ActionVivid, shape = CircleShape, modifier = Modifier.padding(top = 8.dp).size(6.dp)) {}
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(message.presentationType().statusLabelZh, color = message.visual().color, fontSize = 12.sp, lineHeight = 18.sp)
+            Text(message.summaryZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
+            message.relatedContentLabelZh?.let { Text(it, color = RlColor.TextSecondary, fontSize = 13.sp, lineHeight = 19.sp) }
+            if (unavailable) MessageUnavailableLabel()
         }
+        Text(message.formattedTime(), color = RlColor.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp)
+        MessageOpenButton(message, onAction)
     }
+    androidx.compose.material3.HorizontalDivider(color = RlColor.Border.copy(alpha = .6f))
 }
-
-@Composable
-private fun MessageStatus(visual: MessageVisual) {
-    Surface(shape = CircleShape, color = visual.color.copy(alpha = .86f)) {
-        Text(visual.status, Modifier.padding(horizontal = RlSpace.Space12, vertical = RlSpace.Space4),
-            color = Color.White, style = MaterialTheme.typography.labelSmall)
-    }
-}
-
 @Composable
 private fun MessageOpenButton(message: AppMessage, onAction: (MessagesAction) -> Unit) {
     IconButton(onClick = { onAction(MessagesAction.MessageRequested(message.messageId)) },

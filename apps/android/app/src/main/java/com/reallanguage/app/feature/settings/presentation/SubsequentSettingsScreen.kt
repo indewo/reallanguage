@@ -26,8 +26,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Eco
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Mic
 import com.reallanguage.app.core.designsystem.EditorialFont
 import androidx.compose.ui.unit.sp
@@ -38,6 +42,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.draw.scale
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.material3.ProvideTextStyle
@@ -86,66 +98,50 @@ fun SubsequentSettingsScreen(
     onReminderEnableRequested: (() -> Unit)? = null,
     reminderSchedulingMessage: String? = null,
 ) {
-    BackHandler { if (!state.saving) onAction(SubsequentSettingsAction.ReturnRequested) }
-    val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
-    val groupOffsets = remember { mutableStateListOf<Int?>(null, null, null) }
-    var navigationAnchor by remember { mutableStateOf<SettingsNavigationAnchor?>(null) }
-    fun SettingsNavigationAnchor.matchesViewport(): Boolean =
-        scrollOffset == scrollState.value && scrollMaximum == scrollState.maxValue && groupOffset == groupOffsets[index]
-    LaunchedEffect(scrollState.value, scrollState.maxValue, groupOffsets.toList()) {
-        if (navigationAnchor?.matchesViewport() == false) navigationAnchor = null
-    }
-    val selectedGroup by remember(scrollState) {
-        derivedStateOf {
-            // Several groups can fit together at the bottom of a tall viewport. The requested
-            // visible group stays active there, but any real scroll or reflow invalidates it.
-            val requested = navigationAnchor?.takeIf { it.matchesViewport() }
-            if (requested != null) requested.index
-            else if (scrollState.maxValue > 0 && scrollState.value == scrollState.maxValue) 2
-            else groupOffsets.indexOfLast { it != null && it <= scrollState.value + 1 }.coerceAtLeast(0)
+    var showUnsaved by remember { mutableStateOf(false) }
+    val requestReturn: () -> Unit = {
+        if (!state.saving) {
+            if (state.changed) showUnsaved = true else onAction(SubsequentSettingsAction.ReturnRequested)
         }
     }
+    BackHandler(onBack = requestReturn)
+    if (showUnsaved) androidx.compose.material3.AlertDialog(
+        onDismissRequest = { showUnsaved = false },
+        title = { Text("保存修改？") }, text = { Text("当前设置尚未保存。") },
+        confirmButton = { TextButton(onClick = { showUnsaved = false; onAction(SubsequentSettingsAction.SaveRequested) }) { Text("保存并返回") } },
+        dismissButton = { Row { TextButton(onClick = { showUnsaved = false }) { Text("继续编辑") }; TextButton(onClick = { showUnsaved = false; onAction(SubsequentSettingsAction.ReturnRequested) }) { Text("放弃修改") } } },
+    )
+    val scrollState = rememberScrollState()
+    var selectedGroup by remember { mutableStateOf(0) }
     val navigationEnabled = !state.loading && state.draft != null && !state.saving
     SubsequentSettingsFrame(
         modifier = modifier,
         scrollState = scrollState,
-        onBack = { if (!state.saving) onAction(SubsequentSettingsAction.ReturnRequested) },
+        onBack = requestReturn,
         navigation = {
             SubsequentSettingsNavigation(selectedGroup, navigationEnabled) { index ->
-                groupOffsets[index]?.let { offset ->
-                    navigationAnchor = null
-                    scope.launch {
-                        scrollState.scrollTo(offset.coerceAtMost(scrollState.maxValue))
-                        navigationAnchor = SettingsNavigationAnchor(index, scrollState.value, scrollState.maxValue, offset)
+                selectedGroup = index
+
+            }
+        },
+        note = {},
+        footer = {
+            Column(Modifier.fillMaxWidth()) {
+                HorizontalDivider(color = RlColor.Border.copy(alpha = .5f), modifier = Modifier.padding(bottom = 6.dp))
+                SettingsSaveStatus(state)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (selectedGroup == 3) "提醒设置保存后生效" else "新设置从下一份内容生效", Modifier.weight(1f), color = RlColor.TextSecondary, fontSize = 12.sp)
+                    Button(
+                        enabled = state.changed && !state.saving && !state.loading && state.error != SubsequentSettingsError.VERSION_CONFLICT,
+                        onClick = { onAction(SubsequentSettingsAction.SaveRequested) },
+                        modifier = Modifier.width(156.dp).heightIn(min = 36.dp).testTag("subsequent-settings-save"), shape = RlShape.Small,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFAD583A)),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp)) {
+                        Text(stringResource(R.string.subsequent_settings_save), fontFamily = EditorialFont.Serif, fontSize = 15.sp, fontWeight = FontWeight.Normal)
                     }
                 }
             }
-        },
-        note = { SettingsEffectNote(it) },
-        footer = {
-            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space4)) {
-                SettingsSaveStatus(state)
-                BoxWithConstraints(Modifier.fillMaxWidth()) {
-                val compactActions = maxWidth < 360.dp || LocalDensity.current.fontScale > 1.35f
-                Row(Modifier.fillMaxWidth().padding(end = if (compactActions) 0.dp else 38.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(
-                        onClick = { onAction(SubsequentSettingsAction.ReturnRequested) },
-                        enabled = !state.saving,
-                        modifier = (if (compactActions) Modifier.weight(.6f) else Modifier.widthIn(min = 90.dp)).heightIn(min = 48.dp).testTag("subsequent-settings-return"),
-                    ) { Text(stringResource(R.string.settings_back)) }
-                    BillingAction(
-                        text = stringResource(R.string.subsequent_settings_save),
-                        enabled = state.changed && !state.saving && !state.loading && state.error != SubsequentSettingsError.VERSION_CONFLICT,
-                        onClick = { onAction(SubsequentSettingsAction.SaveRequested) },
-                        modifier = (if (compactActions) Modifier.weight(1f) else Modifier.width(156.dp)).heightIn(min = 48.dp).testTag("subsequent-settings-save"),
-                        color = RlColor.ActionVivid,
-                    )
-                }
-                }
-            }
-        },
-    ) {
+        },    ) {
                 when {
                     state.loading -> Text(stringResource(R.string.subsequent_settings_loading))
                     state.draft == null -> {
@@ -166,9 +162,39 @@ fun SubsequentSettingsScreen(
                             bodySmall = typography.bodySmall.copy(fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp),
                         )) {
                         ProvideTextStyle(MaterialTheme.typography.bodyMedium) {
-                            SettingsGroups(state, onAction, onReminderEnableRequested, reminderSchedulingMessage) { index, offset ->
-                                if (groupOffsets[index] != offset) groupOffsets[index] = offset
+                            val initial = InitialSettingsUiState(draft = state.draft, submitting = state.saving || state.error == SubsequentSettingsError.VERSION_CONFLICT)
+                            val bridge: (InitialSettingsAction) -> Unit = { action -> action.toSubsequent()?.let(onAction) }
+                            when (selectedGroup) {
+                                0 -> EditorialExpressionBasics(initial, bridge)
+                                1 -> {
+                                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Text("•", color = RlColor.ActionVivid)
+                                        Text("学习单词池", Modifier.weight(1f), fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                                        Surface(color = Color.Transparent, shape = RlShape.Small, border = BorderStroke(.6.dp, RlColor.Border)) {
+                                            Box(Modifier.width(84.dp).padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
+                                                Text(state.draft.basicVocabulary?.label() ?: "尚未选择", Modifier.testTag("settings-shared-vocabulary-value"))
+                                            }
+                                        }
+                                        TextButton(onClick = { selectedGroup = 0 }, enabled = !state.saving, modifier = Modifier.testTag("settings-edit-shared-vocabulary")) { Text("在表达基础中调整 ›", fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Normal, fontSize = 12.sp, color = RlColor.Ink) }
+                                    }
+                                    HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
+                                    Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                        Text("•", color = RlColor.ActionVivid)
+                                        Text("表达风格／AI 角色参考", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                                    }
+                                    Text("选填。", color = RlColor.TextSecondary, fontSize = 12.sp, modifier = Modifier.padding(start = 24.dp))
+                                    OutlinedTextField(value = state.draft.styleReference, onValueChange = { onAction(SubsequentSettingsAction.StyleReferenceChanged(it)) },
+                                        enabled = !initial.submitting, modifier = Modifier.fillMaxWidth().height(84.dp).testTag("settings-style-reference"),
+                                        minLines = 2, maxLines = 6, shape = RlShape.Small,
+                                        placeholder = { Text("例如：清楚、自然、直接，像同事间交流一样。", fontFamily = EditorialFont.Serif, fontSize = 14.sp) },
+                                        textStyle = TextStyle(fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 21.sp, color = RlColor.Ink),
+                                        colors = OutlinedTextFieldDefaults.colors(unfocusedBorderColor = RlColor.Border, focusedBorderColor = SettingsOlive,
+                                            unfocusedContainerColor = Color.Transparent, focusedContainerColor = Color.Transparent))
+                                }
+                                2 -> EditorialVoiceSettings(initial, bridge)
+                                3 -> ReminderPreferences(state, onAction, onReminderEnableRequested, reminderSchedulingMessage)
                             }
+
                         }
                         }
                     }
@@ -176,122 +202,22 @@ fun SubsequentSettingsScreen(
     }
 }
 
-private data class SettingsNavigationAnchor(val index: Int, val scrollOffset: Int, val scrollMaximum: Int, val groupOffset: Int)
-
 @Composable
 private fun SubsequentSettingsNavigation(selectedGroup: Int, enabled: Boolean, onSelected: (Int) -> Unit) {
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-    if (maxWidth >= 250.dp) {
-        FlowRow(Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("表达基础", "表达风格", "朗读声音").forEachIndexed { index, label ->
-                FilterChip(index == selectedGroup, { onSelected(index) }, enabled = enabled, label = { Text(label) }, modifier = Modifier.testTag("subsequent-settings-navigation-$index"))
-            }
-        }
-        return@BoxWithConstraints
-    }
-    val compact = maxWidth < 172.dp * LocalDensity.current.fontScale.coerceAtMost(1.5f)
-    Column(
-        modifier = Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        listOf("表达基础", "表达风格", "朗读声音").forEachIndexed { index, label ->
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(start = if (index == 0) 0.dp else 7.dp)
-                    .heightIn(min = if (index == 0) 64.dp else 58.dp)
-                    .testTag("subsequent-settings-navigation-$index")
-                    .selectable(selected = index == selectedGroup, enabled = enabled, role = Role.Button,
-                        onClick = { onSelected(index) }),
-                contentAlignment = Alignment.CenterStart,
-            ) {
-                Image(
-                    painter = painterResource(R.drawable.rl_vocabulary_card_paper_r11),
-                    contentDescription = null,
-                    modifier = Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds,
-                )
-                if (!compact) Icon(when (index) { 0 -> Icons.Outlined.Explore; 1 -> Icons.Outlined.Eco; else -> Icons.Outlined.Mic }, null,
-                    Modifier.padding(start = 15.dp).size(28.dp), tint = if (index == selectedGroup) RlColor.ActionVivid else RlColor.Secondary)
-                Text(
-                    text = label,
-                    modifier = Modifier.padding(start = if (compact) 12.dp else 48.dp,
-                        end = 25.dp, top = 12.dp, bottom = 12.dp),
-                    color = RlColor.Ink,
-                    style = MaterialTheme.typography.titleSmall.copy(fontFamily = EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp),
-                )
-                if (index == selectedGroup) {
-                    Box(
-                        modifier = Modifier.align(Alignment.CenterEnd).padding(end = RlSpace.Space8)
-                            .size(12.dp).background(RlColor.ActionVivid, CircleShape),
-                    )
+    Column(Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        listOf("表达基础", "表达风格", "朗读声音", "学习提醒").forEachIndexed { index, label ->
+            Box(Modifier.fillMaxWidth().height(42.dp).settingsPaper(if (selectedGroup == index) SettingsOlive else SettingsPaper).testTag("subsequent-settings-navigation-$index")
+                .selectable(selected = selectedGroup == index, enabled = enabled, role = Role.Tab, onClick = { onSelected(index) })) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Icon(when(index) { 0 -> Icons.Outlined.Edit; 1 -> Icons.Outlined.Layers; 2 -> Icons.Outlined.Headphones; else -> Icons.Outlined.NotificationsNone }, null,
+                        Modifier.size(20.dp), tint = if (selectedGroup == index) RlColor.OnPrimary else RlColor.Ink)
+                    Text(label, color = if (selectedGroup == index) RlColor.OnPrimary else RlColor.Ink,
+                        fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 22.sp)
                 }
             }
         }
     }
-    }
 }
-
-@Composable
-private fun SettingsEffectNote(modifier: Modifier) {
-        Box(
-            modifier = modifier.testTag("subsequent-settings-effect-note"),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                painter = painterResource(R.drawable.rl_registration_age_note),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillBounds,
-            )
-            Text(
-                text = "新设置会\n从下一份内容生效",
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                color = RlColor.Ink,
-                style = MaterialTheme.typography.bodySmall,
-            )
-        }
-}
-
-@Composable
-private fun SettingsGroups(
-    state: SubsequentSettingsUiState,
-    onAction: (SubsequentSettingsAction) -> Unit,
-    onReminderEnableRequested: (() -> Unit)?,
-    reminderSchedulingMessage: String?,
-    onGroupPositionChanged: (Int, Int) -> Unit,
-) {
-    val draft = checkNotNull(state.draft)
-    val editable = !state.saving && state.error != SubsequentSettingsError.VERSION_CONFLICT
-    val initialState = InitialSettingsUiState(draft = draft, submitting = !editable)
-    val bridge: (InitialSettingsAction) -> Unit = { action ->
-        if (editable) action.toSubsequent()?.let(onAction)
-    }
-    Column(
-        modifier = Modifier.fillMaxWidth().testTag("subsequent-settings-group")
-            .onGloballyPositioned { onGroupPositionChanged(0, it.positionInParent().y.roundToInt()) },
-        verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
-    ) {
-        Text("①  ${stringResource(R.string.settings_expression_basics)}", style = MaterialTheme.typography.titleLarge)
-        ExpressionBasics(initialState, bridge)
-    }
-    Column(
-        modifier = Modifier.fillMaxWidth().testTag("subsequent-settings-group")
-            .onGloballyPositioned { onGroupPositionChanged(1, it.positionInParent().y.roundToInt()) },
-        verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
-    ) {
-        Text("②  ${stringResource(R.string.settings_usage_preferences)}", style = MaterialTheme.typography.titleLarge)
-        UsagePreferences(initialState, bridge)
-        ReminderPreferences(state, onAction, onReminderEnableRequested, reminderSchedulingMessage)
-    }
-    Column(
-        modifier = Modifier.fillMaxWidth().testTag("subsequent-settings-group")
-            .onGloballyPositioned { onGroupPositionChanged(2, it.positionInParent().y.roundToInt()) },
-        verticalArrangement = Arrangement.spacedBy(RlSpace.Space4),
-    ) {
-        Text("③  ${stringResource(R.string.settings_voice)}", style = MaterialTheme.typography.titleLarge)
-        VoiceSettings(initialState, bridge)
-    }
-}
-
 @Composable
 private fun ReminderPreferences(
     state: SubsequentSettingsUiState,
@@ -310,14 +236,13 @@ private fun ReminderPreferences(
         onDismiss = { showTimePicker = false },
         onConfirm = { onAction(SubsequentSettingsAction.ReminderTimeChanged(it)); showTimePicker = false })
     Box(Modifier.fillMaxWidth().testTag("settings-daily-reminder")) {
-        Image(painterResource(R.drawable.rl_vocabulary_card_paper_r11), null,
-            Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = RlSpace.Space16, vertical = RlSpace.Space8),
+            modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RlSpace.Space16)) {
+                Text("•", color = RlColor.ActionVivid)
                 Text(label, Modifier.weight(1f), color = RlColor.Ink, style = MaterialTheme.typography.titleMedium)
                 Switch(
                     checked = draft.enabled,
@@ -326,29 +251,32 @@ private fun ReminderPreferences(
                         else onAction(SubsequentSettingsAction.ReminderEnabledChanged(enabled))
                     },
                     enabled = editable,
-                    modifier = Modifier.testTag("settings-reminder-enabled").semantics { contentDescription = label },
+                    modifier = Modifier.scale(.8f).testTag("settings-reminder-enabled").semantics { contentDescription = label },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = RlColor.Surface,
-                        checkedTrackColor = RlColor.Secondary,
+                        checkedTrackColor = SettingsSelected,
                         uncheckedThumbColor = RlColor.TextSecondary,
                         uncheckedTrackColor = RlColor.PaperWarm,
                         uncheckedBorderColor = RlColor.Border,
                     ),
                 )
             }
+            HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RlSpace.Space16)) {
+                Text("•", color = RlColor.ActionVivid)
                 Text(timeLabel, Modifier.weight(1f), color = RlColor.Ink, style = MaterialTheme.typography.bodyLarge)
                 TextButton(
                     enabled = editable,
                     modifier = Modifier.heightIn(min = 48.dp).testTag("settings-reminder-time")
                         .semantics { contentDescription = "$timeLabel $time" },
                     onClick = { showTimePicker = true },
-                ) { Text(time, color = RlColor.Secondary, style = MaterialTheme.typography.titleMedium) }
+                ) { Text("$time  ›", color = RlColor.Ink, style = MaterialTheme.typography.titleMedium) }
             }
             Text(stringResource(R.string.settings_reminder_frequency), color = RlColor.TextSecondary,
                 style = MaterialTheme.typography.bodySmall)
-            reminderSchedulingMessage?.let { ReminderSchedulingStatusText(it) }
+            HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
+            reminderSchedulingMessage?.takeIf { it.isNotBlank() }?.let { ReminderSchedulingStatusText(it) }
         }
     }
 }

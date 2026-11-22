@@ -85,9 +85,9 @@ class AccountLogoutVisibilityTest {
 
         val emailNode = compose.onNodeWithText(email, useUnmergedTree = true).performScrollTo().assertIsDisplayed()
         assertWholeTextInRegion(email, "account-info-section")
-        val labelRight = compose.onNodeWithText("邮箱", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInRoot.right
-        assertTrue("The email value must not overlap its label", emailNode.fetchSemanticsNode().boundsInRoot.left >= labelRight)
+        val labelBottom = compose.onNodeWithText("邮箱", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.bottom
+        assertTrue("The email value must start below its label", emailNode.fetchSemanticsNode().boundsInRoot.top >= labelBottom)
         back.assertIsDisplayed()
         assertEquals("The fixed account header must not scroll away", backBounds, back.fetchSemanticsNode().boundsInRoot)
         capture("account-long-email-double-font.png")
@@ -140,7 +140,7 @@ class AccountLogoutVisibilityTest {
         button.assertIsDisplayed()
         if (busy) button.assertIsNotEnabled() else button.assertIsEnabled().assertHasClickAction()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val label = "  " + context.getString(if (busy) R.string.account_logging_out else R.string.account_logout)
+        val label = context.getString(if (busy) R.string.account_logging_out else R.string.account_logout)
         assertWholeLabel(label, button)
         assertEquals("Displaying or scrolling account details must not submit logout", emptyList<AccountAction>(), actions)
         button.performTouchInput { click() }

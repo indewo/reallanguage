@@ -37,8 +37,10 @@ fun ReadWriteCorrectionScreen(
     state: ReadWriteCorrectionUiState,
     onAction: (ReadWriteCorrectionAction) -> Unit,
 ) {
+    val points = remember { mutableStateListOf<Offset?>() }
     ChapterWritingFrame(state.chapter, state.currentFocusSentenceId, stageTitle = "读写订正",
         workspaceMinHeight = 220.dp,
+        renderWorkspacePaper = false,
         focusOnlyContext = true,
         centerLeftPanelContent = true,
         onBack = { onAction(ReadWriteCorrectionAction.BackRequested) },
@@ -49,6 +51,7 @@ fun ReadWriteCorrectionScreen(
         footer = {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 LearningAction(stringResource(R.string.formation_back), { onAction(ReadWriteCorrectionAction.BackRequested) }, Modifier.weight(1f), enabled = !state.saving)
+                LearningAction("清空重写", { points.clear() }, Modifier.weight(1f).testTag("correction-clear"), enabled = !state.saving && points.isNotEmpty())
                 LearningAction(stringResource(if (state.audioLooping) R.string.learning_mute else R.string.learning_pronounce),
                     { onAction(ReadWriteCorrectionAction.AudioToggled) }, Modifier.weight(1f), enabled = !state.saving)
                 LearningAction(stringResource(R.string.handwriting_finished), { onAction(ReadWriteCorrectionAction.WrittenFinished) },
@@ -56,16 +59,12 @@ fun ReadWriteCorrectionScreen(
             }
         }) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
-            val points = remember { mutableStateListOf<Offset?>() }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text("抄写当前句 · 右侧留白可滚动", color = RlColor.TextSecondary, fontSize = 14.sp)
-                TextButton(onClick = { points.clear() }, enabled = !state.saving && points.isNotEmpty(),
-                    modifier = Modifier.testTag("correction-clear")) { Text("清空重写") }
-            }
+            Text("抄写当前句，完成后点击“我已写完”", color = RlColor.TextSecondary, fontSize = 14.sp)
+            Box(Modifier.fillMaxWidth().weight(1f)) {
+            androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(R.drawable.rl_ruled_handwriting_paper), null, Modifier.matchParentSize(), contentScale = androidx.compose.ui.layout.ContentScale.FillBounds)
             Canvas(
                 // Keep a gutter outside the ink surface for vertical page scrolling.
-                Modifier.fillMaxWidth().weight(1f).padding(end = 20.dp).clipToBounds()
+                Modifier.fillMaxSize().padding(start = 16.dp, end = 20.dp, top = 12.dp, bottom = 12.dp).clipToBounds()
                     .testTag("correction-writing-canvas")
                     .pointerInput(state.saving) {
                         if (!state.saving) {
@@ -87,6 +86,7 @@ fun ReadWriteCorrectionScreen(
                         )
                     }
                 }
+            }
             }
             if (state.saveFailed) {
                 Text(stringResource(R.string.read_write_correction_save_failed), color = RlColor.Error)
