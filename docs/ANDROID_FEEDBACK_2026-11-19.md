@@ -1,3 +1,13 @@
+### 2026-11-22 阶段卡图标/标签安全区与场景异常分支复验
+
+针对用户指出的“提取词汇与句式/建立学习目标图标异常且换行”继续修正共用ProcessStageCard：语义图标放入素材中央圆环，不再叠顶部图钉；标签放在圆环下方并预留底部撕裂边安全区，字号同时按可用宽高测量，最多两行且不接受单字孤行。测试新增横向边界、底部安全区、圆环区域和图文不重叠断言，并等待Activity真正完成横屏重建，避免旧Activity/竖屏造成假通过或假失败。
+
+PFFM10实际运行FormationProcessReferenceFitTest与SceneQuestionsScreenTest共9项，最终9/9通过。stage-rail-v2.png已实际审阅：三图标位于圆环内，“提取词汇”+“与句式”、“建立学”+“习目标”均为完整两行，三张卡片及箭头对齐，文字未压底部撕裂边。该证据覆盖当前生产Screen组件，不据此关闭所有真实生成态/更多尺寸，B03/C05/C28整组仍按台账保留。
+
+同批复验场景问答生成失败后返回的currentQuestion=null分支：页面显示明确失败正文和重试，不再出现无问题却可提交的空白页；活页纸圆孔与正文保留至少8dp实际间距。整句复述FAIL状态把“暂不练习”移到固定底栏，与播放/再练一次同排；直接调用已安装测试入口运行1项通过（3.906s），retelling-failure-stop-latest.png实看长反馈三行、无单字竖排、三个按钮完整。仍属隔离失败状态，不冒充真实录音评价或跳过归档闭环，C23/C24整组不提前关闭。
+
+公网联调包以显式PUBLIC_PROBE及公网API参数重新构建并`adb install -r`覆盖Success，APK SHA256 a735cc8e3d772bdb2a49de13dd7a7b86fce75def68af86ebe00ca38f7c51e0eb。冷启动正常进入首页，未回登录/首次设置；实际打开未完成学习，仍显示8个进行中，首条原QA章保持2/9步。未提交答案、未推进原用户进度。后端decode-speaking-audio与openai-metered-provider精确复跑87/87通过；这不等于API全套通过，另次全套运行有5项非本批目标失败（1项提示词旧预期、1项完整链路500、3项音频窗口5秒超时），保留待查。
+
 ### 2026-11-22 独立复述失败长反馈与暂不练习组件补验
 
 新增FullSentenceSpeakingScreenTest.failedRetellingKeepsLongFeedbackReadableAndStopActionReachable，生产横屏窗口、隔离FAIL状态，第5次长中文反馈。构建覆盖测试包，真机48.576s通过：全文TextLayout无溢出、首行至少8字符（不单字竖排）、实际滚动找到暂不练习并点击，只发StopPractisingRequested。retelling-failure-stop.png实看长反馈三行、暂不练习为清楚的边框按钮、底部再练一次完整。截图为滚动到底状态，顶部内容上移；非真实录音失败，不写用户数据库、不冒充真实跳过归档/费用闭环，C23/C24原真实分支仍待验。

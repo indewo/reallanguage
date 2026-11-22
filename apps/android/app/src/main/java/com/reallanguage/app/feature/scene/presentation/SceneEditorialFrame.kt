@@ -35,7 +35,8 @@ internal fun SceneEditorialFrame(
             EditorialHeader(title = title, modifier = Modifier.testTag("scene-questions-header"))
             if (stacked) {
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    EditorialSheet(contentPadding = 24.dp, showSpine = true, roundSpineHoles = true, contentSpacing = 16.dp, content = content)
+                    EditorialSheet(contentPadding = 24.dp, showSpine = true, roundSpineHoles = true, contentSpacing = 16.dp,
+                        contentModifier = Modifier.padding(start = 14.dp), content = content)
                     SceneEditorialArtwork(supporting, Modifier.fillMaxWidth().height(230.dp))
                 }
                 footer?.let { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), content = it) }
@@ -46,7 +47,7 @@ internal fun SceneEditorialFrame(
                     Box(Modifier.fillMaxWidth().weight(1f)) {
                     EditorialSheet(Modifier.fillMaxSize(), contentPadding = 18.dp,
                         showSpine = true, roundSpineHoles = true, contentSpacing = 10.dp,
-                        contentModifier = Modifier.fillMaxSize().padding(end = 8.dp).verticalScroll(paperScroll), content = content)
+                        contentModifier = Modifier.fillMaxSize().padding(start = 14.dp, end = 8.dp).verticalScroll(paperScroll), content = content)
                     if (paperScroll.maxValue > 0) com.reallanguage.app.feature.learning.presentation.LearningOverflowScrollbar(
                         paperScroll, Modifier.align(Alignment.CenterEnd).padding(end = 6.dp))
                     }

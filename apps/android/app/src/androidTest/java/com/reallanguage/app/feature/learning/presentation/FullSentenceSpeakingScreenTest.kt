@@ -585,7 +585,12 @@ class FullSentenceSpeakingScreenTest {
         composeRule.onNodeWithText(feedback).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { check(it(layouts)) }
         check(!layouts.single().hasVisualOverflow)
         check(layouts.single().getLineEnd(0) >= 8) { "Feedback must not collapse into one-character columns" }
-        composeRule.onNodeWithText("暂不练习").performScrollTo().assertIsDisplayed().assertIsEnabled()
+        composeRule.onNodeWithText("暂不练习").assertIsDisplayed().assertIsEnabled()
+        val stopBounds = composeRule.onNodeWithText("暂不练习").fetchSemanticsNode().boundsInRoot
+        val playBounds = composeRule.onNodeWithText(composeRule.activity.getString(com.reallanguage.app.R.string.full_sentence_speaking_play_answer)).fetchSemanticsNode().boundsInRoot
+        val retryBounds = composeRule.onNodeWithText(composeRule.activity.getString(com.reallanguage.app.R.string.full_sentence_speaking_retry)).fetchSemanticsNode().boundsInRoot
+        check(kotlin.math.abs(stopBounds.center.y - playBounds.center.y) < 3f && kotlin.math.abs(stopBounds.center.y - retryBounds.center.y) < 3f)
+        check(stopBounds.right < playBounds.left && playBounds.right < retryBounds.left)
         val inst = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
         inst.uiAutomation.takeScreenshot()!!.let { bitmap ->
             java.io.File(inst.targetContext.filesDir, "retelling-failure-stop.png").outputStream().use {

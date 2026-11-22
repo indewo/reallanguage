@@ -27,9 +27,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.remember
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.*
 
@@ -165,7 +173,7 @@ internal fun EditorialProcessWorkspace(
                                     if (index != stages.lastIndex) {
                                         val connectorColor = if (index == 0) RlColor.Secondary else RlColor.Primary
                                         Icon(Icons.AutoMirrored.Outlined.ArrowForward, null,
-                                            Modifier.width(32.dp).height(20.dp), tint = connectorColor)
+                                            Modifier.width(22.dp).height(18.dp), tint = connectorColor)
                                     }
                                 }
                             }
@@ -189,19 +197,52 @@ internal fun EditorialProcessWorkspace(
 private fun ProcessStageCard(index: Int, label: String, failed: Boolean, compactCard: Boolean, modifier: Modifier) {
     val accent = if (failed) RlColor.Error else listOf(RlColor.Secondary, RlColor.ActionVivid, RlColor.Primary)[index % 3]
     Box(modifier.testTag("process_stage_card_$index")) {
-        Box(Modifier.aspectRatio(1176f / 1337f).align(Alignment.Center)) {
+        Box(Modifier.aspectRatio(1176f / 1337f).align(Alignment.Center).clipToBounds().testTag("process_stage_art_$index")) {
         Image(painterResource(listOf(R.drawable.rl_v73_process_card_green, R.drawable.rl_v73_process_card_terracotta, R.drawable.rl_v73_process_card_blue)[index % 3]), null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        Column(Modifier.fillMaxSize().padding(start = 10.dp, end = 10.dp,
-            top = if (compactCard) 7.dp else 28.dp, bottom = if (compactCard) 7.dp else 22.dp), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(if (compactCard) 10.dp else 23.dp, Alignment.CenterVertically)) {
-            Icon(processStageIcon(label), null, tint = accent, modifier = Modifier.size(if (compactCard) 27.dp else 42.dp))
-            Text(label, modifier = if (compactCard) Modifier.offset(y = 8.dp) else Modifier, color = accent, fontFamily = EditorialFont.Serif,
-                fontSize = if (compactCard) 13.sp else 15.sp,
-                lineHeight = if (compactCard) 18.sp else 23.sp,
-                fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+        BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 12.dp)) {
+            val labelStyle = LocalTextStyle.current.copy(
+                fontFamily = EditorialFont.Serif,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                lineBreak = LineBreak.Heading,
+            )
+            val labelSize = fitStageLabelSize(label, maxWidth, maxHeight, labelStyle)
+            val iconSize = if (compactCard) 24.dp else 30.dp
+            // The artwork already contains a pin and a circular stamp. Keep the semantic icon in
+            // the stamp and the label below it, instead of stacking either one on the torn edges.
+            Icon(processStageIcon(label), null, tint = accent,
+                modifier = Modifier.align(Alignment.Center).offset(y = -maxHeight * .11f)
+                    .size(iconSize).testTag("process_stage_icon_$index"))
+            Text(label, color = accent, maxLines = 2,
+                modifier = Modifier.align(Alignment.BottomCenter).offset(y = -maxHeight * .12f)
+                    .fillMaxWidth().testTag("process_stage_label_$index"),
+                style = labelStyle.copy(fontSize = labelSize, lineHeight = labelSize * 1.3f))
         }
         }
+    }
+}
+
+/** Keeps the stage label below the stamp and clear of the torn bottom edge. */
+@Composable
+private fun fitStageLabelSize(label: String, maxWidth: Dp, maxHeight: Dp, style: TextStyle): TextUnit {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    return remember(label, maxWidth, maxHeight, style, density) {
+        val widthPx = with(density) { maxWidth.toPx() }.toInt().coerceAtLeast(1)
+        val labelHeightPx = with(density) { maxHeight.toPx() } * .29f
+        listOf(15f, 14.5f, 14f, 13.5f, 13f, 12.5f, 12f, 11.5f).firstOrNull { size ->
+            val result = measurer.measure(
+                text = label,
+                style = style.copy(fontSize = size.sp, lineHeight = (size * 1.3f).sp),
+                maxLines = 2,
+                constraints = Constraints(maxWidth = widthPx),
+            )
+            result.lineCount <= 2 && result.size.height <= labelHeightPx &&
+                (0 until result.lineCount).all { line ->
+                    result.getLineEnd(line) - result.getLineStart(line) >= 2
+                }
+        }?.sp ?: 11.5.sp
     }
 }
 

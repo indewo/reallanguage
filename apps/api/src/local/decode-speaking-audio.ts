@@ -13,6 +13,24 @@ import { promisify } from "node:util";
 
 const execute = promisify(execFile);
 
+// PATH 上可能残留 0 字节的应用别名（Windows WinGet 的 Links 目录就常见），
+// execFile 调用它会以 ENOENT/EACCES 失败，且报错与"音频损坏"完全一样，
+// 排查时极难区分。允许用 FFMPEG_PATH 显式指定真正的可执行文件。
+const ffmpegExecutable = (): string =>
+  process.env.FFMPEG_PATH?.trim() || "ffmpeg";
+
+const isMissingExecutable = (failure: unknown): boolean => {
+  const code = (failure as NodeJS.ErrnoException | null)?.code;
+  // EFTYPE 是 Windows 特有的：路径存在但不是一个可执行文件。WinGet 的 Links
+  // 目录会留下 0 字节的应用别名，实测就是抛这个码。
+  return (
+    code === "ENOENT" ||
+    code === "EACCES" ||
+    code === "EPERM" ||
+    code === "EFTYPE"
+  );
+};
+
 /** Decode the original recording; never synthesize audio from the corrected transcript. */
 export async function decodeSpeakingAudio(
   base64: string,
@@ -59,7 +77,7 @@ export async function decodeSpeakingAudio(
       );
     } else {
       await execute(
-        "ffmpeg",
+        ffmpegExecutable(),
         [
           "-nostdin",
           "-v",
@@ -88,7 +106,11 @@ export async function decodeSpeakingAudio(
         ? decoded
         : acceptedPcmPrefix(decoded, recordingLimits.acceptedEndMs)
     ).toString("base64");
-  } catch {
+  } catch (failure) {
+    // 转码器缺失属于部署问题，与音频本身无法解码要分开报，否则线上只能看到
+    // 一个笼统的失败。两种情况都不外泄转换器 stderr 或录音内容。
+    if (isMissingExecutable(failure))
+      throw new Error("Audio transcoder (ffmpeg) is not available");
     // Do not propagate converter stderr or recorded content to API clients/logs.
     throw new Error("Could not decode original speaking audio");
   } finally {

@@ -54,6 +54,12 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
     val previous = state.history.lastOrNull().takeIf { state.loading }
     val visibleQuestion = state.currentQuestion ?: previous?.question
     val visibleAnswer = previous?.answer?.answerZh ?: state.answerText
+    // Returning from a failed generation can restore this screen after its last request
+    // already cleared currentQuestion. That state has neither a question nor an error, so
+    // rendering it as "submit answer" leaves an enabled-looking blank page. Treat the
+    // missing question as a recoverable request failure and expose the retry action.
+    val missingQuestion = !state.loading && state.error == null && visibleQuestion == null
+    val effectiveError = state.error ?: SceneQuestionsError.REQUEST_FAILED.takeIf { missingQuestion }
     SceneEditorialFrame(
         title = stringResource(R.string.scene_questions_title),
         supporting = "让场景更像\n你真实经历的",
@@ -62,7 +68,7 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 onClick = { onAction(SceneQuestionsAction.ExitRequested) },
                 modifier = Modifier.weight(.4f),
             ) { Text(stringResource(R.string.scene_questions_exit)) }
-            if (state.history.isNotEmpty() && state.error != SceneQuestionsError.INSUFFICIENT_INFORMATION) {
+            if (state.history.isNotEmpty() && effectiveError != SceneQuestionsError.INSUFFICIENT_INFORMATION) {
                 OutlinedButton(
                     onClick = { onAction(SceneQuestionsAction.PreviousRequested) },
                     modifier = Modifier.weight(.45f).testTag("scene-questions-previous"),
@@ -71,16 +77,16 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
             }
             RlPrimaryButton(
                 text = if (state.loading) stringResource(R.string.scene_questions_loading) else stringResource(
-                    when (state.error) {
+                    when (effectiveError) {
                         SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_return_edit
                         null -> R.string.scene_questions_submit
                         else -> R.string.diary_retry
                     },
                 ),
-                enabled = !state.loading && (state.error != null || state.answerText.isNotBlank()),
+                enabled = !state.loading && (effectiveError != null || state.answerText.isNotBlank()),
                 onClick = {
                     onAction(
-                        when (state.error) {
+                        when (effectiveError) {
                             SceneQuestionsError.INSUFFICIENT_INFORMATION -> SceneQuestionsAction.PreviousRequested
                             null -> SceneQuestionsAction.AnswerSubmitted
                             else -> SceneQuestionsAction.RetryRequested
@@ -97,10 +103,10 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), color = RlColor.Secondary, strokeWidth = 2.dp)
                 Text(stringResource(R.string.scene_questions_loading), color = RlColor.TextSecondary, fontSize = 14.sp)
             }
-            state.error != null -> {
+            state.error != null || missingQuestion -> {
                 Text(
                     stringResource(
-                        when (state.error) {
+                        when (effectiveError) {
                             SceneQuestionsError.INVALID_RESPONSE -> R.string.scene_questions_invalid
                             SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_insufficient
                             else -> R.string.scene_questions_failed
@@ -109,11 +115,6 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                     color = RlColor.Error,
                     modifier = Modifier.testTag("scene-questions-error"),
                 )
-                if (state.error != SceneQuestionsError.INSUFFICIENT_INFORMATION) {
-                    OutlinedButton(onClick = { onAction(SceneQuestionsAction.RetryRequested) }) {
-                        Text(stringResource(R.string.diary_retry))
-                    }
-                }
             }
             visibleQuestion != null -> {
                 Text(visibleQuestion.questionZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,

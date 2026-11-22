@@ -105,6 +105,12 @@ fun FullSentenceSpeakingScreen(
           }
         },
         footer = {
+            if (state.finalDecision == SpeakingEvaluationDecision.FAIL) {
+                OutlinedButton(
+                    onClick = { onAction(FullSentenceSpeakingAction.StopPractisingRequested) },
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp),
+                ) { Text(stringResource(R.string.full_sentence_speaking_stop)) }
+            }
             OutlinedButton(
                 onClick = { onAction(FullSentenceSpeakingAction.AnswerAudioRequested) },
                 enabled = !state.submitting && !state.evaluationReceived && !state.technicalRetryPending && !state.technicalRetryBlocked,
@@ -275,11 +281,6 @@ fun FullSentenceSpeakingScreen(
                     stringResource(R.string.full_sentence_speaking_retry_capture),
                     color = RlColor.Error,
                 )
-            }
-            if (state.finalDecision == SpeakingEvaluationDecision.FAIL) {
-                OutlinedButton(
-                    onClick = { onAction(FullSentenceSpeakingAction.StopPractisingRequested) },
-                ) { Text(stringResource(R.string.full_sentence_speaking_stop)) }
             }
         }
     }
