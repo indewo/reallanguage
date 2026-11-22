@@ -140,5 +140,11 @@ class AudioDictationScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("提交").assertIsDisplayed()
         check(state.value.input == text)
+        instrumentation.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "dictation-keyboard-dismissed.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
     }
 }
