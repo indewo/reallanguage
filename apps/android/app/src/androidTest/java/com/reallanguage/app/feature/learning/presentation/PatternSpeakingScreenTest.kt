@@ -42,6 +42,7 @@ class PatternSpeakingScreenTest {
             progressFailed = true,
         )
         composeRule.setContent { RlTheme { PatternSpeakingScreen(state, actions::add) } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         composeRule.onNodeWithText("Visible target answer.").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("固定回答中文。").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("重试保存").assertIsDisplayed().performClick()

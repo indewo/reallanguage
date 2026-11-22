@@ -3,9 +3,6 @@ package com.reallanguage.app.feature.learning.presentation
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.hasAnyAncestor
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -89,8 +86,8 @@ class ReadSpeakScreenTest {
         composeRule.onNodeWithText("触摸并沿着英文句子滑动，录音会自动开始。").assertIsDisplayed()
         composeRule.onNodeWithText("读一遍").assertDoesNotExist()
         composeRule.onNodeWithTag("read_speak_manual_finished").assertIsDisplayed()
-        composeRule.onNode(hasClickAction() and hasAnyAncestor(hasTestTag("read_speak_manual_finished")))
-            .assertIsNotEnabled()
+        // Disabled buttons intentionally have no OnClick semantics; assert the tagged control itself.
+        composeRule.onNodeWithTag("read_speak_manual_finished").assertIsNotEnabled()
     }
 
     @Test fun completedManualReadingDoesNotShowTheRemovedNoAudioCopy() {

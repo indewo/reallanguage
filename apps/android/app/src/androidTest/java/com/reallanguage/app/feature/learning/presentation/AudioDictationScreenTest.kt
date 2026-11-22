@@ -1,11 +1,13 @@
 package com.reallanguage.app.feature.learning.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performScrollTo
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.feature.learning.domain.FixedLearningChapter
@@ -27,6 +29,7 @@ class AudioDictationScreenTest {
         val actions = mutableListOf<AudioDictationAction>()
         val state = AudioDictationUiState(FixedLearningChapter("c1", 1, listOf(FixedLearningSentence("s1", "I felt calm.", "我很平静。", true))), "s1", input = "I felt", audioLooping = false, lockedHintItems = emptyList(), audioFailed = true)
         composeRule.setContent { RlTheme { AudioDictationScreen(state, actions::add) } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         composeRule.onNodeWithText(androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().targetContext.getString(com.reallanguage.app.R.string.dictation_audio_failed)).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("I felt").assertIsDisplayed()
         if (androidx.test.platform.app.InstrumentationRegistry.getArguments().getString("captureVisualEvidence") == "true") {
@@ -114,6 +117,59 @@ class AudioDictationScreenTest {
         composeRule.onNodeWithText("本句没有已选择的重点词义、固定搭配或句式。请继续听音输入；提示不会临时增加学习目标。")
             .performScrollTo().assertIsDisplayed()
     }
+    @Test fun productionKeyboardHostPreservesLongInputAndRestoresSubmitAfterDismissal() {
+        val text = "Please share the timeline for the next phase, including key milestones and deliverables."
+        val actions = mutableListOf<AudioDictationAction>()
+        val state = androidx.compose.runtime.mutableStateOf(AudioDictationUiState(
+            FixedLearningChapter("production-keyboard-host", 1,
+                listOf(FixedLearningSentence("s1", text, "请分享下一阶段时间表。", true))),
+            "s1", audioLooping = false, lockedHintItems = emptyList()))
+        composeRule.setContent {
+            RlTheme {
+                com.reallanguage.app.core.designsystem.RlKeyboardEditingHost {
+                    AudioDictationScreen(state.value) { action ->
+                        actions += action
+                        if (action is AudioDictationAction.InputChanged) {
+                            state.value = state.value.copy(input = action.value)
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithText("请输入完整英文").performScrollTo().performClick()
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.window.decorView.rootWindowInsets?.isVisible(android.view.WindowInsets.Type.ime()) == true
+        }
+        val editor = composeRule.onNodeWithTag("landscape-keyboard-editing-input").assertIsDisplayed()
+        editor.performClick()
+        editor.performTextReplacement(text)
+        composeRule.waitUntil(5_000) { state.value.input == text }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("landscape-keyboard-editing-input")
+            .assertIsDisplayed().assertTextEquals(text)
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "dictation-production-host-keyboard.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
+        instrumentation.sendKeyDownUpSync(android.view.KeyEvent.KEYCODE_BACK)
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.window.decorView.rootWindowInsets?.isVisible(android.view.WindowInsets.Type.ime()) == false
+        }
+        composeRule.onNodeWithText(text).assertIsDisplayed()
+        composeRule.onNodeWithText("提交").assertIsDisplayed().performClick()
+        org.junit.Assert.assertEquals(AudioDictationAction.SubmitRequested, actions.last())
+        org.junit.Assert.assertTrue(actions.dropLast(1).all { it is AudioDictationAction.InputChanged })
+        instrumentation.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "dictation-production-host-dismissed.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
+    }
+
     @Test fun longInputRemainsEditableWithKeyboardWithoutSubmitting() {
         val text = "Please share the timeline for the next phase, including key milestones and deliverables."
         val actions = mutableListOf<AudioDictationAction>()

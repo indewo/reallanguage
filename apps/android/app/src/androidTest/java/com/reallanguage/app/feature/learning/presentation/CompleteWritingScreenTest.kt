@@ -49,6 +49,7 @@ class CompleteWritingScreenTest {
             lockedTargets = emptyList(), phase = CompleteWritingPhase.SILENT_SINGLE,
         )
         composeRule.setContent { RlTheme { CompleteWritingScreen(state, {}) } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         composeRule.onNodeWithText("This is the hidden answer.").assertDoesNotExist()
         composeRule.onNodeWithText("This remains context.").assertIsDisplayed()
     }

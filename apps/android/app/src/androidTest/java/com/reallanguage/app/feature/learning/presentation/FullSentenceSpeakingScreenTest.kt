@@ -42,7 +42,11 @@ class FullSentenceSpeakingScreenTest {
     @Before fun focusedLearningWindow() { composeRule.activityRule.scenario.onActivity {
         it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         configureFocusedLearningWindow(it.window)
-    } }
+    }
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        }
+    }
 
     @Test fun pendingTechnicalRetryLocksEvidenceAndDispatchesOnlyRetry() {
         val actions = mutableListOf<FullSentenceSpeakingAction>()
@@ -87,6 +91,7 @@ class FullSentenceSpeakingScreenTest {
             attemptIndex = 2,
         )
         composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state) {} } } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         val title = composeRule.onNodeWithTag("full-sentence-attempt").assertIsDisplayed()
         val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
         title.performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) {
@@ -115,13 +120,10 @@ class FullSentenceSpeakingScreenTest {
             ),
         )
         composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state) {} } } }
-        composeRule.onNodeWithText("AI 朗读反馈").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("基于本次录音与识别文本").assertIsDisplayed()
-        composeRule.onNodeWithText("词/短语").assertIsDisplayed()
-        composeRule.onNodeWithText("节奏").assertIsDisplayed()
-        composeRule.onNodeWithText("完整度").assertIsDisplayed()
-        composeRule.onNodeWithText("“wonderful day”  ").assertIsDisplayed()
-        composeRule.onNodeWithText("AI 反馈置信度：较高 · 仅供本轮练习参考").assertIsDisplayed()
+        listOf("朗读反馈", "基于本次录音与识别文本", "词/短语", "节奏", "完整度",
+            "“wonderful day”  ", "AI 反馈置信度：较高 · 仅供本轮练习参考").forEach { text ->
+            composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
+        }
         composeRule.onNodeWithTag("full-sentence-attempt").assertTextEquals("中英跟读 · 第 1 次")
         composeRule.onNodeWithTag("learning-current-trailing-arrow").assertIsDisplayed()
         captureAiFeedbackFixtureIfRequested()
@@ -133,7 +135,7 @@ class FullSentenceSpeakingScreenTest {
             evaluationReceived = false, transcriptReadyForConfirmation = false,
             technicalRetryBlocked = true, captureFailed = true)
         composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state, actions::add) } } }
-        composeRule.onNodeWithText("本次请求不能安全重试，未形成学习结果。你可以重新录音，明确开始一次新练习。")
+        composeRule.onNodeWithText(composeRule.activity.getString(com.reallanguage.app.R.string.full_sentence_speaking_retry_blocked))
             .performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText(state.transcript).assertIsNotEnabled()
         composeRule.onNodeWithText("播放").assertIsNotEnabled()
@@ -185,26 +187,27 @@ class FullSentenceSpeakingScreenTest {
     }
 
     @Test
-    fun savedPassWithoutProgressFailureKeepsPrimaryActionDisabled() {
+    fun savedPassWithoutProgressFailureOffersContinueInsteadOfAnotherRecording() {
         val actions = mutableListOf<FullSentenceSpeakingAction>()
         val state = savedPassState(progressFailed = false)
         composeRule.setContent { RlTheme { RlPaperBackground {
             FullSentenceSpeakingScreen(state, actions::add)
         } } }
 
-        composeRule.onNodeWithText("开始复述").assertIsDisplayed().assertIsNotEnabled().performClick()
+        composeRule.onNodeWithText("开始复述").assertDoesNotExist()
+        composeRule.onNodeWithText("继续").assertIsDisplayed().assertIsEnabled().performClick()
         composeRule.onNodeWithText("播放").assertIsNotEnabled()
-        org.junit.Assert.assertTrue(actions.isEmpty())
+        org.junit.Assert.assertEquals(listOf(FullSentenceSpeakingAction.ContinueAfterEvaluation), actions)
     }
 
     @Test
     fun confirmedReadOnlyTranscriptKeepsReadableInkWithoutUnlockingEditingOrPlayback() {
-        assertDisabledTranscriptReadable(savedPassState(progressFailed = false), "开始复述")
+        assertReadOnlyTranscriptKeepsProtectedActions(savedPassState(progressFailed = false), "继续", primaryEnabled = true)
     }
 
     @Test
     fun submittingTranscriptKeepsReadableInkWithoutUnlockingEditingOrPlayback() {
-        assertDisabledTranscriptReadable(savedPassState(progressFailed = false).copy(
+        assertReadOnlyTranscriptKeepsProtectedActions(savedPassState(progressFailed = false).copy(
             finalDecision = null,
             evaluationReceived = false,
             submitting = true,
@@ -409,7 +412,7 @@ class FullSentenceSpeakingScreenTest {
         composeRule.onNodeWithTag("full-sentence-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("full-sentence-attempt").assertIsDisplayed()
         composeRule.onNodeWithText("正在收音").assertIsDisplayed()
-        composeRule.onNodeWithText("实时转写（可修改）").assertIsDisplayed()
+        composeRule.onNodeWithText("识别结果（可修改）").assertIsDisplayed()
         composeRule.onNodeWithText("复述完毕").assertIsDisplayed().performClick()
         assert(actions == listOf(FullSentenceSpeakingAction.FinishedRequested))
     }
@@ -430,7 +433,11 @@ class FullSentenceSpeakingScreenTest {
         progressFailed = progressFailed,
     )
 
-    private fun assertDisabledTranscriptReadable(state: FullSentenceSpeakingUiState, primaryText: String) {
+    private fun assertReadOnlyTranscriptKeepsProtectedActions(
+        state: FullSentenceSpeakingUiState,
+        primaryText: String,
+        primaryEnabled: Boolean = false,
+    ) {
         val actions = mutableListOf<FullSentenceSpeakingAction>()
         composeRule.setContent { RlTheme { RlPaperBackground {
             FullSentenceSpeakingScreen(state, actions::add)
@@ -438,8 +445,9 @@ class FullSentenceSpeakingScreenTest {
         val transcript = composeRule.onNodeWithText(state.transcript)
         transcript.performScrollTo().assertIsDisplayed().assertIsNotEnabled().performClick()
         composeRule.onNodeWithText("播放").assertIsNotEnabled().performClick()
-        composeRule.onNodeWithText(primaryText).assertIsDisplayed().assertIsNotEnabled().performClick()
-        org.junit.Assert.assertTrue("Readability must not be obtained by enabling a protected action", actions.isEmpty())
+        val primary = composeRule.onNodeWithText(primaryText).assertIsDisplayed()
+        if (primaryEnabled) primary.assertIsEnabled() else primary.assertIsNotEnabled().performClick()
+        org.junit.Assert.assertTrue("Readability must not unlock transcript editing or audio playback", actions.isEmpty())
         val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
         transcript.performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) {
             org.junit.Assert.assertTrue(it(layouts))
@@ -572,6 +580,30 @@ class FullSentenceSpeakingScreenTest {
         composeRule.waitForIdle()
         capture("-transcript", transcript)
     }
+    @Test fun blankTranscriptCannotBeConfirmedAndOffersAnExplicitRerecordAction() {
+        val actions = mutableListOf<FullSentenceSpeakingAction>()
+        val state = FullSentenceSpeakingUiState(
+            chapter = FixedLearningChapter("layout-only", 1, listOf(
+                FixedLearningSentence("s1", "Please share the timeline.", "请分享时间表。", true),
+            )),
+            currentFocusSentenceId = "s1", attemptIndex = 4,
+            transcript = "", transcriptReadyForConfirmation = true,
+        )
+        composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state, actions::add) } } }
+        composeRule.onNodeWithText("确认转写并判断").assertIsNotEnabled()
+        composeRule.onNodeWithTag("full-sentence-rerecord").performScrollTo()
+            .assertIsDisplayed().assertIsEnabled().performClick()
+        org.junit.Assert.assertEquals(listOf(FullSentenceSpeakingAction.RetryRequested), actions)
+        composeRule.onAllNodesWithText("继续").assertCountEquals(0)
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "retelling-blank-rerecord.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
+    }
+
     @Test fun failedRetellingKeepsLongFeedbackReadableAndStopActionReachable() {
         val feedback = "这次表达尚未完整覆盖关键意思。请注意说明下一阶段的时间表，并补充关键里程碑和交付成果；可以先整理表达，再重新尝试。"
         val actions = mutableListOf<FullSentenceSpeakingAction>()

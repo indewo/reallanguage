@@ -18,7 +18,10 @@ class ChapterEntryScreenTest {
     @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @org.junit.Before fun landscape() {
-        composeRule.activityRule.scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE }
+        composeRule.activityRule.scenario.onActivity {
+            it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            com.reallanguage.app.core.app.configureFocusedLearningWindow(it.window)
+        }
         composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
     }
 
@@ -34,11 +37,20 @@ class ChapterEntryScreenTest {
             }
         } }
 
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         composeRule.onNodeWithText("Yeah, I get really happy when I'm eating.").assertIsDisplayed()
         composeRule.onNodeWithText("That's nice.").assertIsDisplayed()
         composeRule.onAllNodes(hasText("I’ m") or hasText("That’ s"), useUnmergedTree = true).assertCountEquals(0)
-        val scroll = composeRule.onNodeWithTag("chapter_entry_sentences").fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange]
-        org.junit.Assert.assertEquals("Normal three-line overview must fit without scrolling", 0f, scroll.maxValue(), 1f)
+        val ledgerNode = composeRule.onNodeWithTag("chapter_entry_sentences").fetchSemanticsNode()
+        val scroll = ledgerNode.config[androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange]
+        val screenshot = java.io.File(composeRule.activity.getExternalFilesDir(null), "chapter-entry-three-line.png")
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot().let { bitmap ->
+            screenshot.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+            bitmap.recycle()
+        }
+        org.junit.Assert.assertEquals("Normal three-line overview must fit without scrolling: " +
+            "viewport=${ledgerNode.boundsInRoot}, measured=${ledgerNode.size}, screenshot=${screenshot.absolutePath}",
+            0f, scroll.maxValue(), 1f)
         composeRule.onNodeWithText("从基础讲解开始，每一步都使用同一组固定句子。").assertDoesNotExist()
 
         val dividerCenters = (1..3).map { index ->

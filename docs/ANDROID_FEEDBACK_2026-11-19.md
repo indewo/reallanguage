@@ -1,3 +1,43 @@
+### 2026-11-22 非空回顾、账号长邮箱与设置文字角色复验
+
+A05新增两章非空假队列验证：生产TodayReviewScreen与真实TodayReviewEntry加内存Repository两条路径分别点击左上“返回首页”，均只返回首页，不打开章节、不发送开始动作。最终Screen/Entry相关用例通过；仍缺从真实首页进入账号自然存在的非空回顾后再返回，不以假队列代替该入口证据。
+
+A06在1280×720、fontScale 2下使用96个连续字符加域名的超长邮箱，验证邮箱完整换行、标签不重叠、已验证纸签完整居中、固定返回不移动；读取和滚动均不发送账号修改动作。AccountLogoutVisibilityTest最终5/5通过，`account-long-email-double-font.png`与`account-verified-double-font.png`已实看。纸签检查使用真实容器及祖先裁剪区域，避免把居中Text的段落矩形误当可视容器；未修改真实账号邮箱，真实账号和更多尺寸仍未全验。
+
+A09按设计角色而非全页同字号复验：组标题19/27sp、字段标题17/24sp、正文14/21sp。在1831×859/fontScale 1和1280×720/fontScale 2两种视口逐项滚动到表达基础、表达风格、朗读声音三组代表文字，读取TextLayoutResult确认完整性和角色样式，固定操作区保持可用，双倍字体用例无设置修改或保存动作。SubsequentSettingsFrameTest最终8/8通过，`settings-double-font-voice.png`已实看；更多真实窗口/设备尺寸仍保留。
+
+### 2026-11-22 九学习页圆孔与共同学习三行纸张修复
+
+ChapterLearningFrameTest在未显式传参的共享框架调用上验证默认圆孔宽/高为320/1536，九页复用同一断言。ChapterEntry、基础讲解、读+说、整句会说、手写抄写、听写、订正、句式会说、完整书写及共享框架最终合并`OK (57 tests)`（98.545s）。圆孔新增断言本身未失败；合并中发现的旧文案、旧PASS状态、禁用按钮semantics、已适配内容强制滚动及部分可见未继续滚动等旧测试问题逐项按当前合同修正，没有忽略失败。九页生产Screen组件证据不代替真实入口逐页看图、真实录音或学习提交，A15继续保留整组缺口。
+
+B07共同学习页三行样本首行英文换两行时，原行高预留不足，产生18px/6dp只有纸张尾部可滚动的假溢出并轻裁下缘。ChapterEntryScreen仅把预留18dp增至30dp，保留三行英中、圆孔、固定按钮及正常页零内部滚动要求；ChapterEntryScreenTest最终4/4通过，`chapter-entry-three-line-fixed.png`已实看，未用6dp容差掩盖问题。该修复是当前生产Screen组件证据，既有真实入口B07记录不变。
+
+### 2026-11-22 场景问答普通/加载态横屏一致性复验
+
+SceneQuestionsScreenTest改用真实ComponentActivity横屏窗口并等待重建，PFFM10最终`OK (5 tests)`（7.167s）。覆盖第6/第10问进度与十个指示点、生成返回后缺问题的明确重试，以及普通/加载态下header、artwork、progress、options、answer、submit六块区域坐标不变。加载后原问题仍存在，提交禁用，实际点击选项不发送新答案；回答框通过真实滚动到达，上一问与提交动作顺序正确。
+
+`scene-questions-loading-same-entry.png`已实看：滚动到回答区域后三个选项、回答框、圆孔留白及底部等待按钮完整，无文字重叠。首屏圆孔间距断言必须在滚动前取坐标；本轮首轮4/5是滚动后读取已离屏进度节点造成的测量假失败，已只调整测试时序，没有改产品留白。以上是生产Screen组件证据，不代替原图两种状态的真实入口逐次复验，A14继续保留整组缺口。
+
+### 2026-11-22 续学页、句式本、订正滚动与生产键盘宿主复验
+
+本批先在PFFM10运行PatternBookLayoutTest、IncompleteLearningContentFitTest、ReadWriteCorrectionScreenTest及ReadWriteCorrectionEntryTest共19项，16项通过、3项均在续学页。句式本9项覆盖有数据列表、精确行展开、搜索/无匹配、旧数据不伪造结构拆分、双倍字体长双语及真实IME收起；PATTERN_BOOK.png另实看搜索、三行内容和右侧四侧签完整。订正入口4项通过，原order真实失败分支仍不据此关闭。
+
+续学页失败分别为正常宽度四列退化、双倍字体来源两行截断及紧凑布局缺少当前位置说明。产品仅改IncompleteLearningScreen：移除来源maxLines=2/Ellipsis；位置值允许在所属列换行，不再因此放弃正常四列；窄屏补回IncompletePositionSummary。ContentFit 4项随后通过，并实际保存/审阅正常与双倍字体截图。Geometry旧测试仍要求已被紧凑页替换的大书统计节点，改为验证当前完整实时摘要和真实列表触摸滚动；没有删除正常尺寸大书/蓝纸区域断言。
+
+新增订正页右侧20dp留白真实手势用例，页面VerticalScrollAxisRange确实增加、固定底栏坐标不变、无完成动作，3/3通过；correction-gutter-scrolled.png已实看。新增AudioDictationScreen生产RlKeyboardEditingHost用例：真实系统IME弹出后，悬浮编辑条必须assertTextEquals完整长句并等待Compose空闲再截图；收起后正文保留、提交可见，点击只发隔离SubmitRequested。键盘态与收起后截图均已实看，长句和底按钮完整。
+
+续学页、听写、失败/空/形成中状态及指定视觉审计最终合并`OK (23 tests)`（38.438s）；双倍字体审计实际滚动到“手写抄写”并保存滚动前后图。UiV73LayoutAuditTest只补横屏Activity等待和未合并文本的子串滚动定位。以上为隔离组件/预览证据，不代替原用户记录真实入口、真实数据库故障或完整学习闭环，A04/B10/C16/C18/C26/C29继续保留整组缺口。
+
+### 2026-11-22 目标页、抄写次数与空转写恢复集中复验
+
+PFFM10直接调用当前已安装测试入口，合并运行目标页、独立搭配纸卡、抄写、整句会说、听写及指读相关用例，最终`OK (20 tests)`（45.945s）；同批HandwritingCopyViewModelTest 7项与FullSentenceSpeakingViewModelTest 22项合计29/29通过。横屏请求后统一等待新Activity及Compose层次就绪，避免把重建期`No compose hierarchies found`误报为产品缺陷。
+
+目标页新增四卡真实溢出样本，实际滚动到第4卡，断言滚动条与三个右侧静态纸签分离、不覆盖“已选择”勾选，滚动前后固定底栏坐标不变；`learning-target-scrollbar-separated.png`已实看。附加字段用例最初仍报16px裁剪，定位为helper只读取TextLayout而未实际滚动；产品滚动内容增加16/24dp底部留白，测试仅对附加字段用例补`performScrollTo()`，首屏三组例句仍禁止滚动并保留完整glyph检查。独立搭配卡按当前普通纸素材的真实22dp左边距更新旧金属孔断言，未放宽12sp字号、例句完整性或固定底栏要求；`learning-target-three-card-regression.png`已实看。
+
+抄写页使用真实HandwritingCopyViewModel驱动生产Screen，长句两次确认后进入“已完成2次”，点击“再抄一遍”显示“第3次／至少2次”，且新画布“清空重写”禁用，证明旧笔迹未残留；未保存或推进学习步骤。`handwriting-long-third-attempt.png`已实看长句、中文、画布和第3次按钮完整。整句会说补空转写状态：确认评价禁用、无“继续”、重新录音可用且只发RetryRequested；`retelling-blank-rerecord.png`已实看。ViewModel另验空文本直接确认不会调用评价或生成决定，INCONCLUSIVE后重试可清除旧状态并开始新录音。
+
+以上均为隔离组件/JVM状态证据，不冒充真实两遍手写、真实不清晰语音或真实空识别闭环，不写用户答案及进度。B04/B05/B13/C07/C15/C20/C25只更新局部证据，整组继续保留；原order订正失败、历史费用、旧音频和原OCR图片仍按各自缺口处理。
+
 ### 2026-11-22 阶段卡图标/标签安全区与场景异常分支复验
 
 针对用户指出的“提取词汇与句式/建立学习目标图标异常且换行”继续修正共用ProcessStageCard：语义图标放入素材中央圆环，不再叠顶部图钉；标签放在圆环下方并预留底部撕裂边安全区，字号同时按可用宽高测量，最多两行且不接受单字孤行。测试新增横向边界、底部安全区、圆环区域和图文不重叠断言，并等待Activity真正完成横屏重建，避免旧Activity/竖屏造成假通过或假失败。

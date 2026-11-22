@@ -505,10 +505,20 @@ class FullSentenceSpeakingViewModelTest {
         advanceUntilIdle()
         assertTrue(viewModel.uiState.value.transcriptReadyForConfirmation)
         assertNull(viewModel.uiState.value.finalDecision)
+        viewModel.onAction(FullSentenceSpeakingAction.ConfirmTranscriptRequested)
+        advanceUntilIdle()
+        assertEquals("Blank ASR output cannot start a paid evaluation", 0, repository.evaluations)
+        assertNull(viewModel.uiState.value.finalDecision)
+        assertTrue(viewModel.uiState.value.transcriptReadyForConfirmation)
         viewModel.onAction(FullSentenceSpeakingAction.TranscriptChanged("unclear capture"))
         viewModel.onAction(FullSentenceSpeakingAction.ConfirmTranscriptRequested)
         advanceUntilIdle()
         assertEquals(SpeakingEvaluationDecision.INCONCLUSIVE, viewModel.uiState.value.finalDecision)
+        viewModel.onAction(FullSentenceSpeakingAction.RetryRequested)
+        assertNull(viewModel.uiState.value.finalDecision)
+        assertFalse(viewModel.uiState.value.transcriptReadyForConfirmation)
+        viewModel.onAction(FullSentenceSpeakingAction.StartRequested)
+        assertTrue("An inconclusive result must allow a fresh recording", viewModel.uiState.value.recording)
     }
 
     @Test

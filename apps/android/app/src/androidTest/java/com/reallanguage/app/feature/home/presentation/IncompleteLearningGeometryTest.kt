@@ -115,37 +115,41 @@ class IncompleteLearningGeometryTest {
         composeRule.onNodeWithTag("incomplete-book-scroll-indicator").assertDoesNotExist()
     }
 
-    @Test fun shortDoubleFontCanReadAllStatisticsWithoutPaintingOnTheRibbonOrOutsideTheBook() {
+    @Test fun shortDoubleFontKeepsTheCompactHeaderSummaryCompleteAndReturnVisible() {
         render(width = 640.dp, height = 360.dp, fontScale = 2f, referenceInsets = false)
-        listOf("继续你的表达", "3", "个进行中").forEach { text ->
-            val layouts = mutableListOf<TextLayoutResult>()
-            composeRule.onNodeWithText(text, useUnmergedTree = true)
-                .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
-            assertTrue("Statistics must not be shortened to fit the artwork [$text]: " +
-                layouts.joinToString { "size=${it.size}, overflowW=${it.didOverflowWidth}, overflowH=${it.didOverflowHeight}, " +
-                    "lines=${it.lineCount}, constraints=${it.layoutInput.constraints}" } +
-                ", image=${composeRule.onNodeWithTag("incomplete-learning-book-image", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot}",
-                layouts.isNotEmpty() && layouts.all {
-                !it.hasVisualOverflow && it.getLineEnd(it.lineCount - 1) == text.length
+        // The compact frame intentionally replaces the large book with a thumbnail and
+        // moves the live count into the header. Verify that actual design, not removed nodes.
+        val summary = "3 个进行中 · 从上次停下的位置继续"
+        val layouts = mutableListOf<TextLayoutResult>()
+        composeRule.onNodeWithText(summary, useUnmergedTree = true).assertIsDisplayed()
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
+        assertTrue("The compact live summary must keep every glyph inside its layout: " +
+            layouts.joinToString { "size=${it.size}, overflowW=${it.didOverflowWidth}, overflowH=${it.didOverflowHeight}" },
+            layouts.isNotEmpty() && layouts.all { layout ->
+                !layout.didOverflowHeight && layout.getLineEnd(layout.lineCount - 1) == summary.length &&
+                    (0 until summary.length).all { index ->
+                        val glyph = layout.getBoundingBox(index)
+                        glyph.left >= -1f && glyph.right <= layout.size.width + 1f &&
+                            glyph.top >= -1f && glyph.bottom <= layout.size.height + 1f
+                    }
             })
-            composeRule.onNodeWithText(text, useUnmergedTree = true).performScrollTo().assertIsDisplayed()
-            assertVisibleTextOnActualBluePaper(text)
-        }
+        composeRule.onNodeWithTag("incomplete-learning-book-statistics").assertDoesNotExist()
         composeRule.onNodeWithTag("incomplete-learning-return-home").assertIsDisplayed()
     }
 
-    @Test fun overflowingBookStatisticsAdvertiseAndRespondToRealVerticalTouchScrolling() {
+    @Test fun shortDoubleFontListRespondsToRealVerticalTouchScrollingWithoutMovingReturn() {
         render(width = 640.dp, height = 360.dp, fontScale = 2f, referenceInsets = false)
-        composeRule.onNodeWithTag("incomplete-book-scroll-indicator").assertIsDisplayed()
-        val statistics = composeRule.onNodeWithTag("incomplete-book-statistics")
-        val before = statistics.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
-        repeat(8) { statistics.performTouchInput { swipeUp() } }
-        val range = statistics.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
-        assertTrue("A finger swipe inside the visible blue book must actually reveal later statistics", range.value() > before)
-        assertTrue("A bounded series of swipes must reach the bottom, not an endlessly clipped image", range.value() >= range.maxValue() - 1f)
-        composeRule.onNodeWithText("个进行中", useUnmergedTree = true).assertIsDisplayed()
-        assertVisibleTextOnActualBluePaper("个进行中")
-        composeRule.onNodeWithTag("incomplete-learning-return-home").assertIsDisplayed()
+        composeRule.onNodeWithTag("incomplete-book-scroll-indicator").assertDoesNotExist()
+        val list = composeRule.onNodeWithTag("incomplete-learning-list")
+        val range = list.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
+        val before = range.value()
+        val footer = composeRule.onNodeWithTag("incomplete-learning-return-home").assertIsDisplayed()
+        val footerBefore = footer.fetchSemanticsNode().boundsInRoot
+        repeat(8) { list.performTouchInput { swipeUp() } }
+        assertTrue("A finger swipe inside the compact list must reveal later learning entries", range.value() > before)
+        assertTrue("A bounded series of swipes must reach the actual list bottom", range.value() >= range.maxValue() - 1f)
+        composeRule.onNodeWithTag("incomplete-learning-resume-learning-3").assertIsDisplayed()
+        org.junit.Assert.assertEquals(footerBefore, footer.fetchSemanticsNode().boundsInRoot)
     }
 
     private fun assertVisibleTextOnActualBluePaper(text: String) {

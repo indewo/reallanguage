@@ -107,7 +107,10 @@ fun LearningTargetScreen(
                     Column(
                         Modifier.fillMaxSize().verticalScroll(targetScroll)
                             .padding(top = if (shortScreen) 2.dp else 5.dp)
-                            .padding(start = horizontalContentInset, end = horizontalContentInset + 32.dp),
+                            .padding(start = horizontalContentInset, end = horizontalContentInset + 32.dp)
+                            // Leave enough scroll range to lift the final glyph above both the
+                            // viewport's clipped lower edge and the paper's torn bottom border.
+                            .padding(bottom = if (shortScreen) 16.dp else 24.dp),
                         verticalArrangement = Arrangement.spacedBy(if (shortScreen) 6.dp else 10.dp),
                     ) {
                         LearningSentencePanel(state, onAction, Modifier.fillMaxWidth().heightIn(min = if (shortScreen) 52.dp else 66.dp))

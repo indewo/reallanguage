@@ -2,6 +2,7 @@ package com.reallanguage.app.feature.settings.presentation
 
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -29,11 +30,13 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.test.platform.app.InstrumentationRegistry
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.feature.settings.domain.BasicVocabulary
 import com.reallanguage.app.feature.settings.domain.InitialSettingsDraft
@@ -42,6 +45,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 /**
  * Raster-reference fixture: 1831x859, density 320, font 100%, zero reference Insets.
@@ -135,6 +139,49 @@ class SubsequentSettingsFrameTest {
         composeRule.onNodeWithTag("subsequent-settings-save").assertIsDisplayed().assertIsNotEnabled()
         composeRule.onNodeWithTag("subsequent-settings-return").assertIsDisplayed().assertIsEnabled().performClick()
         assertEquals(listOf(SubsequentSettingsAction.ReturnRequested), actions)
+    }
+
+    @Test fun allThreeGroupsKeepTheirEditorialTypeRolesAtBaseline() {
+        renderBaseline()
+        verifyAllGroupTypography()
+    }
+
+    @Test fun allThreeGroupsKeepTheirEditorialTypeRolesAtDoubleFont() {
+        val actions = mutableListOf<SubsequentSettingsAction>()
+        renderShortLandscape(actions = actions)
+        verifyAllGroupTypography()
+        capture("settings-double-font-voice.png")
+        assertEquals("Typography inspection must not change or save settings", emptyList<SubsequentSettingsAction>(), actions)
+    }
+
+    private fun verifyAllGroupTypography() {
+        assertTextRole("①  表达基础", 19f, 27f)
+        assertTextRole("正式／随意程度", 17f, 24f)
+        assertTextRole("更正式", 14f, 21f)
+        assertTextRole("②  表达风格", 19f, 27f)
+        assertTextRole("词汇难度与使用偏好已合并为一个单词池，不再重复选择。", 14f, 21f)
+        assertTextRole("③  语音设置", 19f, 27f)
+        assertTextRole("语音开关", 17f, 24f)
+        assertTextRole("默认使用美式英语声音", 14f, 21f)
+    }
+
+    private fun assertTextRole(value: String, fontSize: Float, lineHeight: Float) {
+        val node = composeRule.onNodeWithText(value, useUnmergedTree = true).performScrollTo()
+        assertWholeText(node)
+        val layouts = mutableListOf<TextLayoutResult>()
+        node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(layouts)) }
+        val style = layouts.single().layoutInput.style
+        assertEquals("$value fontSize", fontSize, style.fontSize.value, .001f)
+        assertEquals("$value lineHeight", lineHeight, style.lineHeight.value, .001f)
+    }
+
+    private fun capture(name: String) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val screenshot = instrumentation.uiAutomation.takeScreenshot()
+        File(instrumentation.targetContext.cacheDir, name).outputStream().use {
+            screenshot.compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+        screenshot.recycle()
     }
 
     private fun renderShortLandscape(

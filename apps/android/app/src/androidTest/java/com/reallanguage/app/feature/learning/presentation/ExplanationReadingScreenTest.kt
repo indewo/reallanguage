@@ -65,8 +65,11 @@ class ExplanationReadingScreenTest {
         )), "s", "整句基础讲解必须继续保留。", currentIncrementalHint = "本轮只注意 felt 的读音。",
             expressions = listOf(SelectableExpression("x", "calm", 7, 11)), selectedExpression = details)
         composeRule.setContent { RlTheme { ExplanationReadingScreen(state, {}) } }
-        listOf("平静的", "形容人在当前情境中不紧张。", "stay calm：保持冷静", "She stayed calm.", "她保持冷静。", "整句基础讲解必须继续保留。")
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
+        listOf("平静的", "形容人在当前情境中不紧张。", "stay calm：保持冷静", "She stayed calm.", "她保持冷静。")
             .forEach(::assertVisibleOrScrollTo)
+        // The selected word owns the detail pane; do not duplicate the whole-sentence explanation below it.
+        composeRule.onAllNodesWithText("整句基础讲解必须继续保留。").assertCountEquals(0)
         composeRule.onAllNodesWithText("旧完整词语解释").assertCountEquals(0)
         assertVisibleOrScrollTo("本轮只注意 felt 的读音。")
         org.junit.Assert.assertTrue("Only the current round hint belongs at the top of the explanation area",
@@ -82,7 +85,7 @@ class ExplanationReadingScreenTest {
         composeRule.setContent { RlTheme { ExplanationReadingScreen(state, {}) } }
         assertVisibleOrScrollTo("此份讲解未包含独立用法说明。")
         composeRule.onAllNodesWithText("旧词语混合解释").assertCountEquals(1)
-        assertVisibleOrScrollTo("整句原讲解")
+        composeRule.onAllNodesWithText("整句原讲解").assertCountEquals(0)
     }
 
     @Test fun longSelectedExplanationCanScrollToSelfAssessmentWithoutMovingFooter() {
@@ -187,12 +190,12 @@ class ExplanationReadingScreenTest {
         )), "s", "基础讲解", expressions = listOf(SelectableExpression("x", "calm", 7, 11)),
             selectedExpression = com.reallanguage.app.feature.learning.domain.ExpressionExplanation("x", "平静的", naturalExample = example))
         composeRule.setContent { RlTheme { ExplanationReadingScreen(state, {}) } }
-        composeRule.onNodeWithText(example.textEn).performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText(example.textZh).performScrollTo().assertIsDisplayed()
+        assertVisibleOrScrollTo(example.textEn)
+        assertVisibleOrScrollTo(example.textZh)
         composeRule.onAllNodesWithText("平静的").assertCountEquals(1)
     }
 
-    @Test fun referenceStateKeepsExampleBeforeHintAndFullyVisibleWithoutScrolling() {
+    @Test fun referenceStateKeepsExampleBeforeHintAndFullyVisibleAfterScrolling() {
         val english = "But in the end, I worked up the courage to explain my idea clearly."
         val example = com.reallanguage.app.feature.learning.domain.NaturalExpressionExample(
             "She worked up the courage to ask.", "她鼓起勇气问了。")
@@ -228,8 +231,8 @@ class ExplanationReadingScreenTest {
             bitmap.recycle()
         }
         for (text in listOf(example.textEn, example.textZh, hint)) {
-            val node = composeRule.onNodeWithText(text)
-            assertVisibleOrScrollTo(text)
+            // assertIsDisplayed also accepts a partially clipped node; explicitly scroll each target fully into view.
+            val node = composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
             val textNode = node.fetchSemanticsNode()
             val visibleHeight = textNode.boundsInRoot.height
             val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()

@@ -1,6 +1,7 @@
 package com.reallanguage.app.feature.home.presentation
 
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +32,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.io.File
 
 /** Isolated rendered states and real touch, not a real session or logout request. */
 class AccountLogoutVisibilityTest {
@@ -57,6 +59,39 @@ class AccountLogoutVisibilityTest {
 
     @Test fun shortDoubleFontLoggingOutLabelIsCompleteAndRepeatedTouchDoesNotSubmit() {
         verifyLogout(short = true, busy = true)
+    }
+
+    @Test fun longUnbrokenEmailAndVerifiedTabRemainWholeAtDoubleFont() {
+        val email = "a".repeat(96) + "@example.com"
+        val actions = mutableListOf<AccountAction>()
+        compose.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(2f, 2f)) {
+                RlTheme {
+                    Box(Modifier.fillMaxSize()) {
+                        Box(Modifier.requiredSize(640.dp, 360.dp).clipToBounds().testTag(VIEWPORT)) {
+                            AccountScreen(AccountUiState(account = AccountSnapshot(email), loading = false), actions::add)
+                        }
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        val back = compose.onNodeWithContentDescription("返回").assertIsDisplayed()
+        val backBounds = back.fetchSemanticsNode().boundsInRoot
+
+        compose.onNodeWithText("邮箱已验证", useUnmergedTree = true).performScrollTo().assertIsDisplayed()
+        capture("account-verified-double-font.png")
+        assertWholeTextInRegion("邮箱已验证", "account-passport-artwork")
+
+        val emailNode = compose.onNodeWithText(email, useUnmergedTree = true).performScrollTo().assertIsDisplayed()
+        assertWholeTextInRegion(email, "account-info-section")
+        val labelRight = compose.onNodeWithText("邮箱", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.right
+        assertTrue("The email value must not overlap its label", emailNode.fetchSemanticsNode().boundsInRoot.left >= labelRight)
+        back.assertIsDisplayed()
+        assertEquals("The fixed account header must not scroll away", backBounds, back.fetchSemanticsNode().boundsInRoot)
+        capture("account-long-email-double-font.png")
+        assertEquals("Reading and scrolling account details must not dispatch actions", emptyList<AccountAction>(), actions)
     }
 
     private fun verifyLogout(short: Boolean, busy: Boolean) {
@@ -139,6 +174,40 @@ class AccountLogoutVisibilityTest {
         assertTrue("All logout glyphs must fit the real button and clipped ledger: " +
             "label=$label, paragraph=${layout.size}, lines=${layout.lineCount}, clip=$clip, glyphs=$glyphs",
             clip.width > 0f && clip.height > 0f && glyphs.isNotEmpty() && glyphs.all { fits(it, clip) })
+    }
+
+    private fun assertWholeTextInRegion(label: String, regionTag: String) {
+        val text = compose.onNodeWithText(label, useUnmergedTree = true)
+        val layouts = mutableListOf<TextLayoutResult>()
+        text.performSemanticsAction(SemanticsActions.GetTextLayoutResult) {
+            assertTrue("Inspect the actual production Text paragraph", it(layouts))
+        }
+        val layout = layouts.single()
+        assertEquals(label, layout.layoutInput.text.text)
+        assertFalse("The complete text must remain present: $label", layout.multiParagraph.didExceedMaxLines)
+        assertEquals(label.length, layout.getLineEnd(layout.lineCount - 1))
+        repeat(layout.lineCount) { assertFalse(layout.isLineEllipsized(it)) }
+        val coordinates = text.fetchSemanticsNode().layoutInfo.coordinates
+        val origin = coordinates.localToRoot(Offset.Zero)
+        // Centered Text semantics can expose the paragraph width rather than its containing Box.
+        // Measure the real paper/row region and its ancestor clipping, not that narrower paragraph rectangle.
+        val region = compose.onNodeWithTag(regionTag).fetchSemanticsNode().layoutInfo.coordinates
+        val clip = region.findRootCoordinates().localBoundingBoxOf(region, clipBounds = true)
+            .intersect(compose.onNodeWithTag(VIEWPORT).fetchSemanticsNode().boundsInRoot)
+        val glyphs = label.indices.filter { !label[it].isWhitespace() }
+            .map { layout.getBoundingBox(it).translate(origin) }
+        assertTrue("Every glyph must fit its real region and clipped viewport: " +
+            "label=$label, paragraph=${layout.size}, lines=${layout.lineCount}, clip=$clip, glyphs=$glyphs",
+            clip.width > 0f && clip.height > 0f && glyphs.isNotEmpty() && glyphs.all { fits(it, clip) })
+    }
+
+    private fun capture(name: String) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val screenshot = instrumentation.uiAutomation.takeScreenshot()
+        File(instrumentation.targetContext.cacheDir, name).outputStream().use {
+            screenshot.compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+        screenshot.recycle()
     }
 
     private companion object {

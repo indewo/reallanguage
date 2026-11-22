@@ -16,11 +16,13 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.swipe
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.unit.dp
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.core.app.configureFocusedLearningWindow
 import com.reallanguage.app.feature.learning.domain.FixedLearningChapter
 import com.reallanguage.app.feature.learning.domain.FixedLearningSentence
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,6 +39,7 @@ class ReadWriteCorrectionScreenTest {
         val actions = mutableListOf<ReadWriteCorrectionAction>()
         composeRule.setContent { RlTheme { ReadWriteCorrectionScreen(
             ReadWriteCorrectionUiState(chapter, "s1", listOf("order：点餐")), actions::add) } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         val clear = composeRule.onNodeWithTag("correction-clear")
         clear.assertIsDisplayed().assertIsNotEnabled()
         val canvas = composeRule.onNodeWithTag("correction-writing-canvas")
@@ -44,6 +47,41 @@ class ReadWriteCorrectionScreenTest {
         clear.assertIsEnabled().performClick().assertIsNotEnabled()
         org.junit.Assert.assertTrue("Drawing and clearing must not submit a learning result", actions.isEmpty())
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.handwriting_finished)).assertIsDisplayed().assertIsEnabled()
+    }
+
+    @Test fun rightGutterActuallyScrollsThePageWithoutMovingTheFixedFooter() {
+        composeRule.activityRule.scenario.onActivity { configureFocusedLearningWindow(it.window) }
+        composeRule.activity.requestedOrientation = android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+        val chapter = FixedLearningChapter("scroll-correction", 1, listOf(
+            FixedLearningSentence("s1", "Hello, what would you like to order?", "你好，你想点什么？", true),
+        ))
+        val actions = mutableListOf<ReadWriteCorrectionAction>()
+        composeRule.setContent { RlTheme { ReadWriteCorrectionScreen(
+            ReadWriteCorrectionUiState(chapter, "s1", listOf("order：点餐")), actions::add) } }
+        val page = composeRule.onNode(
+            androidx.compose.ui.test.hasScrollAction() and
+                androidx.compose.ui.test.hasAnyDescendant(androidx.compose.ui.test.hasTestTag("correction-writing-canvas")),
+        )
+        val pageBounds = page.fetchSemanticsNode().boundsInRoot
+        val canvasBounds = composeRule.onNodeWithTag("correction-writing-canvas").fetchSemanticsNode().boundsInRoot
+        val range = page.fetchSemanticsNode().config[
+            androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange]
+        assertTrue("The correction page fixture must really overflow", range.maxValue() > 0f)
+        val footer = composeRule.onNodeWithText(composeRule.activity.getString(R.string.handwriting_finished))
+        val footerBefore = footer.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        val gutterX = canvasBounds.right - pageBounds.left + with(composeRule.density) { 10.dp.toPx() }
+        val startY = minOf(canvasBounds.bottom, pageBounds.bottom) - pageBounds.top - 24f
+        val endY = maxOf(canvasBounds.top, pageBounds.top) - pageBounds.top + 24f
+        assertTrue("The reserved gutter must have a usable vertical gesture span", startY > endY)
+        page.performTouchInput { swipe(Offset(gutterX, startY), Offset(gutterX, endY), 400) }
+        composeRule.waitUntil(5_000) { range.value() > 0f }
+        org.junit.Assert.assertEquals("The fixed footer must not scroll with the workspace",
+            footerBefore, footer.fetchSemanticsNode().boundsInRoot)
+        org.junit.Assert.assertTrue("Scrolling must not complete or alter learning", actions.isEmpty())
+        java.io.File(composeRule.activity.filesDir, "correction-gutter-scrolled.png").outputStream().use {
+            composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+        }
     }
 
     @Test fun pendingSaveClearlyDisablesConflictingActions() {

@@ -116,7 +116,10 @@ fun ChapterEntryScreen(state: ChapterEntryUiState, onAction: (ChapterEntryAction
                         }
                     }
                     BoxWithConstraints(Modifier.fillMaxWidth().weight(1f).testTag("chapter_entry_sentence_space")) {
-                        val rowHeight = ((maxHeight - 18.dp) / chapter.sentences.size.coerceAtLeast(1))
+                        // Reserve the ledger's vertical paper padding and the extra line a two-line
+                        // focus sentence may need. Otherwise the paper tail alone becomes a tiny,
+                        // unnecessary scroll range even though all three sentences initially fit.
+                        val rowHeight = ((maxHeight - 30.dp) / chapter.sentences.size.coerceAtLeast(1))
                             .coerceIn(32.dp, 130.dp)
                         LearningSentenceLedger(chapter, chapter.sentences.firstOrNull { it.isFocus }?.sentenceId.orEmpty(),
                             Modifier.fillMaxWidth().align(Alignment.Center)

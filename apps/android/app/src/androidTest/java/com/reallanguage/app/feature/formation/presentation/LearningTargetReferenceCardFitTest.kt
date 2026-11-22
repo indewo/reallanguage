@@ -41,6 +41,9 @@ class LearningTargetReferenceCardFitTest {
             WindowCompat.setDecorFitsSystemWindows(it.window, false)
             WindowCompat.getInsetsController(it.window, it.window.decorView).hide(WindowInsetsCompat.Type.systemBars())
         }
+        compose.waitUntil(5_000) {
+            compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        }
     }
 
     @Test fun allThreeReferenceExampleTranslationsFitAboveFooterWithoutShrinkingText() {
@@ -82,8 +85,12 @@ class LearningTargetReferenceCardFitTest {
         val fixedCard = compose.onNodeWithTag("learning_target_t2").fetchSemanticsNode().boundsInRoot
         val fixedDisplay = compose.onNodeWithTag("learning_target_t2_display", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
         val fixedExample = compose.onNodeWithTag("learning_target_t2_example_en", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        assertTrue("Fixed-expression body must start beyond the brass eyelet", fixedDisplay.left >= fixedCard.left + 49f * 2f - 1f)
-        assertTrue("Example text and its marker must not touch the knot", fixedExample.left >= fixedDisplay.left + 14f * 2f - 1f)
+        // Current wide cards use the independent plain-paper artwork, not the legacy
+        // fixed-expression paper with a brass eyelet. Keep its actual 22dp safe inset.
+        assertTrue("Independent-paper body must retain its safe left inset",
+            fixedDisplay.left >= fixedCard.left + 22f * 2f - 1f)
+        assertTrue("Example text must stay aligned with the independent-paper body",
+            fixedExample.left >= fixedDisplay.left - 1f)
         listOf("全部取消", "返回", "继续").forEach { compose.onNodeWithText(it).assertIsDisplayed() }
     }
 }

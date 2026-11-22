@@ -55,6 +55,7 @@ class IncompleteLearningContentFitTest {
 
     @Test fun referenceLandscapeReadsEverySourceAndResumeDescriptionWithoutEllipsis() {
         render(entries = referenceEntries)
+        capture("incomplete-reference.png")
         val viewport = composeRule.onNodeWithTag("incomplete-learning-fit-viewport").fetchSemanticsNode().boundsInRoot
         assertEquals(1831f, viewport.width, 1f)
         assertEquals(859f, viewport.height, 1f)
@@ -87,6 +88,7 @@ class IncompleteLearningContentFitTest {
         val actions = mutableListOf<IncompleteLearningAction>()
         render(entries, width = 640.dp, height = 360.dp, fontScale = 2f,
             referenceInsets = false, onAction = actions::add)
+        capture("incomplete-double-font.png")
         entries.forEach { entry ->
             assertWholeText(entry.sourceLabelZh)
             assertWholeText("第 ${entry.chapterNumber} 章 · ${entry.savedStepLabelZh}")
@@ -141,6 +143,15 @@ class IncompleteLearningContentFitTest {
         composeRule.onNodeWithTag("incomplete-learning-return-home").assertIsDisplayed().performClick()
         assertEquals(listOf(IncompleteLearningAction.ResumeRequested(entry.learningId),
             IncompleteLearningAction.ReturnHomeRequested), actions)
+    }
+
+    private fun capture(name: String) {
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        val bitmap = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
+        java.io.File(instrumentation.targetContext.filesDir, name).outputStream().use {
+            check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+        }
+        bitmap.recycle()
     }
 
     private fun assertWholeText(text: String) {

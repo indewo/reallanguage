@@ -37,6 +37,9 @@ class UiV73LayoutAuditTest {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             configureFocusedLearningWindow(it.window)
         }
+        rule.waitUntil(5_000) {
+            rule.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        }
         rule.setContent {
             val density = LocalDensity.current.density
             CompositionLocalProvider(LocalDensity provides Density(density, scale)) {
@@ -99,7 +102,8 @@ class UiV73LayoutAuditTest {
                 image.recycle()
             }
             if (!scrollToText.isNullOrBlank()) {
-                rule.onNodeWithText(scrollToText).performScrollTo().assertIsDisplayed()
+                rule.onNodeWithText(scrollToText, substring = true, useUnmergedTree = true)
+                    .performScrollTo().assertIsDisplayed()
                 rule.waitForIdle()
                 val scrolledImage = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
                 if (scrolledImage != null) {

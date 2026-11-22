@@ -1,6 +1,7 @@
 package com.reallanguage.app.feature.learning.presentation
 
 import androidx.compose.material3.Text
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -8,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithText
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.feature.learning.domain.FixedLearningChapter
 import com.reallanguage.app.feature.learning.domain.FixedLearningSentence
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -44,5 +46,14 @@ class ChapterLearningFrameTest {
         val chineseLeft = composeRule.onNodeWithTag("learning-chinese-s1")
             .fetchSemanticsNode().boundsInRoot.left
         assertTrue(englishLeft < chineseLeft)
+
+        // Deliberately use the frame default above: page-specific explicit flags cannot catch a shared regression.
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
     }
+}
+
+internal fun assertOriginalLearningHoleRatio(node: SemanticsNodeInteraction) {
+    val holes = node.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+    assertEquals("The dedicated source ratio keeps every punched hole circular",
+        320f / 1536f, holes.width / holes.height, .02f)
 }

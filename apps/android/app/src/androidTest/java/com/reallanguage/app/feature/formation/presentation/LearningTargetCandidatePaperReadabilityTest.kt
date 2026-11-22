@@ -40,6 +40,9 @@ class LearningTargetCandidatePaperReadabilityTest {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             configureFocusedLearningWindow(it.window)
         }
+        compose.waitUntil(5_000) {
+            compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        }
     }
 
     @Test fun referenceInitialWordAndExpressionExamplesAreWholeWithoutAnyScrolling() {
@@ -47,7 +50,7 @@ class LearningTargetCandidatePaperReadabilityTest {
         compose.waitForIdle()
         val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
         instrumentation.uiAutomation.takeScreenshot().let { bitmap ->
-            java.io.File(requireNotNull(instrumentation.targetContext.getExternalFilesDir(null)), "learning-target-three-card-regression.png").outputStream().use {
+            java.io.File(instrumentation.targetContext.filesDir, "learning-target-three-card-regression.png").outputStream().use {
                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
             }
             bitmap.recycle()
@@ -102,7 +105,7 @@ class LearningTargetCandidatePaperReadabilityTest {
         val texts = listOf(third.explanationZh, example.textEn, example.textZh,
             "结构：work up the courage to + 动词", "相关生词：courage")
         (texts + texts.reversed()).forEach { text ->
-            assertWholeParagraphOnItsPaper("t3", text)
+            assertWholeParagraphOnItsPaper("t3", text, scrollTo = true)
             assertEquals("Local content reading cannot displace or cover the next action", footer,
                 compose.onNodeWithText("继续").assertIsDisplayed().fetchSemanticsNode().boundsInRoot)
         }
@@ -110,8 +113,44 @@ class LearningTargetCandidatePaperReadabilityTest {
         assertEquals(listOf(LearningTargetAction.BackRequested), actions)
     }
 
-    private fun assertWholeParagraphOnItsPaper(id: String, text: String) {
+    @Test fun overflowingListSeparatesScrollbarFromPageTabsAndSelectedTarget() {
+        val fourth = LearningTarget("t4", "u1", "deliverables", "交付物", LearningTargetType.WORD,
+            candidateExample = CandidateExample(
+                "Please include all agreed deliverables in the next project update.",
+                "请在下次项目更新中列出所有约定的交付物。",
+            ))
+        render(listOf(first, second, third, fourth))
+        val footer = compose.onNodeWithText("继续").assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithTag("learning_target_t4").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("learning_target_t4_display", useUnmergedTree = true).assertIsDisplayed()
+        val scrollbar = compose.onNodeWithTag("learning-module-overflow-scrollbar", useUnmergedTree = true)
+            .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        listOf("01", "02", "03").forEach { number ->
+            val tab = compose.onNodeWithTag("learning_target_tab_$number", useUnmergedTree = true)
+                .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+            assertTrue("Scrollbar must remain left of page tab $number: scrollbar=$scrollbar tab=$tab",
+                scrollbar.right < tab.left)
+        }
+        val selected = compose.onNode(
+            hasContentDescription("已选择") and hasAnyAncestor(hasTestTag("learning_target_t4")),
+            useUnmergedTree = true,
+        ).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        assertTrue("Scrollbar must not cover the selected target: selection=$selected scrollbar=$scrollbar",
+            selected.right < scrollbar.left)
+        assertEquals("Touch scrolling cannot move the fixed footer", footer,
+            compose.onNodeWithText("继续").fetchSemanticsNode().boundsInRoot)
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation.takeScreenshot().let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "learning-target-scrollbar-separated.png").outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
+            }
+            bitmap.recycle()
+        }
+    }
+
+    private fun assertWholeParagraphOnItsPaper(id: String, text: String, scrollTo: Boolean = false) {
         val interaction = cardText(id, text)
+        if (scrollTo) interaction.performScrollTo().assertIsDisplayed()
         val results = mutableListOf<TextLayoutResult>()
         interaction.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { assertTrue(it(results)) }
         val layout = results.single()
@@ -155,11 +194,12 @@ class LearningTargetCandidatePaperReadabilityTest {
         return compose.onNodeWithTag("learning_target_${id}_$suffix", useUnmergedTree = true)
     }
 
-    private fun render() {
+    private fun render(targetList: List<LearningTarget> = listOf(first, second, third)) {
         val state = LearningTargetUiState(
             chapters = listOf(EnglishChapterDraft("c1", listOf(EnglishSentenceDraft("u1", "但最后还是鼓起勇气把想法讲清楚了。", true,
                 listOf(EnglishCandidate("e1", "But in the end, I worked up the courage to explain my idea clearly.")))))),
-            selectedCandidateIds = mapOf("u1" to "e1"), targets = listOf(first, second, third), selectedTargetIds = setOf("t1", "t2", "t3"),
+            selectedCandidateIds = mapOf("u1" to "e1"), targets = targetList,
+            selectedTargetIds = targetList.map { it.targetId }.toSet(),
             queryableExpressions = emptyList(),
         )
         compose.setContent {

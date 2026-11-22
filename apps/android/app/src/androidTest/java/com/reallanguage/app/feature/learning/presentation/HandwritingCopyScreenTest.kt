@@ -2,6 +2,8 @@ package com.reallanguage.app.feature.learning.presentation
 
 import android.content.pm.ActivityInfo
 import androidx.activity.ComponentActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.assertIsEnabled
@@ -20,6 +22,7 @@ import com.reallanguage.app.core.designsystem.RlPaperBackground
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.feature.learning.domain.FixedLearningChapter
 import com.reallanguage.app.feature.learning.domain.FixedLearningSentence
+import com.reallanguage.app.feature.learning.domain.HandwritingCompletionRepository
 import org.junit.Rule
 import org.junit.Test
 import org.junit.Before
@@ -32,6 +35,9 @@ class HandwritingCopyScreenTest {
         composeRule.activityRule.scenario.onActivity {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             configureFocusedLearningWindow(it.window)
+        }
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
         }
     }
 
@@ -50,6 +56,7 @@ class HandwritingCopyScreenTest {
             currentFocusSentenceId = "s1",
         )
         composeRule.setContent { RlTheme { RlPaperBackground { HandwritingCopyScreen(state, actions::add) } } }
+        assertOriginalLearningHoleRatio(composeRule.onNodeWithTag("learning-round-hole-strip"))
         composeRule.onNodeWithTag("handwriting-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("handwriting-canvas").assertIsDisplayed()
         composeRule.onNodeWithText("第1次\n至少2次").assertIsDisplayed()
@@ -88,6 +95,42 @@ class HandwritingCopyScreenTest {
         composeRule.onNodeWithTag("handwriting-clear").assertIsNotEnabled()
         composeRule.onNodeWithText("我已写完").assertIsDisplayed().performClick()
         assert(actions == listOf(HandwritingCopyAction.WrittenFinished))
+    }
+
+    @Test
+    fun longSentenceCopyAgainShowsSecondAndThirdAttemptsAndStartsWithCleanCanvas() {
+        val longSentence = "Please share the timeline for the next phase, including key milestones and deliverables."
+        val chapter = FixedLearningChapter("layout-only", 1, listOf(
+            FixedLearningSentence("s1", longSentence, "请分享下一阶段的时间表，包括关键里程碑和交付物。", true),
+        ))
+        composeRule.setContent {
+            val model = remember {
+                HandwritingCopyViewModel(chapter, "s1", HandwritingCompletionRepository { _, _ ->
+                    error("This layout test must not save or open the next learning step")
+                })
+            }
+            val state = model.uiState.collectAsState().value
+            RlTheme { RlPaperBackground { HandwritingCopyScreen(state, model::onAction) } }
+        }
+        composeRule.onNodeWithText(longSentence).assertIsDisplayed()
+        composeRule.onNodeWithText("第1次\n至少2次").assertIsDisplayed()
+        composeRule.onNodeWithTag("handwriting-clear").assertIsNotEnabled()
+        composeRule.onNodeWithText("我已写完").performClick()
+        composeRule.onNodeWithText("第2次\n至少2次").assertIsDisplayed()
+        composeRule.onNodeWithTag("handwriting-clear").assertIsNotEnabled()
+        composeRule.onNodeWithText("我已写完").performClick()
+        composeRule.onNodeWithText("已完成2次\n至少2次").assertIsDisplayed()
+        composeRule.onNodeWithText("再抄一遍").assertIsDisplayed().performClick()
+        composeRule.onNodeWithText("第3次\n至少2次").assertIsDisplayed()
+        composeRule.onNodeWithTag("handwriting-clear").assertIsNotEnabled()
+        composeRule.onNodeWithText("我已写完").assertIsDisplayed()
+        val instrumentation = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        instrumentation.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(instrumentation.targetContext.filesDir, "handwriting-long-third-attempt.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
     }
 
     private fun captureFixtureIfRequested(suffix: String) {

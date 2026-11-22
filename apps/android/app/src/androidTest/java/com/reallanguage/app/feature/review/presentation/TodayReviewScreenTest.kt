@@ -35,9 +35,20 @@ class TodayReviewScreenTest {
 
     @Test fun deferredQueueStillHasReturnHome() = verifyReturnHome(TodayReviewUiState(loading = false, deferredByDailyLimit = true))
 
+    @Test fun nonEmptyQueueStillHasReturnHomeWithoutStartingAChapter() = verifyReturnHome(
+        TodayReviewUiState(
+            chapters = listOf(
+                ReviewChapterSummary("r1", "c1", ReviewSourceType.DIARY, "昨晚的日记", "I finally spoke up.", 1, 2),
+                ReviewChapterSummary("r2", "c2", ReviewSourceType.QUICK_RECORDING, "通勤录音", "The train was delayed again.", 2, 3),
+            ),
+            loading = false,
+        ),
+    )
+
     private fun verifyReturnHome(state: TodayReviewUiState) {
         val actions = mutableListOf<TodayReviewAction>()
         composeRule.setContent { RlTheme { TodayReviewScreen(state, actions::add) } }
+        if (state.chapters.isNotEmpty()) composeRule.onNodeWithTag("today-review-queue").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("返回首页").assertIsDisplayed().performClick()
         assertEquals(listOf(TodayReviewAction.ReturnHomeRequested), actions)
         if (state.deferredByDailyLimit) {

@@ -58,7 +58,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.RlColor
@@ -181,8 +180,9 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
                 typography.titleSmall.copy(fontWeight = FontWeight.Bold))
             val chapterMinimum = maxOf(textWidth("当前位置", typography.bodyMedium),
                 18.dp + textWidth(if (forming) " 当前步骤" else " 章节", typography.labelSmall))
-            val positionMinimum = maxOf(18.dp + textWidth(" 当前位置", typography.labelSmall),
-                textWidth(position, typography.bodyMedium))
+            // The position value may wrap inside its own column. Do not discard the
+            // reference four-column layout merely because this short value is not one line.
+            val positionMinimum = 18.dp + textWidth(" 当前位置", typography.labelSmall)
             val useOriginalColumns = remaining * (.95f / 2.8f) - 24.dp >= sourceMinimum &&
                 remaining * (1.1f / 2.8f) - 16.dp >= chapterMinimum &&
                 remaining * (.75f / 2.8f) - 16.dp >= positionMinimum
@@ -207,7 +207,7 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
                         verticalArrangement = Arrangement.spacedBy(RlSpace.Space4)) {
                         IncompleteSourceSummary(entry, Modifier.fillMaxWidth())
                         IncompleteChapterSummary(entry, forming, currentStep, visual.accent, Modifier.fillMaxWidth(), showLabel = false)
-                        Text(position, color = RlColor.TextSecondary, style = typography.labelSmall)
+                        IncompletePositionSummary(position, Modifier.fillMaxWidth())
                     }
                     IncompleteResumeButton(entry, visual.accent, onAction, Modifier.width(buttonWidth))
                 } else {
@@ -228,7 +228,6 @@ private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (Inc
 private fun IncompleteSourceSummary(entry: IncompleteLearningEntry, modifier: Modifier) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(entry.sourceLabelZh, Modifier.fillMaxWidth(), color = RlColor.Ink,
-            maxLines = 2, overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleSmall.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 14.sp, lineHeight = 20.sp))
         Text(entry.sourceType.label(), color = RlColor.TextSecondary, style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, lineHeight = 16.sp))
     }
