@@ -276,7 +276,6 @@ private fun ReminderPreferences(
             Text(stringResource(R.string.settings_reminder_frequency), color = RlColor.TextSecondary,
                 style = MaterialTheme.typography.bodySmall)
             HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
-            reminderSchedulingMessage?.takeIf { it.isNotBlank() }?.let { ReminderSchedulingStatusText(it) }
         }
     }
 }
