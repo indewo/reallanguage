@@ -173,14 +173,7 @@ private fun ConfirmationHeader(
     renderChapterPaper: Boolean,
 ) {
     Box(modifier.testTag("english_confirmation_header")) {
-        IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "返回重点句选择",
-                tint = RlColor.Ink,
-                modifier = Modifier.size(30.dp),
-            )
-        }
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart), contentDescription = "返回重点句选择")
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,

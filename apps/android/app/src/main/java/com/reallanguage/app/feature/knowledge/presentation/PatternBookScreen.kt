@@ -112,8 +112,7 @@ import com.reallanguage.app.feature.knowledge.domain.PatternRecord
                     val expanded = state.expandedPattern?.patternId == pattern.patternId
                     Column(Modifier.fillMaxWidth().testTag("pattern-item-${pattern.patternId}")) {
                         BoxWithConstraints(Modifier.fillMaxWidth()) {
-                            val rowInset = if (selectedPattern != null && maxWidth >= 600.dp &&
-                                LocalDensity.current.fontScale <= 1.3f) maxWidth * .135f else 0.dp
+                            val rowInset = 0.dp
                             PatternRow(pattern, index, expanded, onAction, detailVisible = selectedPattern != null,
                                 modifier = Modifier.padding(start = rowInset).then(if (expanded)
                                     Modifier.bringIntoViewRequester(selectedRow)

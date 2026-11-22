@@ -48,7 +48,7 @@ fun LearningCheckpointGate(
             TextButton(onClick = { attempt++ }, modifier = Modifier.testTag("checkpoint-retry")) {
                 Text(stringResource(R.string.diary_retry))
             }
-            TextButton(onClick = onReturn) { Text(stringResource(R.string.formation_back)) }
+            com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onReturn, label = stringResource(R.string.formation_back))
         }
     }
 }

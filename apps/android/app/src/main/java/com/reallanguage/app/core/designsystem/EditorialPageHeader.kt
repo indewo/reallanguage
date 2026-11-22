@@ -17,16 +17,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EditorialPageHeader(title: String, onBack: () -> Unit, modifier: Modifier = Modifier, backEnabled: Boolean = true) {
+fun EditorialPageHeader(title: String, onBack: () -> Unit, modifier: Modifier = Modifier, backEnabled: Boolean = true,
+    backLabel: String = "返回", backContentDescription: String = backLabel, backTestTag: String = "editorial-page-back",
+    trailing: (@Composable () -> Unit)? = null, titleTestTag: String = "editorial-page-title") {
     Box(modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-        TextButton(onClick = onBack, enabled = backEnabled, modifier = Modifier.align(Alignment.CenterStart).testTag("editorial-page-back").semantics { contentDescription = "返回" }) {
-            Icon(Icons.AutoMirrored.Outlined.ArrowBack, null, tint = RlColor.Ink)
-            Spacer(Modifier.width(6.dp))
-            Text("返回", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp)
-        }
-        Column(Modifier.align(Alignment.Center).padding(horizontal = 100.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 29.sp)
+        EditorialBackAction(onBack, Modifier.align(Alignment.CenterStart).testTag(backTestTag), backEnabled, backLabel, backContentDescription)
+        Column(Modifier.align(Alignment.Center).padding(horizontal = if (trailing == null) 124.dp else 180.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(title, Modifier.testTag(titleTestTag), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 29.sp)
             Image(editorialUnderlinePainter(), null, Modifier.width(100.dp).height(5.dp), contentScale = ContentScale.FillBounds)
         }
+        if (trailing != null) Box(Modifier.align(Alignment.CenterEnd)) { trailing() }
     }
 }

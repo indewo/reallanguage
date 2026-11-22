@@ -1,0 +1,7 @@
+{
+  "tool": "image_gen.imagegen (built-in); imagegen skill",
+  "purpose": "Background asset simplification for the approved pattern book design, not a full-screen UI",
+  "prompt": "Edit this blank scrapbook book UI background into the SIMPLIFIED APPROVED RealLanguage book background. Landscape 20:9 canvas. Keep a very narrow olive fabric stitched book spine occupying only leftmost 3% of canvas, subtle tan backing and a large blank light ivory finely textured torn paper reading surface covering rest. REMOVE ALL bridges, architectural/engineering diagrams, rulers, tape, scattered writing, paperclips, botanical illustrations. Remove the four right color tabs as native controls will draw them; keep the right edge calm blank paper with a little margin. No text, no letters, no numbers, no icons, no UI controls. Elegant restrained natural paper grain, very light warm ivory, not muddy yellow. This is a BACKGROUND asset extraction for an existing app, not a new screen. Clean spacious usable center. Single full rectangular landscape bitmap, no mockup board, no device frame.",
+  "output": "apps/android/app/src/main/res/drawable-nodpi/rl_pattern_clean_book_20261123.png",
+  "generatedSource": "01a1eee2-316a-7743-bb7a-89a0677a08a7/exec-dd77ea4f-e47f-4c42-8848-62d134399b96.png"
+}

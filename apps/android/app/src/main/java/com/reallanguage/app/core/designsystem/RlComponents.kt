@@ -588,6 +588,10 @@ fun RlPrimaryButton(
     disabledContainerColor: Color = RlColor.DisabledContainer,
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
 ) {
+    if (text.startsWith("返回")) {
+        EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     Button(
         onClick = onClick,
         enabled = enabled,
@@ -616,6 +620,10 @@ fun RlSecondaryButton(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
 ) {
+    if (text.startsWith("返回")) {
+        EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,

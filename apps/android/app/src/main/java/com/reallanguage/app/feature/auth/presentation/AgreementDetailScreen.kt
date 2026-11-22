@@ -46,10 +46,8 @@ fun AgreementDetailScreen(state: AgreementDetailUiState, onAction: (AgreementDet
                 // The contents leaf, document heading and footer have independent anchors
                 // in 51; a shared top-to-bottom column incorrectly pushes the TOC down.
                 val pageWidth = maxWidth
-                IconButton({ onAction(AgreementDetailAction.ReturnRequested) },
-                    Modifier.padding(start = pageWidth * .126f, top = 23.dp).size(48.dp)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction({ onAction(AgreementDetailAction.ReturnRequested) },
+                    Modifier.padding(start = pageWidth * .126f, top = 23.dp).heightIn(min = 44.dp), contentDescription = "返回")
                 Column(Modifier.fillMaxWidth().padding(start = pageWidth * .383f, end = pageWidth * .183f, top = 39.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(state.document?.titleZh ?: stringResource(R.string.agreement_detail_title), color = RlColor.Ink,
                         fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 27.sp, lineHeight = 36.sp)
@@ -93,7 +91,7 @@ fun AgreementDetailScreen(state: AgreementDetailUiState, onAction: (AgreementDet
                 }
             } else Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton({ onAction(AgreementDetailAction.ReturnRequested) }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink) }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction({ onAction(AgreementDetailAction.ReturnRequested) }, contentDescription = "返回")
                     Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(state.document?.titleZh ?: stringResource(R.string.agreement_detail_title), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 27.sp, lineHeight = 36.sp)
                         Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(130.dp).height(5.dp), contentScale = ContentScale.FillBounds)

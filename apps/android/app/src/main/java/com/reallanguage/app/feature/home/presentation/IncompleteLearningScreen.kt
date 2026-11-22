@@ -60,6 +60,8 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.reallanguage.app.R
+import com.reallanguage.app.core.designsystem.EditorialFont
+import com.reallanguage.app.core.designsystem.editorialPaper
 import com.reallanguage.app.core.designsystem.RlColor
 import com.reallanguage.app.core.designsystem.RlSecondaryButton
 import com.reallanguage.app.core.designsystem.RlShape
@@ -95,17 +97,8 @@ fun IncompleteLearningScreen(state: IncompleteLearningUiState, onAction: (Incomp
                 modifier = Modifier.weight(1f),
             )
             else -> Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).testTag("incomplete-learning-list"),
-                verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
+                verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 state.entries.forEach { entry -> IncompleteLearningRow(entry, onAction) }
-            }
-        }
-        Text("从上次停下的位置继续", color = RlColor.TextSecondary, fontSize = 12.sp,
-            modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
-        OutlinedButton(onClick = { onAction(IncompleteLearningAction.ReturnHomeRequested) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("incomplete-learning-return-home")) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(stringResource(R.string.incomplete_learning_return), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp)
-                Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(61.dp).height(4.dp), contentScale = ContentScale.FillBounds)
             }
         }
     }
@@ -149,77 +142,37 @@ private fun IncompleteLearningStatus(
 
 @Composable
 private fun IncompleteLearningRow(entry: IncompleteLearningEntry, onAction: (IncompleteLearningAction) -> Unit) {
-    val visual = entry.sourceType.visual()
     val forming = entry.kind == ResumeLearningKind.FORMATION
     val currentStep = entry.savedStepId.takeIf { !forming && it.matches(Regex("LR-0[1-9]")) }
         ?.substringAfterLast('-')?.toIntOrNull()
+    val chapter = if (!forming && entry.chapterNumber != null) " · 第 ${entry.chapterNumber} 章" else ""
     val position = when {
-        forming -> "尚未确认"
-        currentStep != null -> "停在 $currentStep / 9 步"
-        else -> "进度待确认"
+        forming -> "${entry.savedStepLabelZh} · 尚未确认"
+        currentStep != null -> "${entry.savedStepLabelZh} · 第 $currentStep / 9 步"
+        else -> "${entry.savedStepLabelZh} · 进度待确认"
     }
-    Box(
-        modifier = Modifier.fillMaxWidth().testTag("incomplete-learning-card"),
-    ) {
-        val paper = ImageBitmap.imageResource(R.drawable.rl_v73_incomplete_paper)
-        val paperPainter = remember(paper) { BitmapPainter(paper, srcOffset = IntOffset(0, (paper.height * .09f).toInt()), srcSize = IntSize(paper.width, (paper.height * .79f).toInt())) }
-        Image(paperPainter, null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        BoxWithConstraints(Modifier.padding(horizontal = 18.dp, vertical = 16.dp)) {
-            val density = LocalDensity.current
-            val measurer = rememberTextMeasurer()
-            val typography = MaterialTheme.typography
-            fun textWidth(text: String, style: androidx.compose.ui.text.TextStyle) = with(density) {
-                measurer.measure(AnnotatedString(text), style = style, softWrap = false).size.width.toDp()
+    BoxWithConstraints(Modifier.fillMaxWidth().editorialPaper().padding(14.dp).testTag("incomplete-learning-card")) {
+        @Composable fun Details(modifier: Modifier) {
+            Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(entry.sourceType.label() + chapter, color = RlColor.TextSecondary,
+                    fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp)
+                Text(entry.sourceLabelZh, Modifier.fillMaxWidth(), color = RlColor.Ink,
+                    fontFamily = EditorialFont.Serif, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 24.sp)
+                Text(position, Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
+                    fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp)
+                if (currentStep != null) LinearProgressIndicator(progress = { currentStep / 9f },
+                    modifier = Modifier.fillMaxWidth().height(3.dp).testTag("incomplete-learning-progress"), color = RlColor.Secondary,
+                    trackColor = RlColor.Border.copy(alpha = .55f))
             }
-            // Keep the approved 100% columns. When their actual allocated widths cannot
-            // hold readable text, reflow the same fields in the same reading order inside
-            // their existing card; do not shrink fonts or create vertical character strips.
-            val buttonWidth = maxOf(104.dp, textWidth("继续", typography.labelLarge) + 48.dp + RlSpace.Space8)
-            val remaining = (maxWidth - 52.dp - buttonWidth - 24.dp).coerceAtLeast(0.dp)
-            val sourceMinimum = textWidth(stringResource(R.string.today_review_source_recording),
-                typography.titleSmall.copy(fontWeight = FontWeight.Bold))
-            val chapterMinimum = maxOf(textWidth("当前位置", typography.bodyMedium),
-                18.dp + textWidth(if (forming) " 当前步骤" else " 章节", typography.labelSmall))
-            // The position value may wrap inside its own column. Do not discard the
-            // reference four-column layout merely because this short value is not one line.
-            val positionMinimum = 18.dp + textWidth(" 当前位置", typography.labelSmall)
-            val useOriginalColumns = remaining * (.95f / 2.8f) - 24.dp >= sourceMinimum &&
-                remaining * (1.1f / 2.8f) - 16.dp >= chapterMinimum &&
-                remaining * (.75f / 2.8f) - 16.dp >= positionMinimum
-
-            val canKeepButtonBesideDetails = maxWidth >= buttonWidth + 260.dp
-            Row(Modifier.fillMaxWidth().heightIn(min = 94.dp).padding(horizontal = 22.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.width(42.dp).height(64.dp), contentAlignment = Alignment.Center) {
-                    val ribbon = ImageBitmap.imageResource(R.drawable.rl_v73_incomplete_ribbon)
-                    val ribbonPainter = remember(ribbon) { BitmapPainter(ribbon, srcOffset = IntOffset((ribbon.width * .17f).toInt(), (ribbon.height * .035f).toInt()), srcSize = IntSize((ribbon.width * .65f).toInt(), (ribbon.height * .93f).toInt())) }
-                    Image(ribbonPainter, null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
-                        colorFilter = if (entry.sourceType == OrdinarySourceType.DIARY) null else incompleteRibbonTint(visual.accent))
-                    Icon(visual.icon, null, tint = Color.White, modifier = Modifier.width(25.dp))
-                }
-                if (useOriginalColumns) {
-                    IncompleteSourceSummary(entry, Modifier.weight(.95f).padding(horizontal = RlSpace.Space12))
-                    IncompleteChapterSummary(entry, forming, currentStep, visual.accent,
-                        Modifier.weight(1.1f).padding(horizontal = RlSpace.Space8))
-                    IncompletePositionSummary(position, Modifier.weight(.75f).padding(horizontal = RlSpace.Space8))
-                    IncompleteResumeButton(entry, visual.accent, onAction, Modifier.width(buttonWidth).padding(end = RlSpace.Space8))
-                } else if (canKeepButtonBesideDetails) {
-                    Column(Modifier.weight(1f).padding(horizontal = RlSpace.Space12),
-                        verticalArrangement = Arrangement.spacedBy(RlSpace.Space4)) {
-                        IncompleteSourceSummary(entry, Modifier.fillMaxWidth())
-                        IncompleteChapterSummary(entry, forming, currentStep, visual.accent, Modifier.fillMaxWidth(), showLabel = false)
-                        IncompletePositionSummary(position, Modifier.fillMaxWidth())
-                    }
-                    IncompleteResumeButton(entry, visual.accent, onAction, Modifier.width(buttonWidth))
-                } else {
-                    Column(Modifier.weight(1f).padding(RlSpace.Space12), verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
-                        IncompleteSourceSummary(entry, Modifier.fillMaxWidth())
-                        IncompleteChapterSummary(entry, forming, currentStep, visual.accent, Modifier.fillMaxWidth())
-                        IncompletePositionSummary(position, Modifier.fillMaxWidth())
-                        IncompleteResumeButton(entry, visual.accent, onAction,
-                            Modifier.width(buttonWidth).align(Alignment.End))
-                    }
-                }
+        }
+        if (maxWidth >= 350.dp && LocalDensity.current.fontScale <= 1.35f) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                Details(Modifier.weight(1f))
+                IncompleteResumeButton(entry, RlColor.Secondary, onAction, Modifier.width(88.dp))
             }
+        } else Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Details(Modifier.fillMaxWidth())
+            IncompleteResumeButton(entry, RlColor.Secondary, onAction, Modifier.width(104.dp).align(Alignment.End))
         }
     }
 }
@@ -278,7 +231,7 @@ private fun IncompleteResumeButton(entry: IncompleteLearningEntry, accent: Color
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp, pressedElevation = 0.dp),
     ) {
-        Text("继续", Modifier.fillMaxWidth(), style = MaterialTheme.typography.labelLarge,
+        Text("继续", Modifier.fillMaxWidth(), fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 22.sp,
             textAlign = TextAlign.Center)
     }
 }

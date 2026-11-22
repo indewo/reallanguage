@@ -120,9 +120,7 @@ fun ScreenshotImportScreen(
         val buttonWidth = (maxWidth * .395f).coerceIn(172.dp, 420.dp)
         Column(Modifier.fillMaxSize().padding(horizontal = sideInset)) {
             Box(Modifier.fillMaxWidth().height(headerHeight)) {
-                IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart), contentDescription = "返回")
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("截图导入", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
                         fontSize = if (compact) 22.sp else 25.sp, maxLines = 1)

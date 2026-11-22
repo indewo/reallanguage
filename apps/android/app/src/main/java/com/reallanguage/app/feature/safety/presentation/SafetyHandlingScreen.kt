@@ -197,9 +197,7 @@ private fun ResponsiveSafetyHandling(state: SafetyHandlingUiState, onAction: (Sa
 
 @Composable
 private fun SafetyTitle(editEnabled: Boolean, onBack: () -> Unit) {
-    IconButton(onClick = onBack, enabled = editEnabled, modifier = Modifier.padding(start = 18.dp, top = 8.dp).size(42.dp)) {
-        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回修改", tint = RlColor.Ink, modifier = Modifier.size(27.dp))
-    }
+    com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, enabled = editEnabled, modifier = Modifier.padding(start = 18.dp, top = 8.dp).heightIn(min = 44.dp), contentDescription = "返回修改", label = "返回修改")
     Column(Modifier.fillMaxWidth().padding(top = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text("内容安全处理", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(134.dp).height(7.dp), contentScale = ContentScale.FillBounds)

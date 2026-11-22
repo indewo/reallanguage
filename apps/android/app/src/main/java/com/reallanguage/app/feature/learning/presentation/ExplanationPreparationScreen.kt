@@ -71,7 +71,7 @@ data class ExplanationPreparationFailureDisplay(
               verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Column(Modifier.fillMaxWidth().onSizeChanged { headingHeightPx = it.height },
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            LearningHeading(failureDisplay.title, onBack = { onAction(ExplanationPreparationAction.BackRequested) })
+            LearningHeading(failureDisplay.title, onBack = { onAction(ExplanationPreparationAction.BackRequested) }, showPreviousInHeader = true)
             Text(failureDisplay.supporting, Modifier.align(Alignment.CenterHorizontally),
                 color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 21.sp)
             // The real state belongs above decorative art and generic stage labels,

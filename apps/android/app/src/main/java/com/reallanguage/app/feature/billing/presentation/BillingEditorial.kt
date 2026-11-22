@@ -78,9 +78,7 @@ internal fun BillingEditorialPage(
                 // and receipt cards; it is not an additional full-width row above them.
                 Box(Modifier.fillMaxWidth().padding(top = 38.dp).heightIn(min = 48.dp)
                     .onSizeChanged { headingHeight = with(density) { it.height.toDp() } }.testTag("ledger-fixed-heading")) {
-                    IconButton(onBack, Modifier.align(Alignment.CenterStart).padding(start = left).testTag("ledger-back")) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction(onBack, Modifier.align(Alignment.CenterStart).padding(start = left).testTag("ledger-back"), contentDescription = "返回")
                     if (title.isNotEmpty()) Column(Modifier.align(Alignment.Center).widthIn(max = 230.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(title, color = RlColor.Ink, textAlign = TextAlign.Center,
@@ -102,9 +100,7 @@ internal fun BillingEditorialPage(
                 verticalArrangement = Arrangement.spacedBy(if (wide) 6.dp else 16.dp),
             ) {
                 Box(Modifier.fillMaxWidth().heightIn(min = 44.dp)) {
-                    IconButton(onBack, Modifier.align(Alignment.CenterStart).testTag("ledger-back")) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction(onBack, Modifier.align(Alignment.CenterStart).testTag("ledger-back"), contentDescription = "返回")
                     if (title.isNotEmpty()) Column(Modifier.align(Alignment.Center).padding(horizontal = 50.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(title, color = RlColor.Ink, textAlign = TextAlign.Center,
@@ -146,6 +142,10 @@ internal fun BillingLabel(text: String, color: Color = RlColor.Secondary) {
 @Composable
 internal fun BillingAction(text: String, onClick: () -> Unit, modifier: Modifier = Modifier,
     enabled: Boolean = true, color: Color = RlColor.ActionVivid, secondary: Boolean = false) {
+    if (text.startsWith("返回")) {
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     Box(modifier.heightIn(min = 48.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center) {
         Image(painterResource(if (secondary) R.drawable.rl_vocabulary_card_paper_r11 else R.drawable.rl_torn_terracotta),

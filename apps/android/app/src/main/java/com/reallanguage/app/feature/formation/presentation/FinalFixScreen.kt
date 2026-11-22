@@ -170,9 +170,7 @@ private fun FinalFixHeader(
     chapterCount: Int,
 ) {
     Box(modifier) {
-        IconButton(onClick = onBack, enabled = !submitting, modifier = Modifier.align(Alignment.CenterStart)) {
-            Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null, tint = RlColor.Ink)
-        }
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, enabled = !submitting, modifier = Modifier.align(Alignment.CenterStart))
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 stringResource(R.string.final_fix_title),

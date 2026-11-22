@@ -211,13 +211,7 @@ private fun InitialSettingsWideScreen(state: InitialSettingsUiState, onAction: (
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (state.step != InitialSettingsStep.EXPRESSION_BASICS) {
-                        TextButton(
-                            onClick = { onAction(InitialSettingsAction.BackRequested) },
-                            enabled = !state.submitting,
-                            modifier = Modifier.weight(0.55f),
-                        ) {
-                            Text(stringResource(R.string.settings_back))
-                        }
+                        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(InitialSettingsAction.BackRequested) }, enabled = !state.submitting, modifier = Modifier.weight(0.55f), label = stringResource(R.string.settings_back))
                     } else {
                         Box(Modifier.weight(0.55f))
                     }

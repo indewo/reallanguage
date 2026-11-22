@@ -31,6 +31,10 @@ import com.reallanguage.app.core.designsystem.RlColor
 internal fun ErrorPaperAction(text: String, onClick: () -> Unit, modifier: Modifier = Modifier,
     enabled: Boolean = true, filled: Boolean = true,
 ) {
+    if (text.startsWith("返回")) {
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     val material = ImageBitmap.imageResource(R.drawable.rl_v73_error_rust_note)
     val texture = remember(material) { BitmapPainter(material,
         IntOffset(material.width / 4, material.height / 4),

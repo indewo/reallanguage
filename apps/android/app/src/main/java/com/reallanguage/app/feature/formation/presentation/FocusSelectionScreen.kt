@@ -161,17 +161,10 @@ private fun AccessibleFocusSelection(state: FocusSelectionUiState, onAction: (Fo
 @Composable
 private fun FocusHeader(wide: Boolean, modifier: Modifier, onBack: () -> Unit) {
     Box(modifier) {
-        TextButton(
+        com.reallanguage.app.core.designsystem.EditorialBackAction(
             onClick = onBack,
-            modifier = Modifier.align(Alignment.TopStart).size(if (wide) 56.dp else 48.dp).testTag("focus_back"),
-        ) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = null,
-                tint = RlColor.Ink,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+            modifier = Modifier.align(Alignment.TopStart).testTag("focus_back"),
+        )
         Column(
             modifier = Modifier.align(Alignment.TopCenter).testTag("focus_header"),
             horizontalAlignment = Alignment.CenterHorizontally,

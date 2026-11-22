@@ -302,8 +302,7 @@ private fun CoverFace(cover: Cover, poseState: State<CoverPose>, modifier: Modif
     val art = painterResource(cover.art)
     Box(modifier.fillMaxSize().padding(2.dp)) {
         Image(painterResource(R.drawable.rl_home_task_note_adaptive), null,
-            Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
-            colorFilter = ColorFilter.tint(Color(0xffe2d9ca), BlendMode.Modulate))
+            Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         // Measure the illustration and both pieces of type once. They move on the paper
         // without rewrapping or stretching as its front and side silhouettes exchange.
         Layout(content = {

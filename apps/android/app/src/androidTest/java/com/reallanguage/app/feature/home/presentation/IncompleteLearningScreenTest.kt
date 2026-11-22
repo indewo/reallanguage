@@ -33,7 +33,7 @@ class IncompleteLearningScreenTest {
         composeRule.onNodeWithText("重置", substring = true).assertDoesNotExist()
         composeRule.onNodeWithText("删除", substring = true).assertDoesNotExist()
         composeRule.onNodeWithTag("incomplete-learning-retry").performClick()
-        composeRule.onNodeWithTag("incomplete-learning-return-home").performClick()
+        composeRule.onNodeWithTag("editorial-page-back").performClick()
         assertEquals(listOf(IncompleteLearningAction.RetryRequested, IncompleteLearningAction.ReturnHomeRequested), actions)
     }
 
@@ -49,7 +49,7 @@ class IncompleteLearningScreenTest {
         composeRule.onNodeWithTag("incomplete-learning-retry").assertDoesNotExist()
         composeRule.onNodeWithText("重置", substring = true).assertDoesNotExist()
         composeRule.onNodeWithText("删除", substring = true).assertDoesNotExist()
-        composeRule.onNodeWithTag("incomplete-learning-return-home").assertIsDisplayed()
+        composeRule.onNodeWithTag("editorial-page-back").assertIsDisplayed()
     }
 
     @Test
@@ -76,7 +76,7 @@ class IncompleteLearningScreenTest {
         composeRule.onAllNodesWithTag("incomplete-learning-progress", useUnmergedTree = true)
             .assertCountEquals(3)
         composeRule.onNodeWithTag("incomplete-learning-resume-learning-1").performClick()
-        composeRule.onNodeWithTag("incomplete-learning-return-home").performClick()
+        composeRule.onNodeWithTag("editorial-page-back").performClick()
 
         assertEquals(
             listOf(

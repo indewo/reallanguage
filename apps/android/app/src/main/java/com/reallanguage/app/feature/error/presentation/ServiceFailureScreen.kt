@@ -62,9 +62,7 @@ fun ServiceFailureScreen(state: ServiceFailureUiState, onAction: (ServiceFailure
                     .then(if (compact) Modifier.verticalScroll(rememberScrollState()) else Modifier),
                     verticalArrangement = Arrangement.spacedBy(9.dp)) {
                 Box(Modifier.fillMaxWidth()) {
-                    IconButton({ onAction(ServiceFailureAction.ReturnRequested) }, Modifier.align(Alignment.CenterStart)) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction({ onAction(ServiceFailureAction.ReturnRequested) }, Modifier.align(Alignment.CenterStart), contentDescription = "返回")
                     Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(stringResource(R.string.service_failure_formation_title), fontFamily = EditorialFont.Serif,
                             fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 34.sp, color = RlColor.Ink)

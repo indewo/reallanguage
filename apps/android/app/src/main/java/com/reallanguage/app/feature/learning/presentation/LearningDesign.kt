@@ -131,79 +131,25 @@ internal fun LearningHeading(
     trailing: (@Composable () -> Unit)? = null,
     onExit: (() -> Unit)? = null,
     backContentDescription: String = "返回",
+    showPreviousInHeader: Boolean = false,
 ) {
-    BoxWithConstraints(modifier.fillMaxWidth()) {
-        val exitAction = onExit ?: LocalLearningExitAction.current
-        val hasHeaderActions = trailing != null || exitAction != null
-        val actionSlotWidth = when {
-            trailing != null && exitAction != null -> 232.dp
-            exitAction != null -> 132.dp
-            trailing != null -> 108.dp
-            else -> 48.dp
+    val exitAction = onExit ?: LocalLearningExitAction.current
+    val primaryBack = exitAction ?: onBack
+    Column(modifier.fillMaxWidth().testTag("learning-heading")) {
+        if (primaryBack != null) com.reallanguage.app.core.designsystem.EditorialPageHeader(
+            title, primaryBack,
+            backLabel = if (exitAction != null) "退出学习" else "返回",
+            backContentDescription = if (exitAction != null) "退出学习" else backContentDescription,
+            backTestTag = if (exitAction != null) "learning-header-exit" else "editorial-page-back",
+            trailing = trailing, titleTestTag = "learning-heading-title",
+        ) else {
+            Text(title, Modifier.align(Alignment.CenterHorizontally).testTag("learning-heading-title"), color = RlColor.Ink,
+                fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 29.sp, textAlign = TextAlign.Center)
         }
-        val stacked = hasHeaderActions && maxWidth < 560.dp * LocalDensity.current.fontScale
-        val headerActions: (@Composable () -> Unit)? = if (hasHeaderActions) {{
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                trailing?.invoke()
-                exitAction?.let { LearningHeaderExitAction(it) }
-            }
-        }} else null
-        Column(Modifier.fillMaxWidth().testTag("learning-heading")) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.width(if (stacked) 48.dp else actionSlotWidth),
-                    contentAlignment = Alignment.CenterStart,
-                ) {
-                    onBack?.let { callback -> IconButton(onClick = callback) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, backContentDescription, tint = RlColor.Ink, modifier = Modifier.size(25.dp))
-                    } }
-                }
-                Column(Modifier.weight(1f).padding(vertical = 3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(title, Modifier.testTag("learning-heading-title"), color = RlColor.Ink, fontFamily = EditorialFont.Serif,
-                        fontWeight = FontWeight.Bold, fontSize = 23.sp, lineHeight = 29.sp, textAlign = TextAlign.Center)
-                    Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null,
-                        Modifier.width(140.dp).height(7.dp), contentScale = ContentScale.FillBounds)
-                }
-                if (!stacked && headerActions != null) Box(
-                    Modifier.width(actionSlotWidth),
-                    contentAlignment = Alignment.CenterEnd,
-                ) { headerActions() }
-                else Spacer(Modifier.width(48.dp))
-            }
-            if (stacked && headerActions != null) Box(
-                Modifier.fillMaxWidth().padding(top = 2.dp, bottom = 6.dp),
-                contentAlignment = Alignment.CenterEnd,
-            ) { headerActions() }
+        // These screens have no previous-step action in their footer; keep that distinct callback reachable.
+        if (showPreviousInHeader && exitAction != null && onBack != null) {
+            com.reallanguage.app.core.designsystem.EditorialBackAction(onBack, Modifier.align(Alignment.End), label = "返回上一步", contentDescription = backContentDescription)
         }
-    }
-}
-
-@Composable
-private fun LearningHeaderExitAction(onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        modifier = Modifier.height(36.dp).widthIn(min = 116.dp)
-            .testTag("learning-header-exit"),
-        shape = RoundedCornerShape(5.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, RlColor.Primary.copy(alpha = .72f)),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = RlColor.Surface.copy(alpha = .82f),
-            contentColor = RlColor.Primary,
-        ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-    ) {
-        Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null, modifier = Modifier.size(17.dp))
-        Spacer(Modifier.width(6.dp))
-        Text(
-            stringResource(R.string.learning_exit_open),
-            fontFamily = EditorialFont.Serif,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
-        )
     }
 }
 

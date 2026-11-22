@@ -90,9 +90,7 @@ fun AudioImportScreen(onBack: () -> Unit, onTranscribe: suspend (Uri) -> Unit, m
         val height = maxHeight
         Column(Modifier.fillMaxSize().padding(horizontal = (width * .083f).coerceIn(12.dp, 94.dp))) {
             Box(Modifier.fillMaxWidth().height((height * .16f).coerceIn(48.dp, 84.dp))) {
-                IconButton(onClick = onBack, enabled = !busy, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, enabled = !busy, modifier = Modifier.align(Alignment.CenterStart), contentDescription = "返回")
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("导入音频", fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontWeight = FontWeight.Bold,
                         fontSize = if (compact) 22.sp else 25.sp)

@@ -139,12 +139,11 @@ private fun RegistrationForm(state: AuthUiState, onAction: (AuthAction) -> Unit,
                 Spacer(Modifier.width(if (wide) 22.dp * s else 12.dp))
                 VerticalDivider(Modifier.fillMaxHeight(), color = RlColor.Border, thickness = .5.dp)
                 Spacer(Modifier.width(if (wide) 62.dp * s else 12.dp))
-                Box(Modifier.weight(if (wide) 144f else 1f).heightIn(min = 48.dp).fillMaxHeight().clickable(role = Role.Button) { onAction(AuthAction.LoginRequested) }, contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(R.string.auth_return_to_login), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = (30 * s).sp, lineHeight = (40 * s).sp)
-                        Image(editorialUnderlinePainter(), null, Modifier.width(132.dp * s).height(7.dp * s), contentScale = ContentScale.FillBounds, colorFilter = ColorFilter.tint(RlColor.Ink))
-                    }
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(
+                    onClick = { onAction(AuthAction.LoginRequested) },
+                    modifier = Modifier.weight(if (wide) 230f else 1f).heightIn(min = 48.dp).fillMaxHeight(),
+                    label = stringResource(R.string.auth_return_to_login),
+                )
             }
         }
     }

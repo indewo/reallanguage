@@ -40,10 +40,6 @@ fun LocalRecordingsScreen(state: LocalRecordingsUiState, onAction: (LocalRecordi
                 }
             }
         },
-        actions = {
-            RlSecondaryButton(stringResource(R.string.ai_billing_return_account),
-                onClick = { onAction(LocalRecordingsAction.ReturnAccountRequested) }, modifier = Modifier.fillMaxWidth())
-        },
     ) {
         Text("保存在这台设备", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         when {

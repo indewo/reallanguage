@@ -69,9 +69,7 @@ fun SceneTypeScreen(state: SceneTypeUiState, onAction: (SceneTypeAction) -> Unit
                 Row(Modifier.fillMaxWidth().heightIn(min = 46.dp), verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                     if (!stacked) Spacer(Modifier.weight(1.2f))
-                    TextButton(onClick = { onAction(SceneTypeAction.BackRequested) }, Modifier.weight(1f)) {
-                        Text(stringResource(R.string.scene_type_back), color = RlColor.Ink)
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(SceneTypeAction.BackRequested) }, Modifier.weight(1f), label = stringResource(R.string.scene_type_back))
                     RlPrimaryButton(stringResource(R.string.scene_type_continue), state.selectedType != null,
                         { onAction(SceneTypeAction.ContinueRequested) }, Modifier.weight(1.1f).testTag("scene-type-continue"),
                         containerColor = RlColor.ActionVivid)

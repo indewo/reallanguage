@@ -66,9 +66,7 @@ fun RecordingCapturePage(
         val timerSize = (maxHeight.value * .16f).coerceIn(32f, 93f)
         Column(Modifier.fillMaxSize().safeDrawingPadding().padding(horizontal = maxWidth * .087f)) {
             Box(Modifier.fillMaxWidth().heightIn(min = headHeight)) {
-                IconButton(onClick = onBack, Modifier.align(Alignment.CenterStart), enabled = !transcribing && !state.stopping) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, Modifier.align(Alignment.CenterStart), enabled = !transcribing && !state.stopping, contentDescription = "返回")
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("录音", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
                         fontSize = (headHeight.value * .42f).coerceIn(19f, 31f).sp)

@@ -124,9 +124,7 @@ private fun AuthPaperForm(state: AuthUiState, onAction: (AuthAction) -> Unit, mo
             state.submitError?.let { Text(it.message(), color = RlColor.Error, fontSize = 13.sp) }
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).testTag("registration-actions"), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 EditorialRegistrationButton(stringResource(if (registration) R.string.auth_submit_registration else R.string.auth_login), state.submitEnabled && !state.submitting, { onAction(AuthAction.SubmitRequested) }, Modifier.weight(1.5f).fillMaxHeight().testTag(if (registration) "registration-submit" else "login-submit"))
-                if (registration) TextButton({ onAction(AuthAction.LoginRequested) }, Modifier.weight(1f).fillMaxHeight()) {
-                    Text(stringResource(R.string.auth_return_to_login), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp)
-                } else OutlinedButton({ onAction(AuthAction.RegistrationRequested) }, Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp).testTag("login-create-account"),
+                if (registration) com.reallanguage.app.core.designsystem.EditorialBackAction({ onAction(AuthAction.LoginRequested) }, Modifier.weight(1f).fillMaxHeight(), label = stringResource(R.string.auth_return_to_login)) else OutlinedButton({ onAction(AuthAction.RegistrationRequested) }, Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp).testTag("login-create-account"),
                     shape = RoundedCornerShape(4.dp), border = BorderStroke(.8.dp, RlColor.Ink)) {
                     Text("创建账号", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 24.sp)
                 }
@@ -192,6 +190,10 @@ internal fun EditorialRegistrationButton(text: String, enabled: Boolean, onClick
 /** Approved 02/03 have rounded, printed red actions, unlike the torn tag on 01. */
 @Composable
 internal fun EditorialRoundedAction(text: String, enabled: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    if (text.startsWith("返回")) {
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     val paper = ImageBitmap.imageResource(R.drawable.rl_torn_terracotta)
     val texture = remember(paper) {
         BitmapPainter(paper, srcOffset = IntOffset((paper.width * .05f).toInt(), (paper.height * .08f).toInt()),

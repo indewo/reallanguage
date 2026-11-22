@@ -26,9 +26,7 @@ import com.reallanguage.app.core.designsystem.RlColor
 fun ChapterSelectionScreen(state: ChapterSelectionUiState, onAction: (ChapterSelectionAction) -> Unit) {
     LearningArchivePage(startFraction = .065f, backgroundRes = R.drawable.rl_v73_learning_open_book) {
         val rightPageTopInset = if (maxWidth >= 600.dp) 20.dp else 0.dp
-        IconButton(onClick = { onAction(ChapterSelectionAction.BackRequested) }, modifier = Modifier.align(Alignment.TopStart)) {
-            Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-        }
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(ChapterSelectionAction.BackRequested) }, modifier = Modifier.align(Alignment.TopStart), contentDescription = "返回")
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
                 LearningTwoPane(leftWeight = .31f, contentFirstWhenStacked = true, left = { pane ->

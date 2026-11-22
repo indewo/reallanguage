@@ -72,7 +72,7 @@ fun SceneResponseScreen(state: SceneResponseUiState, onExit: (() -> Unit)? = nul
         Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
             .testTag("scene-content-scroll-viewport"), verticalArrangement = Arrangement.spacedBy(7.dp)) {
             LearningHeading("第 ${state.chapter.chapterNumber} 章 · ${stringResource(R.string.scene_response_title)}",
-                onBack = { onAction(SceneResponseAction.BackRequested) }, onExit = onExit, trailing = {
+                onBack = { onAction(SceneResponseAction.BackRequested) }, onExit = onExit, showPreviousInHeader = true, trailing = {
                     Text(stringResource(R.string.scene_response_round_total, state.roundIndex + 1),
                         color = RlColor.ActionVivid, fontSize = 13.sp, lineHeight = 18.sp)
                 })

@@ -104,16 +104,10 @@ internal fun EditorialHeader(
     subtitle: String? = null,
     onBack: (() -> Unit)? = null,
 ) {
-    Row(modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-        if (onBack != null) IconButton(onClick = onBack) {
-            Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink, modifier = Modifier.size(28.dp))
-        } else Spacer(Modifier.width(48.dp))
-        Column(Modifier.weight(1f).padding(vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(title, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold,
-                fontSize = 27.sp, lineHeight = 34.sp, textAlign = TextAlign.Center)
-            subtitle?.let { Text(it, color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
-                fontSize = 13.sp, lineHeight = 20.sp, textAlign = TextAlign.Center) }
-        }
-        Spacer(Modifier.width(48.dp))
+    Column(modifier.fillMaxWidth()) {
+        if (onBack != null) com.reallanguage.app.core.designsystem.EditorialPageHeader(title, onBack)
+        else Text(title, Modifier.align(Alignment.CenterHorizontally), fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 22.sp)
+        subtitle?.let { Text(it, Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
+            fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 20.sp, textAlign = TextAlign.Center) }
     }
 }

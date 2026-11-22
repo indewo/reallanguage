@@ -176,40 +176,16 @@ fun VocabularyBookScreen(state: VocabularyBookUiState, onAction: (VocabularyBook
 @Composable
 private fun VocabularyBookHeader(state: VocabularyBookUiState, onAction: (VocabularyBookAction) -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val compact = maxWidth < 760.dp || LocalDensity.current.fontScale > 1.35f || state.currentScope.length > 16
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
-        ) {
-            IconButton(
-                { onAction(VocabularyBookAction.ReturnHomeRequested) },
-                Modifier.size(if (compact) 40.dp else 48.dp).testTag("vocabulary-book-back"),
-            ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回首页", tint = RlColor.Ink) }
-            Spacer(Modifier.width(if (compact) 2.dp else 18.dp))
-            VerticalDivider(Modifier.height(34.dp), color = RlColor.Divider)
-            Text(
-                stringResource(R.string.vocabulary_book_title), color = RlColor.Ink,
-                modifier = Modifier.width(if (compact) 86.dp else 102.dp),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
-                    fontSize = if (compact) 22.sp else 30.sp,
-                ),
-            )
-            VerticalDivider(Modifier.height(34.dp), color = RlColor.Primary)
-            Box(Modifier.width(if (compact) 150.dp else 168.dp).height(34.dp), contentAlignment = Alignment.Center) {
-                Image(
-                    vocabularyPaperPainter(), null, Modifier.matchParentSize(),
-                    contentScale = ContentScale.FillBounds,
-                )
-                Text(
-                    stringResource(R.string.vocabulary_book_scope, state.currentScope),
-                    modifier = Modifier.padding(horizontal = 7.dp), maxLines = 1,
-                    color = RlColor.Ink, fontSize = if (compact) 12.sp else 14.sp,
-                )
+        val compact = maxWidth < 760.dp || LocalDensity.current.fontScale > 1.35f
+        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.reallanguage.app.core.designsystem.EditorialPageHeader(stringResource(R.string.vocabulary_book_title),
+                { onAction(VocabularyBookAction.ReturnHomeRequested) }, backContentDescription = "返回首页", backTestTag = "vocabulary-book-back")
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.vocabulary_book_scope, state.currentScope),
+                    Modifier.width(if (compact) 150.dp else 168.dp).padding(horizontal = 7.dp), color = RlColor.Ink,
+                    fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp)
+                VocabularySearchBar(state, onAction, Modifier.weight(1f), compact)
             }
-            Spacer(Modifier.width(if (compact) 2.dp else 8.dp))
-            VocabularySearchBar(state, onAction, Modifier.weight(1f), compact)
         }
     }
 }
@@ -222,7 +198,7 @@ private fun VocabularySearchBar(
     compact: Boolean,
 ) {
     val actionWidth = if (compact) 58.dp else 64.dp
-    val controlHeight = 38.dp
+    val controlHeight = maxOf(38.dp, 32.dp * LocalDensity.current.fontScale)
     Row(
         modifier.height(controlHeight).testTag("vocabulary-search-bar"),
         verticalAlignment = Alignment.CenterVertically,

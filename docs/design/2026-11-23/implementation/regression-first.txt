@@ -1,0 +1,26 @@
+
+com.reallanguage.app.feature.home.presentation.HomeScreenTest:....
+com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest:..
+Error in patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest):
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '高级
+表达' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest.patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(DesignLayoutImplementationTest.kt:72)
+.
+com.reallanguage.app.feature.knowledge.presentation.PatternBookScreenTest:.
+com.reallanguage.app.feature.home.presentation.IncompleteLearningScreenTest:...
+com.reallanguage.app.feature.home.presentation.IncompleteLearningFormationStateTest:....
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:.
+
+Time: 155.983
+There was 1 failure:
+1) patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest)
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '高级
+表达' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest.patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(DesignLayoutImplementationTest.kt:72)
+
+FAILURES!!!
+Tests run: 17,  Failures: 1
+
+

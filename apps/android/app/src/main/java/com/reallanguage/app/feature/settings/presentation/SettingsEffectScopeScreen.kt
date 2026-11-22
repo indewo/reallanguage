@@ -105,13 +105,16 @@ fun SettingsEffectScopeScreen(
     }
     RlPaperBackground(modifier, showCornerCollage = false) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
+          Column(Modifier.fillMaxSize().padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.reallanguage.app.core.designsystem.EditorialPageHeader("设置生效范围", { onAction(SettingsEffectScopeAction.CancelRequested) },
+                backEnabled = !state.applying, backTestTag = "ledger-back")
+          BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val wide = maxWidth >= 720.dp && LocalDensity.current.fontScale <= 1.35f
-            val panelHeight = (maxHeight - 16.dp).coerceAtLeast(350.dp)
+            val panelHeight = (maxHeight - 16.dp).coerceAtLeast(180.dp)
             val guide: @Composable (Modifier) -> Unit = { guideModifier ->
                 Box(guideModifier) {
                     Image(painterResource(R.drawable.rl_editorial_blue_panel), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                     Column(Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = if (wide) 12.dp else 24.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        IconButton({ if (!state.applying) onAction(SettingsEffectScopeAction.CancelRequested) }, Modifier.testTag("ledger-back"), enabled = !state.applying) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.PaperWarm) }
                         SettingsEffectGuide(wide)
                     }
                 }
@@ -120,8 +123,6 @@ fun SettingsEffectScopeScreen(
                 Column(formModifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("设置生效范围", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 27.sp, lineHeight = 36.sp)
-                            Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(150.dp).height(5.dp), contentScale = ContentScale.FillBounds)
                             Text("选择这次修改如何应用", color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 22.sp)
                         }
                         if (wide) Box(Modifier.width(125.dp).height(68.dp).testTag("settings-effect-confirm-note"), contentAlignment = Alignment.Center) {
@@ -145,6 +146,8 @@ fun SettingsEffectScopeScreen(
                 }
                 controls()
             }
+          }
+          }
         }
     }
 }

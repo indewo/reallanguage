@@ -1,5 +1,6 @@
 package com.reallanguage.app.feature.diary.presentation
 
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -131,18 +132,9 @@ fun DiaryInputScreen(
 @Composable
 private fun DiaryHeader(submitting: Boolean, onAction: (DiaryInputAction) -> Unit) {
     Box(Modifier.fillMaxWidth().height(40.dp)) {
-        IconButton(
-            onClick = { onAction(DiaryInputAction.BackRequested) },
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(DiaryInputAction.BackRequested) },
             enabled = !submitting,
-            modifier = Modifier.align(Alignment.CenterStart),
-        ) {
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = stringResource(R.string.diary_back),
-                modifier = Modifier.size(28.dp),
-                tint = RlColor.Ink,
-            )
-        }
+            modifier = Modifier.align(Alignment.CenterStart))
         Column(
             modifier = Modifier.align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,

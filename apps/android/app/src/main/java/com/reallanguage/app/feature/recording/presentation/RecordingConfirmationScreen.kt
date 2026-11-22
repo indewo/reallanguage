@@ -77,10 +77,7 @@ fun RecordingConfirmationScreen(state: RecordingConfirmationUiState, onAction: (
                 RlPrimaryButton(stringResource(R.string.recording_confirmation_transcribe), state.recording.endReason != null,
                     { onAction(RecordingConfirmationAction.TranscribeRequested) },
                     Modifier.weight(1.15f).heightIn(min = 46.dp).testTag("recording-confirmation-transcribe"), containerColor = RlColor.ActionVivid)
-                OutlinedButton(onClick = { onAction(RecordingConfirmationAction.ReturnHomeRequested) },
-                    modifier = Modifier.weight(.85f).heightIn(min = 46.dp).testTag("recording-confirmation-home"), shape = RlShape.Input) {
-                    Text(stringResource(R.string.incomplete_learning_return))
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(RecordingConfirmationAction.ReturnHomeRequested) }, modifier = Modifier.weight(.85f).heightIn(min = 46.dp).testTag("recording-confirmation-home"), label = stringResource(R.string.incomplete_learning_return))
             }
         },
     ) {

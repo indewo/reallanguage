@@ -104,13 +104,8 @@ fun PasswordResetScreen(
                     Text(errorMessage(it), color = MaterialTheme.colorScheme.error)
                 }
                 if (state.step != PasswordResetStep.SUCCESS) {
-                    TextButton(
-                        onClick = { onAction(PasswordResetAction.ReturnToLoginRequested) },
-                        modifier = Modifier.heightIn(min = 48.dp)
-                            .testTag("password-reset-return-login"),
-                    ) {
-                        Text(stringResource(R.string.auth_return_to_login))
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(PasswordResetAction.ReturnToLoginRequested) }, modifier = Modifier.heightIn(min = 48.dp)
+                            .testTag("password-reset-return-login"), label = stringResource(R.string.auth_return_to_login))
                 }
                 }
             }
@@ -206,12 +201,7 @@ private fun VerificationStep(state: PasswordResetUiState, onAction: (PasswordRes
                 ) {
                     Text("更换邮箱", color = RlColor.Ink)
                 }
-                TextButton(
-                    onClick = { onAction(PasswordResetAction.ReturnToLoginRequested) },
-                    modifier = Modifier.heightIn(min = 34.dp).testTag("password-reset-return-login"),
-                ) {
-                    Text(stringResource(R.string.auth_return_to_login), color = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(PasswordResetAction.ReturnToLoginRequested) }, modifier = Modifier.heightIn(min = 34.dp).testTag("password-reset-return-login"), label = stringResource(R.string.auth_return_to_login))
             }
             if (roomy) Box(
                 modifier = Modifier.align(Alignment.TopEnd).width(112.dp).height(72.dp)

@@ -161,9 +161,7 @@ private fun LearningTargetHeader(
 ) {
     if (!adaptiveHeight) {
         BoxWithConstraints(Modifier.fillMaxWidth().height(if (shortScreen) 54.dp else 68.dp).testTag("learning_targets_header")) {
-            IconButton(onClick = { onAction(LearningTargetAction.BackRequested) }, modifier = Modifier.align(Alignment.CenterStart).padding(start = maxWidth * .09f)) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-            }
+            com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(LearningTargetAction.BackRequested) }, modifier = Modifier.align(Alignment.CenterStart).padding(start = maxWidth * .09f), contentDescription = "返回")
             Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("选择学习目标", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = if (shortScreen) 24.sp else 26.sp, lineHeight = if (shortScreen) 30.sp else 34.sp, letterSpacing = 3.sp)
                 Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null, Modifier.width(182.dp).height(if (shortScreen) 5.dp else 7.dp), contentScale = ContentScale.FillBounds)
@@ -173,10 +171,8 @@ private fun LearningTargetHeader(
     }
     Column(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 6.dp).testTag("learning_targets_header")) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(
-            onClick = { onAction(LearningTargetAction.BackRequested) },
-            modifier = Modifier.size(48.dp),
-        ) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink) }
+        com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = { onAction(LearningTargetAction.BackRequested) },
+            modifier = Modifier.heightIn(min = 44.dp), contentDescription = "返回")
         Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 "选择学习目标", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,

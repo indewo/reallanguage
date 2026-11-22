@@ -1,0 +1,10 @@
+
+com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest:....
+com.reallanguage.app.feature.knowledge.presentation.PatternBookScreenTest:.
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:.
+
+Time: 32.316
+
+OK (6 tests)
+
+

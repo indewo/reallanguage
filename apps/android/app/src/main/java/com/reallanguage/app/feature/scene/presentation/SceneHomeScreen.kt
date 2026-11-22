@@ -69,12 +69,8 @@ fun SceneHomeScreen(state: SceneHomeUiState, onAction: (SceneHomeAction) -> Unit
             val leftWidth = if (narrow) usableWidth * .355f else usableWidth * .344f
             val rightWidth = usableWidth - leftWidth - gap
 
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier.offset(x = maxWidth * .012f, y = maxHeight * .020f).size(48.dp).testTag("scene-home-back"),
-            ) {
-                Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = SceneNavy, modifier = Modifier.size(if (narrow) 27.dp else 30.dp))
-            }
+            com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack,
+                modifier = Modifier.offset(x = maxWidth * .012f, y = maxHeight * .020f).heightIn(min = 44.dp).testTag("scene-home-back"), contentDescription = "返回")
             SceneTitle(
                 Modifier.align(Alignment.TopCenter)
                     .width(if (narrow) maxWidth * .48f else maxWidth * .36f)

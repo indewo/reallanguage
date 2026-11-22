@@ -75,9 +75,7 @@ fun TranscriptResultScreen(
                     ),
                 )
                 if (onReturn != null) {
-                    IconButton(onClick = onReturn, modifier = Modifier.align(Alignment.CenterStart).testTag("transcript-result-return")) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.transcript_result_return), tint = RlColor.Ink)
-                    }
+                    com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onReturn, modifier = Modifier.align(Alignment.CenterStart).testTag("transcript-result-return"))
                 }
             }
             Surface(Modifier.fillMaxWidth().height(1.dp), color = RlColor.Border) {}

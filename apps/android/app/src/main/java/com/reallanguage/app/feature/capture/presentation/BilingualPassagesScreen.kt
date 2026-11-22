@@ -91,9 +91,7 @@ fun BilingualPassagesScreen(
         Image(painterResource(R.drawable.rl_bilingual_passages_frame), null, Modifier.fillMaxSize(), contentScale = ContentScale.FillBounds)
         Column(Modifier.fillMaxSize().padding(horizontal = horizontalInset)) {
             Box(Modifier.fillMaxWidth().height(header)) {
-                IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, "返回", tint = RlColor.Ink)
-                }
+                com.reallanguage.app.core.designsystem.EditorialBackAction(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart), contentDescription = "返回")
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("选择学习短句", modifier = Modifier.semantics { heading() }, color = RlColor.Ink,
                         fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = if (small) 20.sp else 24.sp)

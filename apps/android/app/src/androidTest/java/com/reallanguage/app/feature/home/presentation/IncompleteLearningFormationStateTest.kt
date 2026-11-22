@@ -23,7 +23,7 @@ class IncompleteLearningFormationStateTest {
         compose.onNodeWithText("第 null 章", substring = true).assertDoesNotExist()
         compose.onNodeWithTag("incomplete-learning-progress").assertDoesNotExist()
         compose.onNodeWithText("停在 1 / 9 步").assertDoesNotExist()
-        compose.onAllNodesWithText("选择学习目标").onFirst().assertIsDisplayed()
+        compose.onNodeWithText("选择学习目标 · 尚未确认").assertIsDisplayed()
         compose.onNodeWithTag("incomplete-learning-resume-${entry.learningId}").performClick()
         assertEquals(listOf(IncompleteLearningAction.ResumeRequested(entry.learningId)), actions)
     }

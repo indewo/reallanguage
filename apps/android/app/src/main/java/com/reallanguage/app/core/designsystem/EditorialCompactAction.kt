@@ -26,6 +26,10 @@ fun EditorialCompactAction(
     primary: Boolean = false,
     color: Color = RlColor.ActionVivid,
 ) {
+    if (!primary && text.startsWith("返回")) {
+        EditorialBackAction(onClick, modifier, enabled, label = text)
+        return
+    }
     val shape = RoundedCornerShape(5.dp)
     Box(
         modifier.heightIn(min = 48.dp)
