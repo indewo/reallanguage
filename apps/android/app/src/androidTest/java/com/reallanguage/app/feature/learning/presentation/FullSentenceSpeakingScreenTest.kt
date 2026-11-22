@@ -572,4 +572,28 @@ class FullSentenceSpeakingScreenTest {
         composeRule.waitForIdle()
         capture("-transcript", transcript)
     }
+    @Test fun failedRetellingKeepsLongFeedbackReadableAndStopActionReachable() {
+        val feedback = "这次表达尚未完整覆盖关键意思。请注意说明下一阶段的时间表，并补充关键里程碑和交付成果；可以先整理表达，再重新尝试。"
+        val actions = mutableListOf<FullSentenceSpeakingAction>()
+        val state = FullSentenceSpeakingUiState(
+            FixedLearningChapter("layout-only", 1, listOf(FixedLearningSentence("s1", "Please share the timeline.", "请分享时间表。", true))),
+            "s1", attemptIndex = 4, feedbackZh = feedback,
+            finalDecision = SpeakingEvaluationDecision.FAIL, evaluationReceived = true)
+        composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state, actions::add) } } }
+        composeRule.onNodeWithText(feedback).performScrollTo().assertIsDisplayed()
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        composeRule.onNodeWithText(feedback).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { check(it(layouts)) }
+        check(!layouts.single().hasVisualOverflow)
+        check(layouts.single().getLineEnd(0) >= 8) { "Feedback must not collapse into one-character columns" }
+        composeRule.onNodeWithText("暂不练习").performScrollTo().assertIsDisplayed().assertIsEnabled()
+        val inst = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        inst.uiAutomation.takeScreenshot()!!.let { bitmap ->
+            java.io.File(inst.targetContext.filesDir, "retelling-failure-stop.png").outputStream().use {
+                check(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it))
+            }
+            bitmap.recycle()
+        }
+        composeRule.onNodeWithText("暂不练习").performClick()
+        org.junit.Assert.assertEquals(listOf(FullSentenceSpeakingAction.StopPractisingRequested), actions)
+    }
 }

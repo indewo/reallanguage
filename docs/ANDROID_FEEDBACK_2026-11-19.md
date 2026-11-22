@@ -1,3 +1,7 @@
+### 2026-11-22 独立复述失败长反馈与暂不练习组件补验
+
+新增FullSentenceSpeakingScreenTest.failedRetellingKeepsLongFeedbackReadableAndStopActionReachable，生产横屏窗口、隔离FAIL状态，第5次长中文反馈。构建覆盖测试包，真机48.576s通过：全文TextLayout无溢出、首行至少8字符（不单字竖排）、实际滚动找到暂不练习并点击，只发StopPractisingRequested。retelling-failure-stop.png实看长反馈三行、暂不练习为清楚的边框按钮、底部再练一次完整。截图为滚动到底状态，顶部内容上移；非真实录音失败，不写用户数据库、不冒充真实跳过归档/费用闭环，C23/C24原真实分支仍待验。
+
 ### 2026-11-22 听写收键盘后长句保留及按钮可见补证
 
 新增收键盘后截图，构建覆盖测试包，longInputRemainsEditableWithKeyboardWithoutSubmitting通过50.128s。dictation-keyboard-dismissed.png实看英文两行完整、末尾deliverables.保留，底发音/提示/提交完整可读，无提交动作/SQL/HTTP。输入键盘态按钮仍被遮，收起后恢复。源码查到生产RlKeyboardEditingHost有横屏浮动编辑层，本组件直接Screen未包该宿主，故不能把组件键盘遮挡推断为完整生产App缺陷，也不能据此关闭真实入口验收。C18仍需真实录音章当前步骤或新的真实听写入口，本轮不倒退原用户8/9游标。
