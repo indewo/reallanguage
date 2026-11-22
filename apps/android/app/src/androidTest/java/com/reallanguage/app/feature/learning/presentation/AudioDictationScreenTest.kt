@@ -37,7 +37,7 @@ class AudioDictationScreenTest {
                 bitmap.recycle()
             }
         }
-        composeRule.onNodeWithText("重新生成发音（重新计费）").assertIsDisplayed().performClick()
+        composeRule.onNodeWithText("重新生成发音\n（重新计费）").assertIsDisplayed().performClick()
         composeRule.onNodeWithText("I felt").performScrollTo().assertIsDisplayed()
         assert(actions == listOf(AudioDictationAction.RegenerateAudioRequested))
     }

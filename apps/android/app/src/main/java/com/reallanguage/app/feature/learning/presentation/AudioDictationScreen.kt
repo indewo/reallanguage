@@ -93,10 +93,13 @@ fun AudioDictationScreen(
                 modifier = Modifier.weight(1f).heightIn(min = 48.dp),
             ) {
                 Text(
-                    if (state.audioFailed) "重新生成发音（重新计费）" else stringResource(
+                    if (state.audioFailed) "重新生成发音\n（重新计费）" else stringResource(
                         if (state.audioLooping) R.string.learning_mute
                         else R.string.learning_pronounce,
                     ),
+                    fontSize = 14.sp, lineHeight = 18.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    maxLines = 2,
                 )
             }
             OutlinedButton(
