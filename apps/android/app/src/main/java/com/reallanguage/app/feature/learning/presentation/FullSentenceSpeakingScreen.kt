@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.PlayCircleOutline
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -25,6 +24,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.Modifier
@@ -261,7 +264,6 @@ fun FullSentenceSpeakingScreen(
                     AiReadingFeedback(
                         summary = feedback,
                         details = state.feedbackDetails,
-                        confidence = state.feedbackConfidence,
                         transcript = state.feedbackTranscript,
                     )
                 } else {
@@ -290,9 +292,9 @@ fun FullSentenceSpeakingScreen(
 private fun AiReadingFeedback(
     summary: String,
     details: List<ReadingFeedbackDetail>,
-    confidence: Double?,
     transcript: String? = null,
 ) {
+    var expanded by remember(summary, transcript) { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxWidth().testTag("full-sentence-ai-feedback"),
         color = RlColor.PaperWarm,
@@ -307,26 +309,12 @@ private fun AiReadingFeedback(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Icon(
-                    Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    modifier = Modifier.size(17.dp),
-                    tint = RlColor.Primary,
-                )
                 Text(
-                    "朗读反馈",
+                    "本次练习",
                     color = RlColor.Ink,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     lineHeight = 18.sp,
-                )
-                Text(
-                    "基于本次录音与识别文本",
-                    modifier = Modifier.weight(1f),
-                    color = RlColor.TextSecondary,
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
                 )
             }
             Text(
@@ -345,14 +333,18 @@ private fun AiReadingFeedback(
                     lineHeight = 17.sp,
                 )
             }
-            if (details.isEmpty()) {
+            if (details.isNotEmpty()) TextButton(onClick = { expanded = !expanded },
+                modifier = Modifier.testTag("reading-feedback-details-toggle")) {
+                Text(if (expanded) "收起具体建议" else "查看具体建议")
+            }
+            if (expanded && details.isEmpty()) {
                 Text(
                     "旧记录只保留了本轮总评；下一次录音会显示词或短语、节奏和完整度依据。",
                     color = RlColor.TextSecondary,
                     fontSize = 11.sp,
                     lineHeight = 15.sp,
                 )
-            } else {
+            } else if (expanded) {
                 details.forEachIndexed { index, detail ->
                     if (index > 0) androidx.compose.material3.HorizontalDivider(color = RlColor.Divider)
                     Row(
@@ -404,14 +396,6 @@ private fun AiReadingFeedback(
                         )
                     }
                 }
-            }
-            confidence?.let {
-                Text(
-                    "AI 反馈置信度：${if (it >= .8) "较高" else if (it >= .6) "一般" else "有限"} · 仅供本轮练习参考",
-                    color = RlColor.TextSecondary,
-                    fontSize = 9.sp,
-                    lineHeight = 13.sp,
-                )
             }
         }
     }

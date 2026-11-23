@@ -55,7 +55,7 @@ fun AudioDictationScreen(
         modulePaperMinHeight = 168.dp,
         leftPanelContent = {
             Text(
-                if (state.audioLooping) "慢速循环播放中" else "已静音",
+                if (state.audioLooping) "慢速播放中 · 共两遍" else "播放已停止",
                 modifier = Modifier.fillMaxWidth().testTag("audio-dictation-loop-status"),
                 color = RlColor.OnPrimary,
                 style = MaterialTheme.typography.titleMedium.copy(

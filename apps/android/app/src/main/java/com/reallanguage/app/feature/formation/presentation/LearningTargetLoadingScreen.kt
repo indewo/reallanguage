@@ -27,9 +27,9 @@ fun LearningTargetLoadingScreen(state: LearningTargetLoadingUiState, onAction: (
         poster = com.reallanguage.app.R.drawable.rl_v73_target_poster_r2,
         pageTitle = if (state.failed) "学习目标提取" else "正在提取学习目标",
         title = if (state.reconciliationRequired) "本次请求需要核对" else if (state.failed) "学习目标提取失败" else "从真实表达中寻找学习目标",
-        supportingText = if (state.reconciliationRequired) "本次费用待核对，暂不能重新生成；原文和选择已保留。" else if (state.failed) "已保留你确认的中英文和候选选择。" else "已确认的中英文内容会完整保留。",
-        stages = listOf("分析重点句", "提取词汇与句式", "建立学习目标"),
-        footerNote = "只使用你已确认的表达与当前词汇范围。",
+        supportingText = if (state.reconciliationRequired) "本次费用待核对，暂不能重新生成；原文和选择已保留。" else if (state.failed) "中英文原文和候选选择已保留。" else "保留中英文原文，提取本句学习目标。",
+        stages = listOf("分析重点句", "提取词汇\n与句式", "建立\n学习目标"),
+        footerNote = "提取当前表达中的词义、搭配与句式。",
         activeStage = 1,
         failed = state.failed,
         fixedStages = true,
@@ -38,7 +38,7 @@ fun LearningTargetLoadingScreen(state: LearningTargetLoadingUiState, onAction: (
         if (state.failed) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             RlPrimaryButton(text = if (state.reconciliationRequired) "检查恢复状态" else "重试", enabled = true, onClick = { onAction(LearningTargetLoadingAction.RetryRequested) }, modifier = Modifier.weight(1f))
-            RlSecondaryButton(text = "返回确认内容", onClick = { onAction(LearningTargetLoadingAction.BackRequested) }, modifier = Modifier.weight(1f))
+            RlSecondaryButton(text = "返回修改表达", onClick = { onAction(LearningTargetLoadingAction.BackRequested) }, modifier = Modifier.weight(1f))
             }
         }
     }

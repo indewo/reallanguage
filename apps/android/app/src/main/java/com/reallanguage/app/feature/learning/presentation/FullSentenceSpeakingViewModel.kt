@@ -220,7 +220,8 @@ class FullSentenceSpeakingViewModel(
                                 feedbackConfidence = result.feedback.feedbackConfidence,
                                 feedbackDetails = result.feedback.details,
                                 feedbackTranscript = result.feedback.transcript,
-                                trainingCanContinue = result.feedback.action == com.reallanguage.app.feature.learning.domain.ReadingFeedbackAction.CONTINUE,
+                                // These four rounds are practice, not pass/fail gates (SPEC 12.2).
+                                trainingCanContinue = true,
                                 technicalRetryPending = false,
                                 technicalRetryBlocked = false,
                             )
@@ -470,7 +471,8 @@ class FullSentenceSpeakingViewModel(
                     restored = restored.copy(attemptIndex = round,
                         answerAudioPlayed = saved.getValue("answerAudioPlayed").toBooleanStrict(),
                         transcript = saved.getValue("transcript"), feedbackZh = saved.getValue("feedbackZh").ifEmpty { null },
-                        trainingCanContinue = saved.getValue("trainingCanContinue").toBooleanStrict(),
+                        trainingCanContinue = saved.getValue("trainingCanContinue").toBooleanStrict() ||
+                            (round < 4 && saved.getValue("feedbackZh").isNotBlank()),
                         finalDecision = saved.getValue("finalDecision").takeIf { it.isNotEmpty() }?.let(SpeakingEvaluationDecision::valueOf),
                         transcriptReadyForConfirmation = pendingCandidate != null,
                         evaluationReceived = pendingCandidate != null,
@@ -573,7 +575,7 @@ class FullSentenceSpeakingViewModel(
                     feedbackConfidence = recovery.feedback.feedbackConfidence,
                     feedbackDetails = recovery.feedback.details,
                     feedbackTranscript = recovery.feedback.transcript,
-                    trainingCanContinue = recovery.feedback.action == com.reallanguage.app.feature.learning.domain.ReadingFeedbackAction.CONTINUE)
+                    trainingCanContinue = true)
             }
             FullSpeakingRecovery.TranscriptionPending -> {
                 require(state.attemptIndex == 4)

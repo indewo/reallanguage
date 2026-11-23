@@ -50,6 +50,10 @@ class AudioDictationViewModel(
     init { if (progressStore != null) restoreProgress() }
 
     fun onAction(action: AudioDictationAction) {
+        if (action == AudioDictationAction.AudioPlaybackCompleted) {
+            mutableUiState.update { it.copy(audioLooping = false) }
+            return
+        }
         if (action == AudioDictationAction.AudioPlaybackFailed) {
             mutableUiState.update { it.copy(audioLooping = false, audioFailed = true) }
             return
@@ -63,7 +67,7 @@ class AudioDictationViewModel(
         }
         if (current.correct && action !in setOf(AudioDictationAction.BackRequested, AudioDictationAction.ContinueRequested)) return
         when (action) {
-            AudioDictationAction.AudioPlaybackFailed -> Unit
+            AudioDictationAction.AudioPlaybackFailed, AudioDictationAction.AudioPlaybackCompleted -> Unit
             AudioDictationAction.RegenerateAudioRequested -> if (current.audioFailed) mutableUiState.update {
                 it.copy(audioLooping = true, audioFailed = false)
             }

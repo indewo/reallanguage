@@ -1,0 +1,6 @@
+
+com.reallanguage.app.feature.formation.presentation.FormationProcessReferenceFitTest:.....
+
+Time: 7.725
+
+OK (5 tests)

@@ -46,6 +46,25 @@ class FullSentenceSpeakingViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun recognitionAdviceCannotBlockAnyOfTheFourPracticeRoundsOrPassTheFinalAssessment() = runTest(dispatcher) {
+        val repository = FakeRepository(trainingAction = ReadingFeedbackAction.REPEAT_FOR_CLARITY, trainingTranscript = "嗯。")
+        val model = createViewModel(repository)
+        repeat(4) { round ->
+            model.onAction(FullSentenceSpeakingAction.StartRequested)
+            model.onAction(FullSentenceSpeakingAction.FinishedRequested)
+            advanceUntilIdle()
+            assertTrue("Practice round $round must offer continue after receiving feedback", model.uiState.value.trainingCanContinue)
+            assertNull(model.uiState.value.finalDecision)
+            model.onAction(FullSentenceSpeakingAction.ContinueTrainingRequested)
+            advanceUntilIdle()
+            assertEquals(round + 1, model.uiState.value.attemptIndex)
+        }
+        assertTrue(model.uiState.value.isIndependentRetelling)
+        assertFalse(model.uiState.value.trainingCanContinue)
+        assertNull(model.uiState.value.finalDecision)
+        assertTrue(repository.savedDecisions.isEmpty())
+    }
+
     @Test fun trainingExceptionReleasesControlsWithoutAdvancingRound() = runTest(dispatcher) {
         val repository = FakeRepository(throwTraining = true)
         val model = FullSentenceSpeakingViewModel(chapter, "s1", repository)
@@ -57,6 +76,27 @@ class FullSentenceSpeakingViewModelTest {
         assertFalse(model.uiState.value.trainingCanContinue)
         assertEquals(0, model.uiState.value.attemptIndex)
         assertTrue(repository.savedDecisions.isEmpty())
+    }
+
+    @Test fun restoredPracticeAdviceOffersContinueWithoutReplayingAudioOrChargingAgain() = runTest(dispatcher) {
+        val delegate = FakeRepository(throwTraining = true)
+        val repository = object : FullSentenceSpeakingRepository by delegate {
+            override val requiresAttemptRecovery = true
+            override suspend fun restoreAttempt(sentenceId: String, attemptIndex: Int) =
+                if (attemptIndex == 0) com.reallanguage.app.feature.learning.domain.FullSpeakingRecovery.TrainingReady(
+                    ReadingFeedback("未识别出完整内容，请核对。", ReadingFeedbackAction.REPEAT_FOR_CLARITY, transcript = "嗯。"),
+                ) else com.reallanguage.app.feature.learning.domain.FullSpeakingRecovery.None
+        }
+        val model = FullSentenceSpeakingViewModel(chapter, "s1", repository, MemoryProgress())
+        advanceUntilIdle()
+        assertTrue(model.uiState.value.trainingCanContinue)
+        assertEquals("嗯。", model.uiState.value.feedbackTranscript)
+        model.onAction(FullSentenceSpeakingAction.ContinueTrainingRequested)
+        advanceUntilIdle()
+        assertEquals(1, model.uiState.value.attemptIndex)
+        assertFalse(model.uiState.value.trainingCanContinue)
+        assertTrue(delegate.trainingModes.isEmpty())
+        assertTrue(delegate.savedDecisions.isEmpty())
     }
 
     @Test fun recognizedTrainingWordsRemainDistinctFromSummaryAndClearForTheNextRound() = runTest(dispatcher) {

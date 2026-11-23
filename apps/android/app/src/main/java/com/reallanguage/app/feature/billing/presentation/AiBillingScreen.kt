@@ -62,7 +62,7 @@ fun AiBillingScreen(state: AiBillingUiState, onAction: (AiBillingAction) -> Unit
             PaddingValues(start = 14.dp, end = if (wide) 26.dp else 14.dp, top = 10.dp, bottom = 10.dp), spacing = 0.dp) {
             if (wide) Spacer(Modifier.height(12.dp))
             else BillingLabel(stringResource(R.string.ai_billing_details_title))
-            if (wide) BillingColumns(listOf("日期", "类型", "模型", "费用（人民币）"), true)
+            if (wide) BillingColumns(listOf("日期", "用途", "费用（人民币）"), true)
             when {
                 state.loading -> {
                     Text(stringResource(R.string.ai_billing_loading), color = RlColor.TextSecondary)
@@ -76,13 +76,12 @@ fun AiBillingScreen(state: AiBillingUiState, onAction: (AiBillingAction) -> Unit
                 else -> state.charges.forEach { charge ->
                     Column(Modifier.fillMaxWidth().testTag("ai-charge-${charge.chargeId}")) {
                         if (wide) BillingColumns(listOf(charge.occurredAtEpochMillis.asShortDate(), charge.operationLabelZh,
-                            charge.modelSource, "-" + charge.amountFen.asYuan()), operationDetail = stringResource(charge.callType.labelResource()),
+                            "-" + charge.amountFen.asYuan()),
                             operationVisual = charge.operationLabelZh.billingVisual(charge.callType))
                         else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             Column(Modifier.weight(1f)) {
                                 Text(charge.operationLabelZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 18.sp)
-                                Text("${charge.occurredAtEpochMillis.asShortDate()} · ${charge.modelSource}", color = RlColor.TextSecondary, fontSize = 13.sp)
-                                Text(stringResource(charge.callType.labelResource()), color = RlColor.TextSecondary, fontSize = 12.sp)
+                                Text(charge.occurredAtEpochMillis.asShortDate(), color = RlColor.TextSecondary, fontSize = 13.sp)
                             }
                             Text("-" + charge.amountFen.asYuan(), color = RlColor.ActionVivid, fontSize = 18.sp, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif)
                         }
@@ -159,14 +158,14 @@ private fun String.billingVisual(type: AiChargeType): BillingOperationVisual = w
 }
 
 @Composable private fun BillingColumns(values: List<String>, heading: Boolean = false, operationDetail: String? = null, operationVisual: BillingOperationVisual? = null) {
-    val weights = listOf(.65f, 1.32f, .96f, 1.07f)
+    val weights = listOf(.8f, 1.9f, 1.3f)
     Row(Modifier.fillMaxWidth().heightIn(min = if (heading) 25.dp else 33.dp).drawBehind {
         val dash = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 3.dp.toPx()))
-        for (fraction in listOf(.1625f, .4925f, .7325f)) drawLine(RlColor.Border.copy(alpha = .7f), Offset(size.width * fraction, 0f), Offset(size.width * fraction, size.height), strokeWidth = .5.dp.toPx(), pathEffect = dash)
+        for (fraction in listOf(.2f, .675f)) drawLine(RlColor.Border.copy(alpha = .7f), Offset(size.width * fraction, 0f), Offset(size.width * fraction, size.height), strokeWidth = .5.dp.toPx(), pathEffect = dash)
     }, verticalAlignment = Alignment.CenterVertically) {
         values.forEachIndexed { index, value ->
             Column(Modifier.weight(weights[index]).padding(horizontal = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                if (index == 3 && !heading) Surface(color = Color.Transparent, border = BorderStroke(1.dp, RlColor.ActionVivid)) {
+                if (index == 2 && !heading) Surface(color = Color.Transparent, border = BorderStroke(1.dp, RlColor.ActionVivid)) {
                     Text(value, Modifier.padding(horizontal = 12.dp, vertical = 2.dp), color = RlColor.ActionVivid,
                         fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 16.sp, lineHeight = 20.sp)
                 } else if (index == 1 && operationVisual != null) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {

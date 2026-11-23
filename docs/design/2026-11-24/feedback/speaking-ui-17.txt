@@ -1,0 +1,6 @@
+
+com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest:.................
+
+Time: 22.738
+
+OK (17 tests)

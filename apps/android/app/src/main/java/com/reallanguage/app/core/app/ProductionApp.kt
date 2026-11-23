@@ -5290,13 +5290,14 @@ private fun AudioDictationReadyRoute(
         if (!state.audioLooping) {
             speaker.stop()
         } else {
-            while (true) {
+            for (pass in 0 until 2) {
                 if (!speaker.play(sentenceText, speechRate = 0.72f)) {
                     onAction(AudioDictationAction.AudioPlaybackFailed)
-                    break
+                    return@LaunchedEffect
                 }
-                kotlinx.coroutines.delay(900L)
+                if (pass == 0) kotlinx.coroutines.delay(900L)
             }
+            onAction(AudioDictationAction.AudioPlaybackCompleted)
         }
     }
     AudioDictationScreen(state) { action ->

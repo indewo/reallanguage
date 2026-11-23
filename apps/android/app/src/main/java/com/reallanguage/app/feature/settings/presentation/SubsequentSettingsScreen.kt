@@ -279,9 +279,6 @@ private fun ReminderPreferences(
                     onClick = { showTimePicker = true },
                 ) { Text("$time  ›", color = RlColor.Ink, style = MaterialTheme.typography.titleMedium) }
             }
-            Text(stringResource(R.string.settings_reminder_frequency), color = RlColor.TextSecondary,
-                style = MaterialTheme.typography.bodySmall)
-            HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
         }
     }
 }

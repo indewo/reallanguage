@@ -183,7 +183,8 @@
     <string name="read_speak_title">读＋说</string>
     <string name="read_speak_ready">触摸并沿着英文句子滑动，录音会自动开始。</string>
     <string name="read_speak_listening">正在录音，滑完后点击“录完了”。</string>
-    <string name="read_speak_processing">正在整理本次朗读反馈……</string>
+    <string name="read_speak_processing">正在检查是否读完……</string>
+    <string name="read_speak_incomplete">未读完</string>
     <string name="read_speak_failed">麦克风权限或识别未完成，本步骤仍保留。</string>
     <string name="read_speak_play">播放</string>
     <string name="read_speak_start">读一遍</string>
@@ -731,7 +732,7 @@
     <string name="scene_abandon_confirm">确认放弃</string>
     <string name="scene_abandon_failed">暂时无法放弃，本次内容仍然保留。请重试。</string>
     <string name="dev_preview_scene_generation">场景生成中</string>
-    <string name="scene_generation_title">正在生成中文内容</string>
+    <string name="scene_generation_title">正在生成场景内容</string>
     <string name="scene_generation_explanation">正在根据本次问答整理内容，请稍候。</string>
     <string name="scene_generation_failed_title">暂时无法生成</string>
     <string name="scene_generation_failed_explanation">本次起点和已确认问答仍然保留。你可以重试，或返回修改回答。</string>

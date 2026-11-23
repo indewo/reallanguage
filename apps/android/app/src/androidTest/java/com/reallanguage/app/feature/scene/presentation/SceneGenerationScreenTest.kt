@@ -39,7 +39,7 @@ class SceneGenerationScreenTest {
         java.io.File(composeRule.activity.filesDir, "scene-generation-layout.png").outputStream().use {
             composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
         }
-        listOf("整理场景信息", "编排中文场景", "生成练习内容").forEach {
+        listOf("整理信息", "编排场景", "生成内容").forEach {
             composeRule.onNodeWithText(it).assertIsDisplayed()
         }
     }

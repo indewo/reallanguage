@@ -1,0 +1,42 @@
+
+com.reallanguage.app.feature.scene.presentation.SceneQuestionsScreenTest:......
+com.reallanguage.app.feature.scene.presentation.SceneGenerationScreenTest:.
+com.reallanguage.app.feature.learning.presentation.AudioDictationScreenTest:.......
+com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest:.
+Error in pendingTechnicalRetryLocksEvidenceAndDispatchesOnlyRetry(com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'learning-heading')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest.pendingTechnicalRetryLocksEvidenceAndDispatchesOnlyRetry(FullSentenceSpeakingScreenTest.kt:69)
+..
+Error in bilingualAttemptShowsExplicitEvidenceBoundAiFeedbackInsteadOfAnUnlabelledParagraph(com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'learning-current-trailing-arrow' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest.bilingualAttemptShowsExplicitEvidenceBoundAiFeedbackInsteadOfAnUnlabelledParagraph(FullSentenceSpeakingScreenTest.kt:131)
+............
+com.reallanguage.app.feature.billing.presentation.AiBillingScreenTest:..
+com.reallanguage.app.feature.learning.presentation.ExplanationReadingScreenTest:..........
+com.reallanguage.app.feature.learning.presentation.ReadSpeakScreenTest:......
+
+Time: 65.601
+There were 2 failures:
+1) pendingTechnicalRetryLocksEvidenceAndDispatchesOnlyRetry(com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'learning-heading')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest.pendingTechnicalRetryLocksEvidenceAndDispatchesOnlyRetry(FullSentenceSpeakingScreenTest.kt:69)
+2) bilingualAttemptShowsExplicitEvidenceBoundAiFeedbackInsteadOfAnUnlabelledParagraph(com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'learning-current-trailing-arrow' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.learning.presentation.FullSentenceSpeakingScreenTest.bilingualAttemptShowsExplicitEvidenceBoundAiFeedbackInsteadOfAnUnlabelledParagraph(FullSentenceSpeakingScreenTest.kt:131)
+
+FAILURES!!!
+Tests run: 49,  Failures: 2

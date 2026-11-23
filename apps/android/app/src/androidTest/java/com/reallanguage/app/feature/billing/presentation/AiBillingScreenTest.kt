@@ -34,7 +34,7 @@ class AiBillingScreenTest {
     }
 
     @Test
-    fun eachRealAttemptKeepsItsOwnCallTypeAndModelEvenWhenOtherValuesAreIdentical() {
+    fun separateChargesKeepTheirAmountsWithoutShowingProviderImplementationDetails() {
         val labels = mapOf(
             AiChargeType.INITIAL_CALL to "首次调用",
             AiChargeType.AUTOMATIC_RETRY to "自动重试",
@@ -48,10 +48,10 @@ class AiBillingScreenTest {
         composeRule.setContent { RlTheme { AiBillingScreen(AiBillingUiState(3_680, charges, loading = false)) {} } }
         charges.forEach { charge ->
             val row = hasAnyAncestor(hasTestTag("ai-charge-${charge.chargeId}"))
-            for (value in listOf(charge.operationLabelZh, charge.modelSource, "-￥0.42", labels.getValue(charge.callType))) {
+            for (value in listOf(charge.operationLabelZh, "-￥0.42")) {
                 composeRule.onNode(hasText(value) and row, useUnmergedTree = true).assertExists()
             }
-            labels.filterKeys { it != charge.callType }.values.forEach { other ->
+            (labels.values + charge.modelSource).forEach { other ->
                 composeRule.onNode(hasText(other) and row, useUnmergedTree = true).assertDoesNotExist()
             }
         }
@@ -82,7 +82,7 @@ class AiBillingScreenTest {
         composeRule.onNodeWithTag("ai-billing-ledger").assertIsDisplayed()
         composeRule.onNodeWithTag("ai-charge-charge-1").assertIsDisplayed()
         composeRule.onNodeWithText("日记整理").assertIsDisplayed()
-        composeRule.onNodeWithText("OpenAI").assertIsDisplayed()
+        composeRule.onNodeWithText("OpenAI").assertDoesNotExist()
         composeRule.onNodeWithText("-￥0.42").assertIsDisplayed()
         composeRule.onNodeWithTag("ledger-back").assertIsDisplayed().performClick()
         assertEquals(listOf(AiBillingAction.ReturnAccountRequested), actions)

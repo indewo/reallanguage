@@ -22,6 +22,7 @@ sealed interface AudioDictationAction {
     data object AudioToggled : AudioDictationAction
     data object RegenerateAudioRequested : AudioDictationAction
     data object AudioPlaybackFailed : AudioDictationAction
+    data object AudioPlaybackCompleted : AudioDictationAction
     data object HintToggled : AudioDictationAction
     data class InputChanged(val value: String) : AudioDictationAction
     data object SubmitRequested : AudioDictationAction

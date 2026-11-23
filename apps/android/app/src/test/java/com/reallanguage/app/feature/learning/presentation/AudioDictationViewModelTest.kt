@@ -36,6 +36,17 @@ class AudioDictationViewModelTest {
     @Before fun setUp() = Dispatchers.setMain(dispatcher)
     @After fun tearDown() = Dispatchers.resetMain()
 
+    @Test fun successfulPlaybackCompletionStopsWithoutLosingTheTypedAnswerAndCanReplay() = runTest(dispatcher) {
+        val model = createViewModel(AudioDictationCompletionRepository { AudioDictationCompletionResult.Saved })
+        model.onAction(AudioDictationAction.InputChanged("I expressed"))
+        model.onAction(AudioDictationAction.AudioPlaybackCompleted)
+        assertFalse(model.uiState.value.audioLooping)
+        assertFalse(model.uiState.value.audioFailed)
+        assertEquals("I expressed", model.uiState.value.input)
+        model.onAction(AudioDictationAction.AudioToggled)
+        assertTrue(model.uiState.value.audioLooping)
+    }
+
     @Test fun thrownSaveFailureKeepsAnswerAndAllowsExplicitRetry() = runTest(dispatcher) {
         var calls = 0
         val model = createViewModel(AudioDictationCompletionRepository {

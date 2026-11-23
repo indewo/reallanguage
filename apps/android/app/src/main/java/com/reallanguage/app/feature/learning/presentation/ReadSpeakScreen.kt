@@ -82,18 +82,16 @@ fun ReadSpeakScreen(
                                     state.pendingFeedbackRetry -> R.string.learning_audio_retry_pending
                                     state.completed -> R.string.pattern_speaking_read_complete
                                     state.feedbackRetryBlocked -> R.string.full_sentence_speaking_retry_blocked
+                                    state.captureFailed && state.feedbackZh != null -> R.string.read_speak_incomplete
                                     state.captureFailed -> R.string.read_speak_failed
                                     state.listening -> R.string.read_speak_listening
+                                    state.feedbackZh != null -> R.string.read_speak_incomplete
                                     else -> R.string.read_speak_ready
                                 },
                             ),
                             color = if (state.captureFailed) RlColor.Error else RlColor.Ink,
                             style = MaterialTheme.typography.titleMedium,
                         )
-                        state.feedbackZh
-                            ?.takeUnless { state.completed }
-                            ?.takeUnless(String::isReadSpeakNoAudioCompletionCopy)
-                            ?.let { Text(it, color = RlColor.TextSecondary) }
                     }
                 }
             }

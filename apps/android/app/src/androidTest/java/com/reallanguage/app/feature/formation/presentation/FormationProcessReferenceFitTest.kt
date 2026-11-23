@@ -49,8 +49,8 @@ class FormationProcessReferenceFitTest {
     ) { EnglishGenerationScreen(EnglishGenerationUiState(processing = true), {}) }
 
     @Test fun targetStageLabelsFitBeforeTheFixedNote() = verify(
-        listOf("分析重点句", "提取词汇与句式", "建立学习目标"),
-        "只使用你已确认的表达与当前词汇范围。",
+        listOf("分析重点句", "提取词汇\n与句式", "建立\n学习目标"),
+        "提取当前表达中的词义、搭配与句式。",
     ) { LearningTargetLoadingScreen(LearningTargetLoadingUiState(processing = true), {}) }
 
     @Test fun failedTargetStagesAreFixedAndItsPunchHolesStayRound() {
@@ -63,7 +63,7 @@ class FormationProcessReferenceFitTest {
             .assertDoesNotExist()
         val buttonsTop = compose.onNodeWithText("重试").assertIsDisplayed()
             .fetchSemanticsNode().boundsInRoot.top
-        listOf("分析重点句", "提取词汇与句式", "建立学习目标").forEach { label ->
+        listOf("分析重点句", "提取词汇\n与句式", "建立\n学习目标").forEach { label ->
             val bounds = compose.onNodeWithText(label, useUnmergedTree = true)
                 .assertIsDisplayed().fetchSemanticsNode().boundsInRoot
             assertTrue("$label must remain above the fixed actions", bounds.bottom <= buttonsTop)
@@ -81,7 +81,7 @@ class FormationProcessReferenceFitTest {
                 LearningTargetLoadingScreen(LearningTargetLoadingUiState(processing = true), {})
             }
         }
-        listOf("分析重点句", "提取词汇与句式", "建立学习目标").forEachIndexed { index, label ->
+        listOf("分析重点句", "提取词汇\n与句式", "建立\n学习目标").forEachIndexed { index, label ->
             val art = compose.onNodeWithTag("process_stage_art_$index", useUnmergedTree = true)
                 .fetchSemanticsNode().boundsInRoot
             val labelNode = compose.onNodeWithTag("process_stage_label_$index", useUnmergedTree = true)

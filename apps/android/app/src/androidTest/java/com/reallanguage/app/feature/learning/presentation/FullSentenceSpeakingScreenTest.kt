@@ -65,7 +65,7 @@ class FullSentenceSpeakingScreenTest {
                 FullSentenceSpeakingScreen(state, actions::add)
             }
         } } }
-        val heading = composeRule.onNodeWithTag("learning-heading")
+        val heading = composeRule.onNodeWithTag("learning-page-heading")
             .fetchSemanticsNode().boundsInRoot
         val exit = composeRule.onNodeWithTag("learning-header-exit").assertIsDisplayed()
             .fetchSemanticsNode().boundsInRoot
@@ -120,13 +120,35 @@ class FullSentenceSpeakingScreenTest {
             ),
         )
         composeRule.setContent { RlTheme { RlPaperBackground { FullSentenceSpeakingScreen(state) {} } } }
-        listOf("朗读反馈", "基于本次录音与识别文本", "词/短语", "节奏", "完整度",
-            "“wonderful day”  ", "AI 反馈置信度：较高 · 仅供本轮练习参考").forEach { text ->
+        composeRule.onNodeWithText("本次练习").assertIsDisplayed()
+        composeRule.onNodeWithText("AI 反馈置信度：较高 · 仅供本轮练习参考").assertDoesNotExist()
+        composeRule.onNodeWithText("词/短语").assertDoesNotExist()
+        composeRule.onNodeWithTag("reading-feedback-details-toggle").performScrollTo().performClick()
+        listOf("词/短语", "节奏", "完整度", "“wonderful day”  ").forEach { text ->
             composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
         }
         composeRule.onNodeWithTag("full-sentence-attempt").assertTextEquals("中英跟读 · 第 1 次")
-        composeRule.onNodeWithTag("learning-current-trailing-arrow").assertIsDisplayed()
+        composeRule.onNodeWithTag("learning-current-trailing-arrow").performScrollTo().assertIsDisplayed()
         captureAiFeedbackFixtureIfRequested()
+    }
+
+    @Test fun completedPracticeWithUncertainRecognitionKeepsContinueVisibleBelowLongContext() {
+        val actions = mutableListOf<FullSentenceSpeakingAction>()
+        val state = FullSentenceSpeakingUiState(
+            chapter = FixedLearningChapter("practice", 1, listOf(
+                FixedLearningSentence("s1", "The online meeting started,", "线上会议开始了，", true),
+                FixedLearningSentence("s2", "and I opened the shared screen to display the quarterly sales data spreadsheet I'd just finished organizing.", "然后我打开共享屏幕，展示刚整理好的季度销售数据表格。", false),
+            )), currentFocusSentenceId = "s1", attemptIndex = 0,
+            feedbackZh = "未识别出完整内容，请核对本次识别。", feedbackTranscript = "嗯。", trainingCanContinue = true,
+        )
+        composeRule.setContent { RlTheme { FullSentenceSpeakingScreen(state, actions::add) } }
+        composeRule.onNodeWithText("继续").assertIsDisplayed().assertIsEnabled()
+        val inst = androidx.test.platform.app.InstrumentationRegistry.getInstrumentation()
+        java.io.File(inst.targetContext.filesDir, "training-continue-visible.png").outputStream().use { output ->
+            composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)
+        }
+        composeRule.onNodeWithText("继续").performClick()
+        org.junit.Assert.assertEquals(listOf(FullSentenceSpeakingAction.ContinueTrainingRequested), actions)
     }
 
     @Test fun terminalAttemptLabelsNewRecordingExplicitlyInsteadOfPretendingTechnicalRetry() {

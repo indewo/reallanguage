@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import com.reallanguage.app.core.app.configureFocusedLearningWindow
 import com.reallanguage.app.core.designsystem.RlTheme
@@ -168,6 +169,33 @@ class SceneQuestionsScreenTest {
             composeRule.onRoot().captureToImage().asAndroidBitmap()
                 .compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
         }
+    }
+
+    @Test fun customAnswerCanReplaceASelectedOptionAndBeSubmitted() {
+        var answer by mutableStateOf("办公室")
+        var submitted: String? = null
+        composeRule.setContent {
+            RlTheme {
+                SceneQuestionsScreen(SceneQuestionsUiState(
+                    start = SceneStart.DirectDescription("沟通计划"),
+                    contentType = SceneContentType.DIALOGUE,
+                    currentQuestion = SceneQuestion("custom", "在哪里沟通？", listOf("办公室", "线上会议")),
+                    loading = false, answerText = answer,
+                )) { action ->
+                    when (action) {
+                        is SceneQuestionsAction.AnswerChanged -> answer = action.answer
+                        SceneQuestionsAction.AnswerSubmitted -> submitted = answer
+                        else -> Unit
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithTag("scene-questions-custom-answer").performScrollTo().performClick()
+        composeRule.runOnIdle { assertEquals("", answer) }
+        composeRule.onNodeWithTag("scene-questions-submit").assertIsNotEnabled()
+        composeRule.onNodeWithTag("scene-questions-answer").performScrollTo().performTextReplacement("在园区咖啡店")
+        composeRule.onNodeWithTag("scene-questions-submit").performClick()
+        composeRule.runOnIdle { assertEquals("在园区咖啡店", submitted) }
     }
 
     private fun showProgress(confirmedCount: Int) {

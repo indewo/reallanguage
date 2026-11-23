@@ -37,6 +37,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
@@ -54,6 +57,7 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
     val previous = state.history.lastOrNull().takeIf { state.loading }
     val visibleQuestion = state.currentQuestion ?: previous?.question
     val visibleAnswer = previous?.answer?.answerZh ?: state.answerText
+    val customAnswerFocus = remember { FocusRequester() }
     // Returning from a failed generation can restore this screen after its last request
     // already cleared currentQuestion. That state has neither a question nor an error, so
     // rendering it as "submit answer" leaves an enabled-looking blank page. Treat the
@@ -117,7 +121,7 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 )
             }
             visibleQuestion != null -> {
-                Text(visibleQuestion.questionZh, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
+                Text(visibleQuestion.questionZh, modifier = Modifier.testTag("scene-questions-prompt"), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
                     fontSize = 22.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
                 if (visibleQuestion.options.isNotEmpty()) {
                     Column(
@@ -146,14 +150,22 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                           }
                         }
                     }
+                    TextButton(
+                        enabled = !state.loading,
+                        modifier = Modifier.testTag("scene-questions-custom-answer"),
+                        onClick = {
+                            onAction(SceneQuestionsAction.AnswerChanged(""))
+                            customAnswerFocus.requestFocus()
+                        },
+                    ) { Text("其他／自定义回答") }
                 }
                 com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(
                     value = visibleAnswer,
                     readOnly = state.loading,
                     onValueChange = { onAction(SceneQuestionsAction.AnswerChanged(it)) },
-                    label = { Text(stringResource(R.string.scene_questions_answer_label)) },
+                    label = { Text("你的回答（可自行填写或修改）") },
                     minLines = 1,
-                    modifier = Modifier.fillMaxWidth().testTag("scene-questions-answer"),
+                    modifier = Modifier.fillMaxWidth().focusRequester(customAnswerFocus).testTag("scene-questions-answer"),
                 )
             }
         }

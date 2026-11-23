@@ -34,6 +34,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -142,6 +148,8 @@ fun ExplanationReadingScreen(
             }
         },
         interactiveEnglishContent = { sentence, modifier ->
+            var textLayout by remember(sentence.textEn) { mutableStateOf<TextLayoutResult?>(null) }
+            val boxColor = RlColor.Primary
             val annotatedSentence = buildAnnotatedString {
                 append(sentence.textEn)
                 state.expressions.forEach { expression ->
@@ -159,7 +167,7 @@ fun ExplanationReadingScreen(
                         addStyle(
                             SpanStyle(
                                 color = RlColor.Primary,
-                                textDecoration = TextDecoration.Underline,
+                                textDecoration = TextDecoration.None,
                             ),
                             expression.startOffset,
                             expression.endOffset,
@@ -169,7 +177,26 @@ fun ExplanationReadingScreen(
             }
             ClickableText(
                 text = annotatedSentence,
-                modifier = modifier,
+                modifier = modifier.testTag("explanation-clickable-words").drawBehind {
+                    val layout = textLayout ?: return@drawBehind
+                    state.expressions.forEach { expression ->
+                        if (expression.startOffset < 0 || expression.endOffset > sentence.textEn.length ||
+                            expression.startOffset >= expression.endOffset) return@forEach
+                        (expression.startOffset until expression.endOffset)
+                            .groupBy(layout::getLineForOffset).values.forEach { offsets ->
+                                val boxes = offsets.map(layout::getBoundingBox)
+                                val left = boxes.minOf { it.left } + .5.dp.toPx()
+                                val top = boxes.minOf { it.top }
+                                val width = boxes.maxOf { it.right } - left - .5.dp.toPx()
+                                val height = boxes.maxOf { it.bottom } - top
+                                if (width > 0f) {
+                                    drawRoundRect(boxColor.copy(alpha = .05f), Offset(left, top), Size(width, height), CornerRadius(3.dp.toPx()))
+                                    drawRoundRect(boxColor.copy(alpha = .5f), Offset(left, top), Size(width, height), CornerRadius(3.dp.toPx()), style = Stroke(.7.dp.toPx()))
+                                }
+                            }
+                    }
+                },
+                onTextLayout = { textLayout = it },
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.Unspecified,
                     fontFamily = EditorialFont.Serif,
