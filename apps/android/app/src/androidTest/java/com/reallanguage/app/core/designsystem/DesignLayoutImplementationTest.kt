@@ -49,15 +49,17 @@ class DesignLayoutImplementationTest {
             }
         } } }
         val back = compose.onNodeWithTag("ledger-back").assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-        var previousBottom = 0f
+        capture("layout-pattern-centering-diagnostic.png")
+        var previousTab: androidx.compose.ui.geometry.Rect? = null
         listOf("基础\n句式", "功能\n句式", "过渡\n衔接", "高级\n表达").forEachIndexed { index, label ->
             val tab = compose.onNodeWithTag("pattern-category-$index").assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-            val text = compose.onNodeWithText(label, useUnmergedTree = true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-            assertTrue(tab.top >= previousBottom)
+            val displayLabel = if (compose.onAllNodesWithText(label, useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty()) label else label.replace("\n", "")
+            val text = compose.onNodeWithText(displayLabel, useUnmergedTree = true).assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+            previousTab?.let { assertTrue("Categories must not overlap", tab.left >= it.right || tab.top >= it.bottom) }
             assertEquals(tab.center.x, text.center.x, 2f)
-            assertEquals(tab.center.y, text.center.y, 2f)
+            assertEquals("Category $index: paper=$tab text=$text", tab.center.y, text.center.y, 2f)
             assertTrue(text.left >= tab.left && text.right <= tab.right && text.top >= tab.top && text.bottom <= tab.bottom)
-            previousBottom = tab.bottom
+            previousTab = tab
         }
         capture("layout-pattern-list.png")
         compose.onNodeWithTag("pattern-row-p1").performClick()

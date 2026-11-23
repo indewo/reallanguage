@@ -47,16 +47,22 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
             if (compact || keyboardVisible) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 PatternCategories.forEachIndexed { index, label -> PatternCategory(index, if (keyboardVisible) label.replace("\n", "") else label, Modifier.weight(1f).heightIn(min = 44.dp)) }
             }
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+              // System bars and short windows can leave less than four readable side tabs.
+              val shortCategories = !compact && !keyboardVisible && maxHeight < 194.dp
+              Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (shortCategories) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    PatternCategories.forEachIndexed { index, label -> PatternCategory(index, label.replace("\n", ""), Modifier.weight(1f).heightIn(min = 44.dp)) }
+                }
             Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ProvideTextStyle(MaterialTheme.typography.bodyMedium.copy(fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 21.sp, color = RlColor.Ink)) {
                     Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(scrollState).padding(horizontal = 6.dp, vertical = 6.dp), content = content)
                 }
-                if (!compact && !keyboardVisible) BoxWithConstraints(Modifier.width(44.dp).fillMaxHeight()) {
-                    val categoryHeight = maxOf(44.dp, (maxHeight - 18.dp) / 4)
-                    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        PatternCategories.forEachIndexed { index, label -> PatternCategory(index, label, Modifier.height(categoryHeight).fillMaxWidth()) }
-                    }
+                if (!compact && !keyboardVisible && !shortCategories) Column(Modifier.width(44.dp).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    PatternCategories.forEachIndexed { index, label -> PatternCategory(index, label, Modifier.weight(1f).fillMaxWidth()) }
                 }
+            }
+              }
             }
             if (!keyboardVisible && !detailVisible && hasVisiblePatterns) Text("点击一行展开详情", Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
                 fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)

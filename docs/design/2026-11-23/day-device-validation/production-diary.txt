@@ -1,0 +1,6 @@
+
+com.reallanguage.app.core.app.ProductionDiaryDeviceTest:.
+
+Time: 34.463
+
+OK (1 test)

@@ -20,21 +20,22 @@ internal fun SubsequentSettingsFrame(
     modifier: Modifier = Modifier,
     scrollState: ScrollState,
     onBack: () -> Unit,
-    navigation: @Composable () -> Unit,
+    navigation: @Composable (horizontal: Boolean) -> Unit,
     note: @Composable (Modifier) -> Unit,
     footer: @Composable () -> Unit,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     RlPaperBackground(modifier, showCornerCollage = false) {
         BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding().imePadding().padding(horizontal = 20.dp)) {
-            val wide = maxWidth >= 640.dp && LocalDensity.current.fontScale <= 1.35f
+            val wide = maxWidth >= 640.dp
+            val sidebarWidth = maxOf(152.dp, (54 + 64 * LocalDensity.current.fontScale).dp)
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 EditorialPageHeader("设置", onBack)
                 if (wide) Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-                    Column(Modifier.weight(.55f).fillMaxHeight().verticalScroll(rememberScrollState()).testTag("subsequent-settings-sidebar")) { navigation() }
+                    Column(Modifier.width(sidebarWidth).fillMaxHeight().verticalScroll(rememberScrollState()).testTag("subsequent-settings-sidebar")) { navigation(false) }
                     Column(Modifier.weight(2f).fillMaxHeight().settingsPaper().padding(12.dp).verticalScroll(scrollState).testTag("subsequent-settings-paper"), verticalArrangement = Arrangement.spacedBy(2.dp), content = content)
                 } else {
-                    navigation()
+                    navigation(true)
                     Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollState).padding(12.dp).testTag("subsequent-settings-paper"), verticalArrangement = Arrangement.spacedBy(2.dp), content = content)
                 }
                 footer()

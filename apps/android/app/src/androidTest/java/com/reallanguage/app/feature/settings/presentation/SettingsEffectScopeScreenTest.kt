@@ -10,7 +10,9 @@ import com.reallanguage.app.core.app.configureFocusedLearningWindow
 import org.junit.Before
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.feature.settings.domain.InitialSettingsDraft
 import com.reallanguage.app.feature.settings.domain.SettingsSourceContext
@@ -47,11 +49,12 @@ class SettingsEffectScopeScreenTest {
         }
 
         composeRule.onNodeWithTag("settings-effect-guide").assertIsDisplayed()
+        composeRule.onNodeWithText("已确认的学习内容不会被直接覆盖").assertIsDisplayed()
         composeRule.onNodeWithTag("settings-effect-confirm-note").assertIsDisplayed()
         composeRule.onAllNodesWithTag("settings-effect-option", useUnmergedTree = true)
             .assertCountEquals(2)
-        composeRule.onNodeWithTag("settings-effect-confirm").performClick()
-        composeRule.onNodeWithTag("settings-effect-cancel").performClick()
+        composeRule.onNodeWithTag("settings-effect-confirm").performScrollTo().performClick()
+        composeRule.onNodeWithTag("settings-effect-cancel").performScrollTo().performClick()
 
         assertEquals(
             listOf(SettingsEffectScopeAction.ReprocessRequested, SettingsEffectScopeAction.CancelRequested),

@@ -3230,6 +3230,7 @@ private fun SubsequentSettingsRoute(
         }
     }
     LaunchedEffect(settings) {
+        settings.onEntryVisible()
         settings.effects.collect { effect ->
             when (effect) {
                 SubsequentSettingsEffect.OpenHome -> onHome()

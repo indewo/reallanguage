@@ -36,6 +36,11 @@ class SubsequentSettingsViewModel(
 
     init { load() }
 
+    /** The same ViewModel survives while the scope picker is on top of this page. */
+    fun onEntryVisible() {
+        effectScopeOpened = false
+    }
+
     fun onAction(action: SubsequentSettingsAction) {
         if (mutableUiState.value.error == SubsequentSettingsError.VERSION_CONFLICT &&
             action != SubsequentSettingsAction.ReturnRequested) return

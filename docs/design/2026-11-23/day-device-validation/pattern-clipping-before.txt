@@ -1,0 +1,21 @@
+
+com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest:
+Error in patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest):
+java.lang.AssertionError: Category 3: paper=Rect.fromLTRB(2226.0, 820.0, 2358.0, 918.0) text=Rect.fromLTRB(2256.0, 832.0, 2328.0, 918.0) expected:<869.0> but was:<875.0>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:577)
+	at com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest.patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(DesignLayoutImplementationTest.kt:68)
+
+
+Time: 39.128
+There was 1 failure:
+1) patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest)
+java.lang.AssertionError: Category 3: paper=Rect.fromLTRB(2226.0, 820.0, 2358.0, 918.0) text=Rect.fromLTRB(2256.0, 832.0, 2328.0, 918.0) expected:<869.0> but was:<875.0>
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.failNotEquals(Assert.java:835)
+	at org.junit.Assert.assertEquals(Assert.java:577)
+	at com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest.patternCategoriesStayCenteredAndHeaderStaysFixedAcrossExpansion(DesignLayoutImplementationTest.kt:68)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

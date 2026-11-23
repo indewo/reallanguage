@@ -69,6 +69,27 @@ class SubsequentSettingsViewModelTest {
         assertEquals(SubsequentSettingsEffect.OpenHome, effect.await())
     }
 
+    @Test fun returnFromScopeUnlocksTheExistingDraftAndCanOpenScopeAgain() = runTest {
+        val repository = FakeRepository()
+        val vm = viewModel(repository)
+        advanceUntilIdle()
+        vm.onAction(SubsequentSettingsAction.BasicVocabularyChanged(BasicVocabulary.TEM_8))
+        val first = async { vm.effects.first() }
+        vm.onAction(SubsequentSettingsAction.SaveRequested)
+        assertTrue(first.await() is SubsequentSettingsEffect.OpenEffectScope)
+
+        vm.onEntryVisible()
+        vm.onAction(SubsequentSettingsAction.FormalityChanged(4))
+        assertEquals(4, vm.uiState.value.draft?.formalityLevel)
+        assertEquals(BasicVocabulary.TEM_8, vm.uiState.value.draft?.basicVocabulary)
+        assertEquals(current, vm.uiState.value.original)
+        val second = async { vm.effects.first() }
+        vm.onAction(SubsequentSettingsAction.SaveRequested)
+        val event = second.await() as SubsequentSettingsEffect.OpenEffectScope
+        assertEquals(4, event.proposed.formalityLevel)
+        assertTrue(repository.saved.isEmpty())
+    }
+
     @Test fun failedLoadAndSaveStayRetryableWithoutReplacingOriginal() = runTest {
         val repository = FakeRepository(loadResult = SubsequentSettingsLoadResult.Failed)
         val viewModel = viewModel(repository)

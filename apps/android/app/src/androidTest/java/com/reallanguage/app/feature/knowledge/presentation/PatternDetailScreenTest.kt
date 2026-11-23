@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import com.reallanguage.app.core.designsystem.RlTheme
 import com.reallanguage.app.core.app.configureFocusedLearningWindow
 import com.reallanguage.app.feature.knowledge.domain.KnowledgeStatus
@@ -56,8 +57,8 @@ class PatternDetailScreenTest {
         composeRule.onNodeWithText("连续会写 2 次").assertIsDisplayed()
         composeRule.onNodeWithText("连续会说 1 次").assertIsDisplayed()
         composeRule.onNodeWithTag("pattern-example-p1-0").assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag("pattern-detail-collapse").assertIsDisplayed().performClick()
-        composeRule.onNodeWithTag("pattern-detail-remove").assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("pattern-detail-collapse").performScrollTo().assertIsDisplayed().performClick()
+        composeRule.onNodeWithTag("pattern-detail-remove").performScrollTo().assertIsDisplayed().performClick()
         assertEquals(
             listOf(
                 PatternBookAction.ExamplePronunciationRequested("p1", 0),

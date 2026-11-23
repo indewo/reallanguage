@@ -110,12 +110,13 @@ fun SettingsEffectScopeScreen(
                 backEnabled = !state.applying, backTestTag = "ledger-back")
           BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
             val wide = maxWidth >= 720.dp && LocalDensity.current.fontScale <= 1.35f
+            val compactGuide = wide && maxHeight < 340.dp
             val panelHeight = (maxHeight - 16.dp).coerceAtLeast(180.dp)
             val guide: @Composable (Modifier) -> Unit = { guideModifier ->
                 Box(guideModifier) {
                     Image(painterResource(R.drawable.rl_editorial_blue_panel), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                     Column(Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, top = if (wide) 12.dp else 24.dp, bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        SettingsEffectGuide(wide)
+                        SettingsEffectGuide(wide, compactHeight = compactGuide)
                     }
                 }
             }
@@ -153,20 +154,20 @@ fun SettingsEffectScopeScreen(
 }
 
 @Composable
-private fun SettingsEffectGuide(wide: Boolean) {
+private fun SettingsEffectGuide(wide: Boolean, compactHeight: Boolean = false) {
     BoxWithConstraints(Modifier.fillMaxWidth().testTag("settings-effect-guide")) {
     val labelsInsideDiagram = wide && maxWidth >= 200.dp && LocalDensity.current.fontScale <= 1.15f
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
+        verticalArrangement = Arrangement.spacedBy(if (compactHeight) 4.dp else RlSpace.Space8),
     ) {
-        Text("如何生效", color = RlColor.PaperWarm, fontFamily = EditorialFont.Serif, fontSize = 22.sp, lineHeight = 30.sp)
+        Text("如何生效", color = RlColor.PaperWarm, fontFamily = EditorialFont.Serif, fontSize = if (compactHeight) 20.sp else 22.sp, lineHeight = if (compactHeight) 26.sp else 30.sp)
         Text(
             "根据你选择的范围，新设置将以不同方式应用到学习内容。",
             color = RlColor.PaperWarm,
-            style = MaterialTheme.typography.bodySmall.copy(fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 22.sp),
+            style = MaterialTheme.typography.bodySmall.copy(fontFamily = EditorialFont.Serif, fontSize = if (compactHeight) 12.sp else 13.sp, lineHeight = if (compactHeight) 18.sp else 22.sp),
         )
-        if (labelsInsideDiagram) Box(Modifier.fillMaxWidth().height(150.dp)) {
+        if (labelsInsideDiagram && !compactHeight) Box(Modifier.fillMaxWidth().height(150.dp)) {
             Image(painterResource(R.drawable.rl_v73_settings_effect_diagram), null,
                 Modifier.matchParentSize(), contentScale = ContentScale.Fit)
             Row(Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 18.dp, vertical = 12.dp),
@@ -180,7 +181,7 @@ private fun SettingsEffectGuide(wide: Boolean) {
             }
         } else {
             Image(painterResource(R.drawable.rl_v73_settings_effect_diagram), null,
-                Modifier.fillMaxWidth().height(150.dp), contentScale = ContentScale.Fit)
+                Modifier.fillMaxWidth().height(if (compactHeight) 64.dp else 150.dp), contentScale = ContentScale.Fit)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 EffectDiagramLabel("已确认内容", R.drawable.rl_olive_torn_paper, Modifier.weight(1f))
                 EffectDiagramLabel("新内容", R.drawable.rl_home_scene_torn_blue_transparent, Modifier.weight(1f))
@@ -188,7 +189,7 @@ private fun SettingsEffectGuide(wide: Boolean) {
         }
         // Keep the note on unobstructed blue paper, away from the lower-left
         // newspaper collage. Large text uses the natural-height compact branch.
-        Row(Modifier.fillMaxWidth().then(if (wide) Modifier.padding(start = 49.dp, end = 2.dp)
+        Row(Modifier.fillMaxWidth().then(if (wide) Modifier.padding(start = if (compactHeight) 0.dp else 49.dp, end = 2.dp)
             else Modifier.background(RlColor.Primary.copy(alpha = .94f)).padding(10.dp)),
             horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
             Icon(Icons.Outlined.Info, null, Modifier.size(18.dp), tint = RlColor.PaperWarm)

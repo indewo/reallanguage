@@ -15,6 +15,27 @@ import org.junit.Assert.*
 /** Isolated rendering and editing; no account or persistence writes. */
 class SettingsDesignAlignmentTest {
     @get:Rule val compose = createAndroidComposeRule<ComponentActivity>()
+    @Test fun largeFontKeepsAUsableBodyAndReachableTabs() {
+        compose.activityRule.scenario.onActivity {
+            it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            configureFocusedLearningWindow(it.window)
+        }
+        compose.waitUntil(5_000) { compose.activity.resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE }
+        val draft = InitialSettingsDraft(formalityLevel = 3, basicVocabulary = BasicVocabulary.CET_6)
+        compose.setContent {
+            val density = androidx.compose.ui.platform.LocalDensity.current
+            androidx.compose.runtime.CompositionLocalProvider(androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(density.density, 1.5f)) {
+                RlTheme { SubsequentSettingsScreen(SubsequentSettingsUiState(original = draft, draft = draft, loading = false), {}) }
+            }
+        }
+        val body = compose.onNodeWithTag("subsequent-settings-paper").assertIsDisplayed().fetchSemanticsNode().boundsInRoot
+        val field = compose.onNodeWithText("正式程度").assertIsDisplayed().fetchSemanticsNode()
+        assertEquals("The first field must be fully readable", field.layoutInfo.height.toFloat(), field.boundsInRoot.height, 1f)
+        assertTrue("The field must stay inside the usable body", field.boundsInRoot.top >= body.top && field.boundsInRoot.bottom <= body.bottom)
+        compose.onNodeWithTag("subsequent-settings-navigation-3").performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithTag("subsequent-settings-save").assertIsDisplayed()
+        compose.onNodeWithTag("editorial-page-back").assertIsDisplayed()
+    }
     @Test fun allFourTabsAndEightPoolsFitAndStyleUsesSameDraft() {
         compose.activityRule.scenario.onActivity {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE

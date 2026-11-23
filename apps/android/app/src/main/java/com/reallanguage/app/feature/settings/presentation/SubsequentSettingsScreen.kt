@@ -5,6 +5,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -118,8 +119,8 @@ fun SubsequentSettingsScreen(
         modifier = modifier,
         scrollState = scrollState,
         onBack = requestReturn,
-        navigation = {
-            SubsequentSettingsNavigation(selectedGroup, navigationEnabled) { index ->
+        navigation = { horizontal ->
+            SubsequentSettingsNavigation(selectedGroup, navigationEnabled, horizontal) { index ->
                 selectedGroup = index
 
             }
@@ -203,19 +204,24 @@ fun SubsequentSettingsScreen(
 }
 
 @Composable
-private fun SubsequentSettingsNavigation(selectedGroup: Int, enabled: Boolean, onSelected: (Int) -> Unit) {
-    Column(Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf("表达基础", "表达风格", "朗读声音", "学习提醒").forEachIndexed { index, label ->
-            Box(Modifier.fillMaxWidth().height(42.dp).settingsPaper(if (selectedGroup == index) SettingsOlive else SettingsPaper).testTag("subsequent-settings-navigation-$index")
+private fun SubsequentSettingsNavigation(selectedGroup: Int, enabled: Boolean, horizontal: Boolean, onSelected: (Int) -> Unit) {
+    val labels = listOf("表达基础", "表达风格", "朗读声音", "学习提醒")
+    val itemHeight = maxOf(42.dp, (22 * LocalDensity.current.fontScale + 20).dp)
+    @Composable fun Item(index: Int, label: String, modifier: Modifier) {
+            Box(modifier.heightIn(min = itemHeight).settingsPaper(if (selectedGroup == index) SettingsOlive else SettingsPaper).testTag("subsequent-settings-navigation-$index")
                 .selectable(selected = selectedGroup == index, enabled = enabled, role = Role.Tab, onClick = { onSelected(index) })) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Icon(when(index) { 0 -> Icons.Outlined.Edit; 1 -> Icons.Outlined.Layers; 2 -> Icons.Outlined.Headphones; else -> Icons.Outlined.NotificationsNone }, null,
                         Modifier.size(20.dp), tint = if (selectedGroup == index) RlColor.OnPrimary else RlColor.Ink)
                     Text(label, color = if (selectedGroup == index) RlColor.OnPrimary else RlColor.Ink,
                         fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 22.sp)
                 }
             }
-        }
+    }
+    if (horizontal) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).testTag("subsequent-settings-navigation"), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        labels.forEachIndexed { index, label -> Item(index, label, Modifier.widthIn(min = 150.dp)) }
+    } else Column(Modifier.fillMaxWidth().testTag("subsequent-settings-navigation"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        labels.forEachIndexed { index, label -> Item(index, label, Modifier.fillMaxWidth()) }
     }
 }
 @Composable

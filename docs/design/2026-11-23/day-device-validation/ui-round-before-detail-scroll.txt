@@ -1,0 +1,21 @@
+
+com.reallanguage.app.feature.settings.presentation.SettingsEffectScopeScreenTest:.
+com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest:....
+com.reallanguage.app.feature.knowledge.presentation.PatternBookScreenTest:.
+com.reallanguage.app.feature.settings.presentation.SettingsDesignAlignmentTest:.
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:
+Error in expandedPatternShowsRealExamplesCountsAndWorkingActions(com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'pattern-detail-collapse' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest.expandedPatternShowsRealExamplesCountsAndWorkingActions(PatternDetailScreenTest.kt:59)
+
+
+Time: 152.563
+There was 1 failure:
+1) expandedPatternShowsRealExamplesCountsAndWorkingActions(com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'pattern-detail-collapse' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest.expandedPatternShowsRealExamplesCountsAndWorkingActions(PatternDetailScreenTest.kt:59)
+
+FAILURES!!!
+Tests run: 8,  Failures: 1
