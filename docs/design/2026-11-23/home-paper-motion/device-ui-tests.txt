@@ -1,0 +1,9 @@
+
+com.reallanguage.app.feature.home.presentation.HomeScreenTest:....
+com.reallanguage.app.feature.home.presentation.HomePaperMotionTest:.
+
+Time: 12.846
+
+OK (5 tests)
+
+

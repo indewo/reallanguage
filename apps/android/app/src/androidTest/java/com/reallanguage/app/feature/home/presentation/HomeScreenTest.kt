@@ -88,7 +88,13 @@ class HomeScreenTest {
             "home-review-card" to HomeAction.DueReviewRequested,
             "home-incomplete-card" to HomeAction.IncompleteLearningRequested,
         )
-        entries.forEach { (tag, _) -> compose.onNodeWithTag(tag).assertIsDisplayed().performClick() }
+        val coverTitles = listOf("开始录音", "对话截图", "导入音频", "AI设定场景", "日常记录")
+        entries.forEachIndexed { index, (tag, _) ->
+            // A stacked 3-D card's bounding-box centre may be covered by the front sheet.
+            // Its visible printed title is the actual touch target available to a user.
+            if (index < coverTitles.size) compose.onNodeWithText(coverTitles[index], useUnmergedTree = true).assertIsDisplayed().performClick()
+            else compose.onNodeWithTag(tag).assertIsDisplayed().performClick()
+        }
         compose.runOnIdle { assertEquals(entries.map { it.second }, events) }
     }
 

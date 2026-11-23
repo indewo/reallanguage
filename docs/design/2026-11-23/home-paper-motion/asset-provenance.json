@@ -1,0 +1,22 @@
+{
+  "generator": "image_gen.imagegen",
+  "references": [
+    "codex-clipboard-27199b3c-e471-406f-b269-d33a663501c8.jpg",
+    "existing home paper/recording assets"
+  ],
+  "assets": [
+    {
+      "path": "rl_home_paper_board_20261123.png",
+      "prompt": "Create a reusable blank card BACKGROUND ASSET for the existing RealLanguage mobile app, editing the attached references. Reference 1 is the approved 1896x830 full home page. Extract ONLY the thick ivory paper board of the large central recording card (approximately 772x470, width/height 1.6426). Reference 2 is the current paper asset; improve it to match reference 1's central board. One perfectly frontal flat horizontal blank paper card, aspect ratio exactly 772:470 for the paper itself, no perspective or rotation, centered with very small fully transparent safety margin on all sides for the shadows/fibres. Bright warm near-white surface #FCFAF6, very restrained yellow, against TRUE TRANSPARENCY. TOP PRIORITY: continuous fine naturally irregular hand-torn fibrous edges on all FOUR sides, fuzzy soft pale-white fibres, naturally torn corners (not rounded rectangle, not outline, not regular sawtooth). Match the fine scale and soft thickness of the central card of reference1. Show TWO or THREE thin misregistered paper layers and very low contrast contact shadow close to the board; slight occasional lifted paper edges but overall flat. Restrained low contrast microfibres and subtle emboss on surface, much less cracked/veiny than reference2. Soft light from upper left as reference1. NO text, NO letters, NO icons, NO illustrations, NO denim, NO decorative corner, NO tape, NO leaves, NO border. It is a shared UI material, NOT an entire screen mockup. Entire blank paper interior unobstructed. High definition transparent PNG, preserve partial transparency of fibres and contact shadows, use canvas around 1896x1200 or nearest supported landscape size. Do not add a checkerboard or an opaque backdrop."
+    },
+    {
+      "path": "rl_home_record_plain_20261123.png",
+      "prompt": "Edit ONLY the attached existing transparent RealLanguage recording collage asset. Remove the small light-blue folded denim corner with white stitches at the VERY TOP LEFT (roughly x0-132,y0-116 in the original 406x456). Replace just that patch with a seamless continuation of the existing DARK BLUE textured backing beneath it, keeping the original outer torn silhouette. The separate UI layer will supply a new cloth corner, so NO folded or stitched corner remains in this art. Absolutely preserve the original recorder device, knobs, headphones, warm brown headband, leaves, waveform tape, proportions, colors, lighting and composition. No redesign, no extra elements, no text. Keep the same portrait aspect 406:456 and tight transparent bounding canvas. True transparent PNG with all original warm-white cutout edges and contact shadows retained. Do not put any new fabric triangle at any corner."
+    },
+    {
+      "path": "rl_home_fabric_corner_20261123.png",
+      "prompt": "Extract a SINGLE independent transparent fabric corner applique for the RealLanguage paper card UI, matching the LIGHT BLUE DENIM FOLDED TRIANGLE at the top left of the central recording card in reference 1 and reference 2. Only ONE approximately right triangular denim/linen cloth scrap, top horizontal edge, left vertical edge, lower edge runs diagonally from bottom-left to top-right; actual worn soft irregular textile edges, slightly rounded folded upper-left textile bend, finely woven denim threads, a fine single line of loose cream-white hand stitches following the lower diagonal. Low saturation dusty denim blue base around #476882, pale cream stitches, subtle darker blue layered fabric rim and very soft low contrast contact shadow just under cloth. No paper card, no recorder, no plants, no words, no other objects. Frontal and flat, no overall rotation or perspective; the app will rotate the entire paper with this applique. Occupy most of a square 512x512 or higher-resolution canvas with small transparent safety margins; bottom-right half is entirely transparent. TRUE transparency, preserve fine threads and shadow alpha. One finished cutout, not a mockup sheet, no checkerboard background."
+    }
+  ],
+  "notes": "The generator redrew some recording hardware and waveform details; no claim of pixel-identical preservation. The final complete page is native Compose output, not a generated mockup."
+}
