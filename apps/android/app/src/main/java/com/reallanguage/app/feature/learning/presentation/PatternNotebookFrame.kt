@@ -1,6 +1,5 @@
 package com.reallanguage.app.feature.learning.presentation
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
@@ -13,10 +12,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reallanguage.app.R
@@ -60,8 +57,6 @@ internal fun PatternNotebookFrame(state: PatternSpeakingUiState, scroll: ScrollS
                         state.currentResponseExample?.let { Text(it.aiPromptEn, fontSize = 12.sp, color = RlColor.TextSecondary) }
                         state.currentPattern?.let { targetAssessment(it) }
                     }
-                    if (!compact) Image(painterResource(learningThemeArtwork(state.chapter.sentences.joinToString { it.textEn })),
-                        null, Modifier.fillMaxWidth().height(48.dp), contentScale = ContentScale.Fit)
                 }
             }
             val exercise: @Composable (Modifier) -> Unit = { pane ->
