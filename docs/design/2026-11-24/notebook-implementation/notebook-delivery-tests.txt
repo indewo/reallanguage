@@ -6,5 +6,3 @@ com.reallanguage.app.core.designsystem.NotebookScreenFitTest:....
 Time: 28.355
 
 OK (13 tests)
-
-
