@@ -7,6 +7,7 @@ data class AiBillingUiState(
     val charges: List<AiChargeRecord> = emptyList(),
     val loading: Boolean = true,
     val loadFailed: Boolean = false,
+    val dailyCharges: List<com.reallanguage.app.feature.billing.domain.DailyAiCharge> = emptyList(),
 )
 
 sealed interface AiBillingAction {

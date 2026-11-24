@@ -59,6 +59,7 @@ class AiBillingViewModel(
                     it.copy(
                         balanceAmountFen = result.snapshot.balanceAmountFen,
                         charges = result.snapshot.charges.sortedByDescending { charge -> charge.occurredAtEpochMillis },
+                        dailyCharges = result.snapshot.dailyCharges,
                         loading = false,
                     )
                 }

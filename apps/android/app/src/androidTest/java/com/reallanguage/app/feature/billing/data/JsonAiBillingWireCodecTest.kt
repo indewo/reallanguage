@@ -20,6 +20,22 @@ import org.junit.runner.RunWith
  * Bounds are the existing billingSummarySchema, not new payment/rounding rules. */
 @RunWith(AndroidJUnit4::class)
 class JsonAiBillingWireCodecTest {
+    @Test fun dailySummaryKeepsFullCountsAndRejectsMalformedGroupFacts() {
+        val group = JSONObject().put("date", "2026-11-24").put("operationLabelZh", "提取学习目标")
+            .put("count", 501).put("amountFen", 501)
+        fun body(row: JSONObject) = JSONObject().put("balanceAmountFen", 9652)
+            .put("dailyCharges", JSONArray().put(row)).toString()
+        val parsed = JsonAiBillingWireCodec().snapshot(body(group))
+        assertEquals(501, parsed.dailyCharges.single().count)
+        assertEquals(501L, parsed.dailyCharges.single().amountFen)
+        assertTrue(parsed.charges.isEmpty())
+        for ((field, bad) in listOf("count" to 0, "count" to 1.5, "amountFen" to "501", "date" to "2026-02-30")) {
+            val value = JSONObject(group.toString()).put(field, bad)
+            assertTrue("Invalid $field must not become a displayed total", runCatching { JsonAiBillingWireCodec().snapshot(body(value)) }.isFailure)
+        }
+        val duplicate = JSONObject().put("balanceAmountFen", 9652).put("dailyCharges", JSONArray().put(group).put(group))
+        assertTrue(runCatching { JsonAiBillingWireCodec().snapshot(duplicate.toString()) }.isFailure)
+    }
     @Test fun zeroMaximumAndAnExplicitEmptyLedgerAreValid() = runBlocking {
         for (amount in listOf(0L, MAX_FEN)) {
             val result = ready(load(summary().put("balanceAmountFen", amount)

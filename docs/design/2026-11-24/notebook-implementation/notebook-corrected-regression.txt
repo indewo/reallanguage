@@ -1,0 +1,10 @@
+
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingScreenTest:....
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingStagePositionTest:..
+com.reallanguage.app.core.designsystem.NotebookScreenFitTest:....
+
+Time: 25.582
+
+OK (10 tests)
+
+

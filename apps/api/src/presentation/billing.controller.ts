@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
   UnauthorizedException,
 } from "@nestjs/common";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@reallanguage/backend-modules/billing";
 import {
   billingSummarySchema,
+  billingDailySummarySchema,
   rechargeConfigSchema,
   rechargeOrderCommandSchema,
   rechargeOrderResultSchema,
@@ -61,7 +63,8 @@ export class BillingController {
     @Inject(AUTHENTICATE_ACCESS_TOKEN)
     private readonly accessTokens: AccessTokenAuthenticator,
     @Inject(BILLING_SUMMARY_APPLICATION)
-    private readonly billing: Pick<GetBillingSummary, "execute">,
+    private readonly billing: Pick<GetBillingSummary, "execute"> &
+      Partial<Pick<GetBillingSummary, "executeDaily">>,
     @Inject(CREATE_RECHARGE_ORDER_APPLICATION)
     private readonly createRecharge: Pick<CreateRechargeOrder, "execute">,
     @Inject(GET_RECHARGE_ORDER_APPLICATION)
@@ -98,6 +101,24 @@ export class BillingController {
         occurredAt: charge.occurredAt.toISOString(),
       })),
     });
+  }
+
+  // Keep the existing raw summary API unchanged for older app versions.
+  @Get("daily-summary")
+  public async dailySummary(
+    @Headers("authorization") authorization: string | undefined,
+    @Query("timeZone") timeZone = "Asia/Shanghai",
+  ) {
+    const accountId = await this.accountId(authorization);
+    if (timeZone.length > 100) throw new BadRequestException();
+    try {
+      new Intl.DateTimeFormat("en", { timeZone }).format();
+    } catch {
+      throw new BadRequestException();
+    }
+    const summary = await this.billing.executeDaily?.({ accountId, timeZone });
+    if (!summary) throw new NotFoundException();
+    return billingDailySummarySchema.parse(summary);
   }
 
   @Post("recharge-orders")

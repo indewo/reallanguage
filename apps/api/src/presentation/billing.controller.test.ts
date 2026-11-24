@@ -15,6 +15,7 @@ import {
 import { AUTHENTICATE_ACCESS_TOKEN } from "./initial-settings.controller.js";
 
 const execute = vi.fn();
+const executeDaily = vi.fn();
 const authenticate = vi.fn();
 const createRecharge = vi.fn();
 const getRecharge = vi.fn();
@@ -25,7 +26,10 @@ const requestMinorSupport = vi.fn();
 @Module({
   controllers: [BillingController],
   providers: [
-    { provide: BILLING_SUMMARY_APPLICATION, useValue: { execute } },
+    {
+      provide: BILLING_SUMMARY_APPLICATION,
+      useValue: { execute, executeDaily },
+    },
     {
       provide: CREATE_RECHARGE_ORDER_APPLICATION,
       useValue: { execute: createRecharge },
@@ -57,6 +61,7 @@ afterEach(async () => {
   app = undefined;
   [
     execute,
+    executeDaily,
     authenticate,
     createRecharge,
     getRecharge,
@@ -68,6 +73,47 @@ afterEach(async () => {
 });
 
 describe("billing HTTP adapter", () => {
+  it("returns grouped daily usage only after authentication and rejects invalid zones", async () => {
+    authenticate.mockResolvedValue("account-1");
+    const summary = {
+      balanceAmountFen: 800,
+      dailyCharges: [
+        {
+          date: "2026-11-24",
+          operationLabelZh: "提取学习目标",
+          count: 501,
+          amountFen: 501,
+        },
+      ],
+    };
+    executeDaily.mockResolvedValue(summary);
+    app = await createHttpApp(TestModule);
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/billing/daily-summary?timeZone=Asia%2FShanghai",
+      headers: { authorization: "Bearer token" },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual(summary);
+    expect(executeDaily).toHaveBeenCalledWith({
+      accountId: "account-1",
+      timeZone: "Asia/Shanghai",
+    });
+    const invalid = await app.inject({
+      method: "GET",
+      url: "/api/v1/billing/daily-summary?timeZone=not-a-zone",
+      headers: { authorization: "Bearer token" },
+    });
+    expect(invalid.statusCode).toBe(400);
+    authenticate.mockResolvedValue(null);
+    const denied = await app.inject({
+      method: "GET",
+      url: "/api/v1/billing/daily-summary",
+      headers: { authorization: "Bearer expired" },
+    });
+    expect(denied.statusCode).toBe(401);
+    expect(executeDaily).toHaveBeenCalledTimes(1);
+  });
   it("authenticates and returns CNY balance with actual charge facts", async () => {
     authenticate.mockResolvedValue("account-1");
     execute.mockResolvedValue({

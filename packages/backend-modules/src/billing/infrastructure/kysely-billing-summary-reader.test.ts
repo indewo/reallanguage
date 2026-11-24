@@ -25,6 +25,57 @@ beforeEach(async () => {
 afterEach(async () => database.destroy());
 
 describe("KyselyBillingSummaryReader", () => {
+  it("aggregates complete days before limiting groups and respects the requested zone", async () => {
+    await sql`insert into billing.pricing_rules values
+      ('40000000-0000-4000-8000-000000000010',2,1,'CEILING',0,'2026-01-01',now())`.execute(
+      database,
+    );
+    await sql`insert into billing.ledger_entries
+      select gen_random_uuid(),s.billing_subject_id,w.wallet_id,'AI_CHARGE',-1,'CNY',
+        'PROVIDER_ATTEMPT','daily-'||n,'daily-'||n,
+        case when n=503 then '2026-11-23T15:59:00Z'::timestamptz else '2026-11-23T16:00:00Z'::timestamptz end
+      from billing.billing_subjects s join billing.wallets w using(billing_subject_id),generate_series(1,503) n
+      where s.user_id=${accountId}`.execute(database);
+    await sql`insert into billing.ai_usage_charges
+      select business_ref_id,billing_subject_id,wallet_id,ledger_entry_id,'operation',
+        case when business_ref_id='daily-502' then '英文发音' else '提取学习目标' end,
+        'provider/model','INITIAL_CALL',125000,1,'40000000-0000-4000-8000-000000000010',posted_at
+      from billing.ledger_entries where business_ref_id like 'daily-%'`.execute(
+      database,
+    );
+    const reader = new KyselyBillingSummaryReader(database);
+    const shanghai = await reader.readDaily(accountId, "Asia/Shanghai");
+    expect(shanghai?.dailyCharges).toEqual(
+      expect.arrayContaining([
+        {
+          date: "2026-11-24",
+          operationLabelZh: "提取学习目标",
+          count: 501,
+          amountFen: 501,
+        },
+        {
+          date: "2026-11-24",
+          operationLabelZh: "英文发音",
+          count: 1,
+          amountFen: 1,
+        },
+        {
+          date: "2026-11-23",
+          operationLabelZh: "提取学习目标",
+          count: 1,
+          amountFen: 1,
+        },
+      ]),
+    );
+    expect(shanghai?.dailyCharges).toHaveLength(3);
+    const utc = await reader.readDaily(accountId, "UTC");
+    expect(
+      utc?.dailyCharges.find((row) => row.operationLabelZh === "提取学习目标"),
+    ).toMatchObject({ date: "2026-11-23", count: 502, amountFen: 502 });
+    expect(
+      (await reader.readDaily(otherId, "Asia/Shanghai"))?.dailyCharges,
+    ).toEqual([]);
+  });
   it("returns available CNY and newest actual charges for one account only", async () => {
     await sql`insert into billing.pricing_rules values
       ('40000000-0000-4000-8000-000000000010',2,1,'CEILING',0,'2026-01-01',now())`.execute(

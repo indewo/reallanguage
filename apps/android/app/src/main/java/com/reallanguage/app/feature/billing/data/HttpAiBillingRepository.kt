@@ -18,6 +18,7 @@ class HttpAiBillingRepository(
     private val transport: HttpTransport,
     private val runtime: SessionRuntime,
     private val codec: AiBillingWireCodec = JsonAiBillingWireCodec(),
+    private val groupDaily: Boolean = false,
 ) : AiBillingRepository {
     private val ownerAccountId = runtime.accountId
     private val ownerAccountEpoch = runtime.accountEpoch
@@ -28,7 +29,9 @@ class HttpAiBillingRepository(
         if (!ownerIsActive()) return@withContext AiBillingSnapshotResult.Failed
         val token = runtime.accessToken ?: return@withContext AiBillingSnapshotResult.Failed
         try {
-            val response = transport.execute(HttpRequest("GET", "/api/v1/billing/summary", "", mapOf("Authorization" to "Bearer $token")))
+            val zone = java.net.URLEncoder.encode(java.time.ZoneId.systemDefault().id, "UTF-8")
+            val path = if (groupDaily) "/api/v1/billing/daily-summary?timeZone=$zone" else "/api/v1/billing/summary"
+            val response = transport.execute(HttpRequest("GET", path, "", mapOf("Authorization" to "Bearer $token")))
             if (response.statusCode != 200 || !ownerIsActive()) return@withContext AiBillingSnapshotResult.Failed
             val snapshot = codec.snapshot(response.body)
             if (ownerIsActive()) AiBillingSnapshotResult.Ready(snapshot) else AiBillingSnapshotResult.Failed
@@ -41,6 +44,25 @@ fun interface AiBillingWireCodec { fun snapshot(body: String): AiBillingSnapshot
 class JsonAiBillingWireCodec : AiBillingWireCodec {
     override fun snapshot(body: String): AiBillingSnapshot {
         val root = JSONObject(body)
+        if (root.has("dailyCharges")) {
+            require(root.keys().asSequence().toSet() == setOf("balanceAmountFen", "dailyCharges"))
+            val rows = root.getJSONArray("dailyCharges")
+            require(rows.length() <= 500)
+            val identities = mutableSetOf<Pair<String, String>>()
+            return AiBillingSnapshot(root.amountFen("balanceAmountFen"), emptyList(), List(rows.length()) { index ->
+                val row = rows.getJSONObject(index)
+                require(row.keys().asSequence().toSet() == setOf("date", "operationLabelZh", "count", "amountFen"))
+                val date = row.originalString("date", 10)
+                require(java.time.LocalDate.parse(date).toString() == date)
+                val label = row.originalString("operationLabelZh", 200)
+                require(identities.add(date to label))
+                val count = row.get("count")
+                val amount = row.get("amountFen")
+                require(count is Number && count.toDouble() in 1.0..Int.MAX_VALUE.toDouble() && count.toDouble() % 1 == 0.0)
+                require(amount is Number && amount.toDouble() in 0.0..9_007_199_254_740_991.0 && amount.toDouble() % 1 == 0.0)
+                com.reallanguage.app.feature.billing.domain.DailyAiCharge(date, label, count.toInt(), amount.toLong())
+            })
+        }
         require(root.keys().asSequence().toSet() == setOf("balanceAmountFen", "charges"))
         val charges = root.getJSONArray("charges")
         require(charges.length() <= 500)

@@ -929,7 +929,7 @@ class ProductionAppGraph(
         AccountDeletionViewModel(accountDeletionRepository(), commandId)
     }
     fun billingFactory() = viewModelFactory {
-        AiBillingViewModel(HttpAiBillingRepository(transport, sessionRuntime))
+        AiBillingViewModel(HttpAiBillingRepository(transport, sessionRuntime, groupDaily = true))
     }
     fun rechargeFactory(route: HomeDiaryRoute.Recharge) = viewModelFactory {
         RechargeViewModel(

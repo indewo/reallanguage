@@ -64,8 +64,8 @@ class SceneResponseScreenTest {
         composeRule.setContent { RlTheme { SceneResponseScreen(state) {} } }
         val footer = composeRule.onNodeWithTag("scene-response-footer")
         val footerBefore = footer.fetchSemanticsNode().boundsInRoot
-        val viewport = composeRule.onNodeWithTag("scene-content-scroll-viewport")
         listOf("scene-background-scroll", "scene-dialogue-scroll", "scene-feedback-scroll", "scene-transcript-scroll").forEach { tag ->
+            val viewport = composeRule.onNodeWithTag(if (tag == "scene-background-scroll") "scene-background-viewport" else "scene-content-scroll-viewport")
             val node = composeRule.onNodeWithTag(tag)
             node.performScrollTo().assertIsDisplayed()
             val layouts = mutableListOf<TextLayoutResult>()
@@ -209,7 +209,7 @@ class SceneResponseScreenTest {
         composeRule.onAllNodesWithText("正在检查你的回应……").assertCountEquals(2)
         composeRule.onNodeWithTag("scene-response-checking-spinner").assertIsDisplayed()
         composeRule.onNodeWithText("播放上一句").assertIsDisplayed().assertIsNotEnabled()
-        composeRule.onNodeWithText("重试").assertIsDisplayed().assertIsNotEnabled()
+        composeRule.onNodeWithText("重新回应").assertIsDisplayed().assertIsNotEnabled()
         composeRule.onNode(hasText("正在检查你的回应……") and isNotEnabled()).assertIsDisplayed()
         assertEquals(emptyList<SceneResponseAction>(), actions)
     }

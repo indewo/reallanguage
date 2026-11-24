@@ -8,6 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -65,102 +68,87 @@ fun SceneResponseScreen(state: SceneResponseUiState, onExit: (() -> Unit)? = nul
         state.recording -> R.string.pattern_speaking_response_finished
         else -> R.string.pattern_speaking_start_response
     })
-    LearningPage {
-        val compact = maxWidth < 600.dp * LocalDensity.current.fontScale.coerceAtMost(1.5f)
-        Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())
-            .testTag("scene-content-scroll-viewport"), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-            LearningHeading("第 ${state.chapter.chapterNumber} 章 · ${stringResource(R.string.scene_response_title)}",
-                onBack = { onAction(SceneResponseAction.BackRequested) }, onExit = onExit, showPreviousInHeader = true, trailing = {
-                    Text(stringResource(R.string.scene_response_round_total, state.roundIndex + 1),
-                        color = RlColor.ActionVivid, fontSize = 13.sp, lineHeight = 18.sp)
-                })
-            if (state.progressFailed) Text(stringResource(R.string.full_sentence_speaking_progress_failed), color = RlColor.Error)
-            if (state.needsNewRecording) Text(stringResource(R.string.full_sentence_speaking_needs_recording), color = RlColor.Error)
-            LearningPaper(Modifier.fillMaxWidth(), PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LearningRibbon(stringResource(R.string.scene_response_context_label))
-                    Text(task?.backgroundEn.orEmpty(), Modifier.weight(1f).testTag("scene-background-scroll"),
-                        color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 21.sp)
+    val scroll = androidx.compose.runtime.key(state.taskIndex, state.roundIndex) { rememberScrollState() }
+    com.reallanguage.app.core.designsystem.NotebookPage(
+        "第 ${state.chapter.chapterNumber} 章 · 场景回应",
+        onExit ?: LocalLearningExitAction.current ?: { onAction(SceneResponseAction.BackRequested) }, "退出学习",
+        footer = {
+            Row(Modifier.fillMaxWidth().testTag("scene-response-footer"), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(Modifier.weight(.25f)) {
+                    Text("第 ${state.roundIndex + 1} 轮 / 共 3 轮", color = RlColor.Secondary, fontSize = 13.sp)
+                    if (state.recording || state.submitting || state.transcribing)
+                        SceneRecordingStatus(state.recording, state.submitting || state.transcribing, Modifier.fillMaxWidth())
+                }
+                Row(Modifier.weight(.75f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    com.reallanguage.app.core.designsystem.NotebookAction(if (androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f) "播放" else stringResource(if (state.audioMuted) R.string.learning_pronounce else R.string.scene_response_play_previous),
+                        { onAction(SceneResponseAction.AudioToggled) }, Modifier.weight(1f),
+                        enabled = !state.recording && !state.submitting && !state.transcribing && !state.technicalRetryPending && !state.technicalRetryBlocked,
+                        leadingIcon = Icons.Outlined.PlayCircleOutline)
+                    com.reallanguage.app.core.designsystem.NotebookAction("重新回应", { onAction(SceneResponseAction.RetryRequested) }, Modifier.weight(1f),
+                        enabled = !state.loading && !state.recording && !state.submitting && !state.transcribing && !state.technicalRetryBlocked,
+                        leadingIcon = Icons.Outlined.Refresh)
+                    com.reallanguage.app.core.designsystem.NotebookAction(mainLabel, { onAction(mainAction) }, Modifier.weight(1.35f).testTag("scene-response-main-action"),
+                        primary = true, leadingIcon = Icons.AutoMirrored.Outlined.ArrowForward, enabled = when {
+                            state.submitting || state.transcribing || state.loading -> false
+                            state.saveFailed || state.progressFailed -> true
+                            task == null -> state.captureFailed
+                            state.transcriptReady -> state.transcript.isNotBlank()
+                            state.trainingRoundCompleted -> true
+                            state.captureFailed || state.finalDecision == SceneEvaluationDecision.INCONCLUSIVE || state.finalDecision == SceneEvaluationDecision.FAIL -> true
+                            else -> state.finalDecision == null
+                        })
                 }
             }
-            LearningTwoPane(Modifier.fillMaxWidth().testTag("scene-response-workspace"), leftWeight = .42f, contentFirstWhenStacked = true,
-                left = { pane -> Column(pane, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(BitmapPainter(ImageBitmap.imageResource(R.drawable.rl_v73_learning_corridor_polaroid),
-                        srcOffset = IntOffset(0, 124), srcSize = IntSize(1164, 1140)), null,
-                        Modifier.fillMaxWidth().height(194.dp).graphicsLayer { clip = true }
-                            .testTag("scene-response-context-image"),
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.TopCenter)
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center) {
-                    Image(painterResource(R.drawable.rl_scene_response_microphone), null,
-                        Modifier.size(118.dp).offset(y = (-10).dp).testTag("scene-response-microphone-art"), contentScale = ContentScale.Fit)
+        }) {
+        com.reallanguage.app.core.designsystem.NotebookTwoPane(Modifier.weight(1f).fillMaxWidth().testTag("scene-response-workspace"),
+            left = { pane ->
+                com.reallanguage.app.core.designsystem.NotebookPanel(pane.fillMaxHeight(), scroll = rememberScrollState(), scrollTag = "scene-background-viewport") {
+                    LearningRibbon("场景情境")
+                    Text(task?.backgroundEn.orEmpty(), Modifier.testTag("scene-background-scroll"), fontSize = 14.sp, lineHeight = 21.sp)
+                    Image(painterResource(learningThemeArtwork(task?.backgroundEn.orEmpty())), null,
+                        Modifier.fillMaxWidth().height(100.dp).testTag("scene-response-context-image"), contentScale = ContentScale.Fit)
+                    if (!state.isFinalRound) Text(task?.targetSentenceEn.orEmpty(), fontSize = 13.sp, color = RlColor.TextSecondary)
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        repeat(3) { index -> LearningRibbon("${index + 1}", Modifier.weight(1f),
+                            if (state.roundIndex == index) RlColor.Secondary else RlColor.NoteAccent) }
                     }
-                } },
-                right = { pane -> Column(pane, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    SceneFilmStrip()
-                    LearningPaper(Modifier.fillMaxWidth(), PaddingValues(horizontal = 12.dp, vertical = 8.dp)) {
-                        Text(task?.contextLines?.joinToString("\n") { "${it.speaker}: ${it.textEn}" }.orEmpty(),
-                            Modifier.fillMaxWidth().testTag("scene-dialogue-scroll"), color = RlColor.Ink,
-                            fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 23.sp)
+                    TextButton(onClick = { onAction(SceneResponseAction.BackRequested) }, enabled = !state.recording && !state.submitting) {
+                        Text("返回上一步")
                     }
-                    state.feedbackZh?.let { feedback -> LearningPaper(Modifier.fillMaxWidth(), PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                        Text(feedback, Modifier.testTag("scene-feedback-scroll"), fontSize = 14.sp, lineHeight = 20.sp, color = RlColor.TextPrimary)
-                    } }
-                    SceneResponsePaper {
-                        if (state.transcriptReady) {
-                            RlKeyboardAwareOutlinedTextField(value = state.transcript,
-                                onValueChange = { onAction(SceneResponseAction.TranscriptChanged(it)) },
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
-                                enabled = !state.submitting && state.finalDecision == null && !state.technicalRetryPending && !state.technicalRetryBlocked,
-                                shape = RlShape.Input,
-                                textStyle = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 18.sp, lineHeight = 27.sp))
-                        } else Text(state.transcript.ifBlank { if (state.isFinalRound) "" else task?.targetSentenceEn.orEmpty() },
-                            Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("scene-transcript-scroll"),
-                            color = Color.White, fontFamily = EditorialFont.Serif, fontSize = 17.sp, lineHeight = 24.sp)
+                }
+            },
+            right = { pane ->
+                com.reallanguage.app.core.designsystem.NotebookPanel(pane.fillMaxHeight().learningContentEntrance("${state.taskIndex}:${state.roundIndex}")
+                    , scroll = scroll, scrollTag = "scene-content-scroll-viewport") {
+                    LearningRibbon("与对方对话")
+                    Text(task?.contextLines?.joinToString("\n\n") { "${it.speaker}: ${it.textEn}" }.orEmpty(),
+                        Modifier.fillMaxWidth().testTag("scene-dialogue-scroll"), fontSize = 17.sp, lineHeight = 25.sp)
+                    HorizontalDivider(color = RlColor.Border)
+                    if (state.transcriptReady) {
+                        RlKeyboardAwareOutlinedTextField(state.transcript,
+                            { onAction(SceneResponseAction.TranscriptChanged(it)) }, Modifier.fillMaxWidth().heightIn(min = 72.dp),
+                            label = { Text("本次转写（可修改）") }, enabled = !state.submitting && !state.recording,
+                            shape = RlShape.Input)
+                    } else LearningPaper(Modifier.fillMaxWidth().heightIn(min = 72.dp), padding = PaddingValues(12.dp), ruled = true) {
+                        Text("本次转写", color = RlColor.TextSecondary, fontSize = 12.sp)
+                        Text(state.transcript, Modifier.testTag("scene-transcript-scroll"), fontSize = 15.sp, lineHeight = 22.sp)
                     }
-                } })
-            if (state.technicalRetryBlocked) Text(stringResource(R.string.full_sentence_speaking_retry_blocked), color = RlColor.Error)
-            else if (state.technicalRetryPending) Text(stringResource(R.string.learning_audio_retry_pending), color = RlColor.Error)
-            else if (state.captureFailed || state.finalDecision == SceneEvaluationDecision.INCONCLUSIVE) Text(stringResource(R.string.scene_response_inconclusive), color = RlColor.Error)
-            if (state.finalDecision == SceneEvaluationDecision.FAIL) TextButton(onClick = { onAction(SceneResponseAction.StopPractisingRequested) }) { Text(stringResource(R.string.full_sentence_speaking_stop)) }
-            if (state.saveFailed) Text(stringResource(R.string.scene_response_save_failed), color = RlColor.Error)
-        }
-        Column(Modifier.fillMaxWidth().testTag("scene-response-footer"), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-          // Recording is ongoing independently of where the user has scrolled.
-          // Keep its status beside (or above) the fixed controls, not under a photo.
-          val checking = state.transcribing || state.submitting
-          if (compact) SceneRecordingStatus(state.recording, checking, Modifier.fillMaxWidth())
-          Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (!compact) {
-                SceneRecordingStatus(state.recording, checking, Modifier.weight(.42f))
-                Spacer(Modifier.width(20.dp))
-            }
-            Row(if (compact) Modifier.fillMaxWidth() else Modifier.weight(.58f), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                LearningAction(stringResource(if (state.audioMuted) R.string.learning_pronounce else R.string.scene_response_play_previous),
-                    { onAction(SceneResponseAction.AudioToggled) }, Modifier.weight(1f),
-                    enabled = !state.recording && !state.submitting && !state.transcribing && !state.technicalRetryPending && !state.technicalRetryBlocked)
-                LearningAction(stringResource(R.string.read_speak_retry), { onAction(SceneResponseAction.RetryRequested) }, Modifier.weight(.7f),
-                    enabled = !state.loading && !state.submitting && !state.transcribing && !state.technicalRetryBlocked)
-                LearningAction(mainLabel, { onAction(mainAction) }, Modifier.weight(1.2f)
-                    .testTag("scene-response-main-action"), primary = true, enabled = when {
-                    state.submitting || state.transcribing || state.loading -> false
-                    state.saveFailed || state.progressFailed -> true
-                    task == null -> state.captureFailed
-                    state.transcriptReady -> state.transcript.isNotBlank() && !state.submitting
-                    state.trainingRoundCompleted -> true
-                    state.captureFailed || state.finalDecision == SceneEvaluationDecision.INCONCLUSIVE || state.finalDecision == SceneEvaluationDecision.FAIL -> true
-                    else -> !state.submitting && !state.transcribing && state.finalDecision == null
-                })
-            }
-          }
-        }
-        }
+                    state.feedbackZh?.let { Text(it, Modifier.testTag("scene-feedback-scroll"), fontSize = 14.sp, lineHeight = 21.sp) }
+                    if (state.progressFailed) Text(stringResource(R.string.full_sentence_speaking_progress_failed), color = RlColor.Error)
+                    if (state.needsNewRecording) Text(stringResource(R.string.full_sentence_speaking_needs_recording), color = RlColor.Error)
+                    if (state.technicalRetryBlocked) Text(stringResource(R.string.full_sentence_speaking_retry_blocked), color = RlColor.Error)
+                    else if (state.technicalRetryPending) Text(stringResource(R.string.learning_audio_retry_pending), color = RlColor.Error)
+                    else if (state.captureFailed || state.finalDecision == SceneEvaluationDecision.INCONCLUSIVE)
+                        Text(stringResource(R.string.scene_response_inconclusive), color = RlColor.Error)
+                    if (state.finalDecision == SceneEvaluationDecision.FAIL) TextButton(onClick = { onAction(SceneResponseAction.StopPractisingRequested) }) {
+                        Text(stringResource(R.string.full_sentence_speaking_stop))
+                    }
+                    if (state.saveFailed) Text(stringResource(R.string.scene_response_save_failed), color = RlColor.Error)
+                }
+            })
     }
 }
-
 @Composable
 private fun SceneRecordingStatus(recording: Boolean, checking: Boolean, modifier: Modifier = Modifier) {
     LearningPaper(modifier.heightIn(min = 44.dp)

@@ -1,0 +1,13 @@
+
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingScreenTest:....
+com.reallanguage.app.feature.learning.presentation.SceneResponseScreenTest:........
+com.reallanguage.app.feature.billing.data.JsonAiBillingWireCodecTest:............
+com.reallanguage.app.feature.billing.presentation.AiBillingScreenTest:..
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingStagePositionTest:..
+com.reallanguage.app.core.designsystem.NotebookScreenFitTest:....
+
+Time: 38.178
+
+OK (32 tests)
+
+

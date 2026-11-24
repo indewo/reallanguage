@@ -19,7 +19,10 @@ data class AiChargeRecord(
 data class AiBillingSnapshot(
     val balanceAmountFen: Long,
     val charges: List<AiChargeRecord>,
+    val dailyCharges: List<DailyAiCharge> = emptyList(),
 )
+
+data class DailyAiCharge(val date: String, val operationLabelZh: String, val count: Int, val amountFen: Long)
 
 sealed interface AiBillingSnapshotResult {
     data class Ready(val snapshot: AiBillingSnapshot) : AiBillingSnapshotResult

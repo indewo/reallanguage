@@ -257,8 +257,8 @@
     <string name="pattern_speaking_response_finished">回应完毕</string>
     <string name="pattern_speaking_capture_failed">本次无法可靠反馈，请重读。</string>
     <string name="pattern_speaking_read_again">再读一次</string>
-    <string name="pattern_speaking_next_scene">进入下一场景</string>
-    <string name="pattern_speaking_skip_scene">跳过本场景</string>
+    <string name="pattern_speaking_next_scene">下一场景</string>
+    <string name="pattern_speaking_skip_scene">跳过场景</string>
     <string name="pattern_speaking_unavailable">当前句式无法自然生成新场景，原状态保持不变。</string>
     <string name="pattern_speaking_continue_writing">进入完整书写</string>
     <string name="dev_preview_pattern_speaking">句式会说</string>

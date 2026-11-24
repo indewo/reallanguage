@@ -46,16 +46,12 @@ class AiBillingScreenTest {
                 "actual-model-$index", type, "生成英语表达")
         }
         composeRule.setContent { RlTheme { AiBillingScreen(AiBillingUiState(3_680, charges, loading = false)) {} } }
-        charges.forEach { charge ->
-            val row = hasAnyAncestor(hasTestTag("ai-charge-${charge.chargeId}"))
-            for (value in listOf(charge.operationLabelZh, "-￥0.42")) {
-                composeRule.onNode(hasText(value) and row, useUnmergedTree = true).assertExists()
-            }
-            (labels.values + charge.modelSource).forEach { other ->
-                composeRule.onNode(hasText(other) and row, useUnmergedTree = true).assertDoesNotExist()
-            }
+        composeRule.onAllNodesWithText("生成英语表达", useUnmergedTree = true).assertCountEquals(1)
+        composeRule.onNodeWithText("-￥1.68").assertIsDisplayed()
+        composeRule.onNodeWithText("4").assertIsDisplayed()
+        (labels.values + charges.map { it.modelSource }).forEach { hidden ->
+            composeRule.onNodeWithText(hidden).assertDoesNotExist()
         }
-        composeRule.onAllNodesWithText("生成英语表达", useUnmergedTree = true).assertCountEquals(4)
     }
 
     @Test
@@ -78,9 +74,9 @@ class AiBillingScreenTest {
 
         composeRule.setContent { RlTheme { AiBillingScreen(state, actions::add) } }
 
-        composeRule.onAllNodesWithText("￥36.80").assertCountEquals(2)
+        composeRule.onAllNodesWithText("￥36.80").assertCountEquals(1)
         composeRule.onNodeWithTag("ai-billing-ledger").assertIsDisplayed()
-        composeRule.onNodeWithTag("ai-charge-charge-1").assertIsDisplayed()
+        composeRule.onNodeWithTag("ai-billing-daily-list").assertIsDisplayed()
         composeRule.onNodeWithText("日记整理").assertIsDisplayed()
         composeRule.onNodeWithText("OpenAI").assertDoesNotExist()
         composeRule.onNodeWithText("-￥0.42").assertIsDisplayed()

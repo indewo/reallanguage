@@ -47,11 +47,11 @@ internal fun PatternDetailPaper(modifier: Modifier, content: @Composable () -> U
 
 @Composable
 internal fun PatternDetailSectionTitle(text: String) {
-    val verticalPadding = if (LocalDensity.current.fontScale > 1.3f) 4.dp else 1.dp
+    val verticalPadding = 6.dp
     Box(contentAlignment = Alignment.Center) {
         Image(painterResource(R.drawable.rl_olive_torn_paper), null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-        Text(text, Modifier.padding(horizontal = 12.dp, vertical = verticalPadding), color = Color.White,
+        Text(text, Modifier.padding(horizontal = 18.dp, vertical = verticalPadding), color = Color.White,
             fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp)
     }
 }
@@ -66,7 +66,7 @@ internal fun PatternDetailAudioIcon(description: String) {
 
 @Composable
 internal fun PatternDetailStatistic(text: String, icon: ImageVector, color: Color) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, Modifier.size(18.dp), tint = color)
         Text(text, Modifier.weight(1f), color = color, fontFamily = EditorialFont.Serif,
             fontSize = 13.sp, lineHeight = 20.sp)
@@ -79,19 +79,9 @@ internal fun PatternDetailOccurrenceStatistic(text: String) =
 
 @Composable
 internal fun PatternDetailAction(text: String, destructive: Boolean, modifier: Modifier, onClick: () -> Unit) {
-    Box(Modifier.heightIn(min = 48.dp).widthIn(min = 112.dp), propagateMinConstraints = true) {
-        Image(patternDetailTexture(destructive), null,
-            Modifier.matchParentSize().clip(RoundedCornerShape(3.dp)), contentScale = ContentScale.FillBounds)
-        Button(onClick, modifier.heightIn(min = 48.dp), shape = RoundedCornerShape(3.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White),
-            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 10.dp)) {
-            Icon(if (destructive) Icons.Outlined.RemoveCircleOutline else Icons.Outlined.KeyboardDoubleArrowUp,
-                null, Modifier.size(20.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(text, color = Color.White, fontFamily = EditorialFont.Serif,
-                fontSize = 16.sp, lineHeight = 24.sp, textAlign = TextAlign.Center)
-        }
-    }
+    com.reallanguage.app.core.designsystem.NotebookAction(text, onClick,
+        modifier.width(168.dp * LocalDensity.current.fontScale.coerceIn(1f, 1.5f)), primary = destructive,
+        leadingIcon = if (destructive) Icons.Outlined.RemoveCircleOutline else Icons.Outlined.KeyboardDoubleArrowUp)
 }
 
 @Composable

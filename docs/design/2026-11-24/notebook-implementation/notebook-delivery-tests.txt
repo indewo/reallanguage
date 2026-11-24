@@ -1,0 +1,10 @@
+
+com.reallanguage.app.feature.learning.presentation.SceneResponseScreenTest:........
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:.
+com.reallanguage.app.core.designsystem.NotebookScreenFitTest:....
+
+Time: 28.355
+
+OK (13 tests)
+
+

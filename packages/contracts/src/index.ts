@@ -1387,6 +1387,27 @@ export const billingSummarySchema = z
     charges: z.array(billingChargeSchema).max(500),
   })
   .strict();
+export const billingDailySummarySchema = z
+  .object({
+    balanceAmountFen: amountFenSchema,
+    dailyCharges: z
+      .array(
+        z
+          .object({
+            date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+            operationLabelZh: z.string().min(1).max(200),
+            count: z.number().int().positive().max(2_147_483_647),
+            amountFen: z
+              .number()
+              .int()
+              .nonnegative()
+              .max(Number.MAX_SAFE_INTEGER),
+          })
+          .strict(),
+      )
+      .max(500),
+  })
+  .strict();
 export const rechargeConfigSchema = z.object({
   recommendedOptions: z
     .array(

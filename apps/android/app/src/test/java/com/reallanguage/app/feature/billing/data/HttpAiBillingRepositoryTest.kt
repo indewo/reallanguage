@@ -12,6 +12,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HttpAiBillingRepositoryTest {
+    @Test fun billingPageRequestsDailyGroupsWithoutChangingTheRawSummaryConsumer() = runTest {
+        val runtime = SessionRuntime().apply { update("token", "account") }
+        val repository = HttpAiBillingRepository({ request ->
+            assertTrue(request.path.startsWith("/api/v1/billing/daily-summary?timeZone="))
+            assertEquals("Bearer token", request.headers["Authorization"])
+            HttpResponse(200, "ignored")
+        }, runtime, codec = { AiBillingSnapshot(800, emptyList(), listOf(
+            com.reallanguage.app.feature.billing.domain.DailyAiCharge("2026-11-24", "提取学习目标", 501, 501))) }, groupDaily = true)
+        val ready = repository.loadSnapshot() as AiBillingSnapshotResult.Ready
+        assertEquals(501, ready.snapshot.dailyCharges.single().count)
+    }
     @Test fun loadsAuthenticatedRmbBalanceAndActualCharges() = runTest {
         val runtime = SessionRuntime().apply { update("token", "account") }
         val repository = HttpAiBillingRepository(

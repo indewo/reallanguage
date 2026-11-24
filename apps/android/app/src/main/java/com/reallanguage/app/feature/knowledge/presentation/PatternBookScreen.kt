@@ -163,7 +163,7 @@ private fun PatternRow(pattern: PatternRecord, index: Int, expanded: Boolean, on
                             fontSize = 12.sp, lineHeight = 17.sp)
                     }
                     if (!stacked) {
-                        val statusColumn = Modifier.width(105.dp).then(if (detailVisible) Modifier else Modifier.drawBehind {
+                        val statusColumn = Modifier.width(130.dp).then(if (detailVisible) Modifier else Modifier.drawBehind {
                             drawLine(RlColor.BorderStrong.copy(alpha = .6f),
                                 Offset((-8).dp.toPx(), -6.dp.toPx()), Offset((-8).dp.toPx(), size.height + 6.dp.toPx()),
                                 strokeWidth = 1f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(7f, 4f)))
@@ -197,7 +197,7 @@ private fun PatternStatus(label: String, status: KnowledgeStatus, count: Int, sp
                 null, tint = if (status == KnowledgeStatus.NOT_STARTED) RlColor.TextSecondary else RlColor.OnSecondary,
                 modifier = Modifier.size(16.dp))
         }
-        Text(if (status == KnowledgeStatus.MASTERED) "$label  $count 次" else status.displayName(),
+        Text(if (status == KnowledgeStatus.MASTERED) "$label  $count 次" else "$label · ${status.displayName()}",
             color = RlColor.Ink, fontFamily = EditorialFont.Serif,
             fontSize = 13.sp, lineHeight = 19.sp, modifier = Modifier.weight(1f))
     }
@@ -210,7 +210,7 @@ private fun PatternDetail(pattern: PatternRecord, loading: Boolean, onAction: (P
 ) {
     val largeType = LocalDensity.current.fontScale > 1.3f
     PatternDetailPaper(Modifier.fillMaxWidth().testTag("pattern-detail-sheet")) {
-        Column(Modifier.padding(horizontal = 18.dp, vertical = if (largeType) 12.dp else 4.dp),
+        Column(Modifier.padding(start = 18.dp, end = 18.dp, top = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(if (largeType) 9.dp else 2.dp)) {
             PatternDetailColumns(1f, 1.1f, first = { columnModifier ->
                 Column(columnModifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
