@@ -46,6 +46,9 @@ class PatternBookViewModelTest {
         assertEquals("p1", viewModel.uiState.value.expandedPatternId)
         viewModel.onAction(PatternBookAction.PatternSelected("p2"))
         assertEquals("p2", viewModel.uiState.value.expandedPatternId)
+        viewModel.onAction(PatternBookAction.PatternSelected("p2"))
+        assertNull(viewModel.uiState.value.expandedPatternId)
+        viewModel.onAction(PatternBookAction.PatternSelected("p1"))
         viewModel.onAction(PatternBookAction.CollapseRequested)
         assertNull(viewModel.uiState.value.expandedPatternId)
     }

@@ -1873,6 +1873,7 @@ internal fun HomeProductionFlow(
     } else Modifier)) {
     CompositionLocalProvider(
         LocalConnectionPlaybackPolicy provides ConnectionPlaybackPolicy(playbackEligible, playbackInterrupted),
+        LocalSentenceSpeakerFactory provides remember(graph) { { _, allowed -> graph.remoteSentenceSpeaker(allowed) } },
         LocalLearningExitAction provides checkpoint?.let { { showLearningExit = true } },
     ) {
     com.reallanguage.app.feature.learning.presentation.LearningCheckpointGate(

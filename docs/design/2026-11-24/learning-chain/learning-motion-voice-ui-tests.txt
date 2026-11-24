@@ -1,0 +1,9 @@
+
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingScreenTest:....
+com.reallanguage.app.feature.learning.presentation.AudioDictationScreenTest:.......
+com.reallanguage.app.feature.learning.presentation.HandwritingCopyScreenTest:..
+com.reallanguage.app.feature.home.presentation.AccountDesignAlignmentTest:.
+
+Time: 27.483
+
+OK (14 tests)

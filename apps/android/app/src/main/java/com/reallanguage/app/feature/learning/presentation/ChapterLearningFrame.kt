@@ -180,7 +180,7 @@ fun ChapterLearningFrame(
                 val internalScroll = moduleScrollState ?: rememberScrollState()
                 val workspaceHeight = if (fixedPageWithModuleOverflow) pane.fillMaxHeight()
                     else pane.heightIn(min = bodyMinHeight)
-                Column(workspaceHeight.testTag("learning-page-workspace")) {
+                Column(workspaceHeight.learningContentEntrance("$currentFocusSentenceId:$stageTitle").testTag("learning-page-workspace")) {
                     if (modulePaper) LearningPaper(
                         Modifier.fillMaxWidth().heightIn(min = modulePaperMinHeight).testTag("learning-module-paper"),
                         padding = PaddingValues(10.dp), ruled = true, contentSpacing = 6.dp,
@@ -437,7 +437,7 @@ fun ChapterWritingFrame(
                         if (leftPanelContent != null) leftPanelContent() else Text(stageTitle, color = Color.White,
                             fontFamily = EditorialFont.Serif, fontSize = 20.sp)
                 } },
-                right = { pane -> Column(pane.height(workspaceHeight)) {
+                right = { pane -> Column(pane.height(workspaceHeight).learningContentEntrance("$currentFocusSentenceId:$stageTitle")) {
                     Box(Modifier.fillMaxWidth().weight(1f)) {
                         if (renderWorkspacePaper) Image(painterResource(R.drawable.rl_ruled_handwriting_paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
                         Column(

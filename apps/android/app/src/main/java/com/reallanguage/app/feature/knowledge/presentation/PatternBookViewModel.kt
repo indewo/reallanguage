@@ -40,8 +40,8 @@ class PatternBookViewModel(private val repository: PatternBookRepository) : View
                 lastPronunciation?.let(::requestPronunciation)
             }
             is PatternBookAction.PatternSelected -> if (mutableUiState.value.visiblePatterns.any { it.patternId == action.patternId }) {
-                if (mutableUiState.value.expandedPatternId != action.patternId) stopPronunciation()
-                mutableUiState.update { it.copy(expandedPatternId = action.patternId) }
+                stopPronunciation()
+                mutableUiState.update { it.copy(expandedPatternId = if (it.expandedPatternId == action.patternId) null else action.patternId) }
             }
             PatternBookAction.CollapseRequested -> {
                 stopPronunciation()

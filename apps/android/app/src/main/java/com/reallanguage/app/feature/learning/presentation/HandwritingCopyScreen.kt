@@ -49,6 +49,7 @@ fun HandwritingCopyScreen(
     state: HandwritingCopyUiState,
     onAction: (HandwritingCopyAction) -> Unit,
 ) {
+    val points = remember(state.canvasRevision) { mutableStateListOf<Offset?>() }
     ChapterWritingFrame(
         chapter = state.chapter,
         currentFocusSentenceId = state.currentFocusSentenceId,
@@ -102,7 +103,7 @@ fun HandwritingCopyScreen(
                 )
             }
         },
-        footer = { HandwritingControls(state, onAction) },
+        footer = { HandwritingControls(state, onAction, points.isNotEmpty()) { points.clear() } },
     ) {
         Column(
             modifier = Modifier.fillMaxSize().testTag("handwriting-workspace"),
@@ -118,7 +119,6 @@ fun HandwritingCopyScreen(
                 Text(stringResource(R.string.handwriting_save_failed), color = RlColor.Error)
             }
             key(state.canvasRevision) {
-                val points = remember { mutableStateListOf<Offset?>() }
                 Box(
                     modifier = Modifier.fillMaxWidth().weight(1f)
                         .clipToBounds()
@@ -172,13 +172,6 @@ fun HandwritingCopyScreen(
                             }
                         }
                     }
-                OutlinedButton(
-                    onClick = { points.clear() },
-                    enabled = state.copyInProgress && !state.saving && points.isNotEmpty(),
-                    modifier = Modifier.align(Alignment.TopEnd).padding(end = 84.dp).testTag("handwriting-clear"),
-                ) {
-                    Text("清空重写")
-                }
                     Image(
                         painter = painterResource(R.drawable.rl_diary_fountain_pen),
                         contentDescription = null,
@@ -195,7 +188,8 @@ fun HandwritingCopyScreen(
 }
 
 @Composable
-private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (HandwritingCopyAction) -> Unit) {
+private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (HandwritingCopyAction) -> Unit,
+    canClear: Boolean, onClear: () -> Unit) {
   BoxWithConstraints(Modifier.fillMaxWidth()) {
     val compact = maxWidth < 650.dp * LocalDensity.current.fontScale
     val controls: @Composable (Modifier) -> Unit = { controlsModifier ->
@@ -204,6 +198,10 @@ private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (Handwr
                 horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
             ) {
+                OutlinedButton(onClick = onClear, enabled = state.copyInProgress && !state.saving && canClear,
+                    modifier = Modifier.weight(.65f).heightIn(min = 48.dp).testTag("handwriting-clear")) {
+                    Text("清空重写")
+                }
                 if (!state.copyInProgress) {
                     OutlinedButton(
                         onClick = { onAction(HandwritingCopyAction.CopyAgainRequested) },
@@ -233,7 +231,7 @@ private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (Handwr
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        controls(Modifier.fillMaxWidth(if (compact) 1f else .412f))
+        controls(Modifier.fillMaxWidth(if (compact) 1f else .78f))
     }
   }
 }
