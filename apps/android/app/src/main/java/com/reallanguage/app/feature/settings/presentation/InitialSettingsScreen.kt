@@ -919,11 +919,6 @@ private fun PreferencesPaperSheet(
                         color = RlColor.Ink,
                         style = MaterialTheme.typography.titleLarge.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif),
                     )
-                    Text(
-                        "当前池的词义会优先用于内容生成和学习目标标注。",
-                        color = RlColor.TextSecondary,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
                 }
             }
             TornSectionLabel("表达风格 / AI 角色参考", Modifier.width(205.dp).height(34.dp))
@@ -1281,26 +1276,6 @@ private fun VoiceSettingsPaperSheet(
                 onSelected = { onAction(InitialSettingsAction.SpeechSpeedChanged(it)) },
                 modifier = Modifier.fillMaxWidth().height(65.dp).testTag("settings-speech-speed"),
             )
-            Box(Modifier.fillMaxWidth().height(45.dp)) {
-                Image(
-                    painter = painterResource(R.drawable.rl_torn_heading_label),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.FillBounds,
-                )
-                Text(
-                    "默认使用美式英语声音，当前不提供声线选择。",
-                    modifier = Modifier.align(Alignment.CenterStart).padding(start = 24.dp, end = 56.dp),
-                    color = RlColor.TextSecondary,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 9.5.sp),
-                )
-                Icon(
-                    Icons.Outlined.Headphones,
-                    contentDescription = null,
-                    tint = RlColor.Primary,
-                    modifier = Modifier.align(Alignment.CenterEnd).padding(end = 22.dp).size(23.dp),
-                )
-            }
             Row(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 horizontalArrangement = Arrangement.End,
@@ -1660,11 +1635,6 @@ internal fun UsagePreferences(
             color = RlColor.Ink,
             style = MaterialTheme.typography.titleLarge,
         )
-        Text(
-            "词汇难度与使用偏好已合并为一个单词池，不再重复选择。",
-            color = RlColor.TextSecondary,
-            style = MaterialTheme.typography.bodyMedium,
-        )
     }
     RlTextField(
         value = state.draft.styleReference,
@@ -1695,13 +1665,6 @@ internal fun VoiceSettings(
         FiveLevelChoices(
             selected = state.draft.speechSpeedLevel,
             onSelected = { onAction(InitialSettingsAction.SpeechSpeedChanged(it)) },
-        )
-    }
-    SettingsPaperCard {
-        Text(
-            stringResource(R.string.settings_default_accent),
-            color = RlColor.TextSecondary,
-            style = MaterialTheme.typography.bodyMedium,
         )
     }
 }

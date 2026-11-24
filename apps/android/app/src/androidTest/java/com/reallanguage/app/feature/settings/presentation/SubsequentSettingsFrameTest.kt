@@ -127,7 +127,7 @@ class SubsequentSettingsFrameTest {
             viewport.fetchSemanticsNode().boundsInRoot.height >= 76f)
         viewport.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 100_000f) }
         composeRule.waitForIdle()
-        assertWholeText(composeRule.onNodeWithText("默认使用美式英语声音"))
+        assertWholeText(composeRule.onNodeWithText("语速"))
         composeRule.onNodeWithTag("subsequent-settings-return").assertIsDisplayed().assertIsEnabled().performClick()
         assertEquals(listOf(SubsequentSettingsAction.ReturnRequested), actions)
     }
@@ -159,10 +159,10 @@ class SubsequentSettingsFrameTest {
         assertTextRole("正式／随意程度", 17f, 24f)
         assertTextRole("更正式", 14f, 21f)
         assertTextRole("②  表达风格", 19f, 27f)
-        assertTextRole("词汇难度与使用偏好已合并为一个单词池，不再重复选择。", 14f, 21f)
+        composeRule.onNodeWithText("词汇难度与使用偏好已合并为一个单词池，不再重复选择。").assertDoesNotExist()
         assertTextRole("③  语音设置", 19f, 27f)
         assertTextRole("语音开关", 17f, 24f)
-        assertTextRole("默认使用美式英语声音", 14f, 21f)
+        composeRule.onNodeWithText("默认使用美式英语声音").assertDoesNotExist()
     }
 
     private fun assertTextRole(value: String, fontSize: Float, lineHeight: Float) {

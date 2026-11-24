@@ -42,8 +42,6 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
             EditorialPageHeader("句式本", onBack, backContentDescription = "返回首页", backTestTag = "ledger-back",
                 trailing = if (compact) null else ({ PatternSearch(query, onQueryChanged, Modifier.width(170.dp)) { keyboard?.hide(); focus.clearFocus() } }))
             if (compact) PatternSearch(query, onQueryChanged, Modifier.fillMaxWidth()) { keyboard?.hide(); focus.clearFocus() }
-            if (!keyboardVisible) Text("展示全部已收录句式，不受当前词汇范围过滤", Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
-                fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
             if (compact || keyboardVisible) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 PatternCategories.forEachIndexed { index, label -> PatternCategory(index, if (keyboardVisible) label.replace("\n", "") else label, Modifier.weight(1f).heightIn(min = 44.dp)) }
             }
@@ -64,8 +62,6 @@ internal fun PatternBookFrame(query: String, onQueryChanged: (String) -> Unit, o
             }
               }
             }
-            if (!keyboardVisible && !detailVisible && hasVisiblePatterns) Text("点击一行展开详情", Modifier.fillMaxWidth(), color = RlColor.TextSecondary,
-                fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
             feedback()
         }
     }

@@ -122,11 +122,6 @@ private fun SafetyCopy(modifier: Modifier = Modifier) {
             "正在确认这份内容可以进入学习",
             color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 19.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold,
         )
-        Text(
-            "我们只检查本次确认的中文来源，不会改变你的原意。",
-            color = RlColor.TextPrimary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp,
-        )
-        Text("每份新内容都会独立检查。", color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp, lineHeight = 17.sp)
     }
 }
 

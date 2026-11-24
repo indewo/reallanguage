@@ -70,7 +70,7 @@ internal fun EditorialProcessWorkspace(
                     textAlign = TextAlign.Center)
                 Image(com.reallanguage.app.core.designsystem.editorialUnderlinePainter(), null,
                     Modifier.align(Alignment.CenterHorizontally).width(190.dp).height(6.dp), contentScale = ContentScale.FillBounds)
-                Text(supportingText, Modifier.fillMaxWidth(), color = RlColor.Ink, fontFamily = EditorialFont.Serif,
+                if (supportingText.isNotBlank()) Text(supportingText, Modifier.fillMaxWidth(), color = RlColor.Ink, fontFamily = EditorialFont.Serif,
                     fontSize = 15.sp, lineHeight = 23.sp, textAlign = TextAlign.Center)
             }
             val body: @Composable ColumnScope.() -> Unit = {
@@ -88,8 +88,6 @@ internal fun EditorialProcessWorkspace(
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(label, color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold,
                                 fontSize = 19.sp, lineHeight = 27.sp)
-                            if (index == activeStage) Text(if (failed) "内容已保留，可继续重试" else "处理中，请稍候",
-                                color = RlColor.TextSecondary, fontSize = 12.sp, lineHeight = 18.sp)
                         }
                     }
                     if (index != stages.lastIndex) HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))

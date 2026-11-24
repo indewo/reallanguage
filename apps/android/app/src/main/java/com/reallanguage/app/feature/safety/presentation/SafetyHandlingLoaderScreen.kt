@@ -50,7 +50,6 @@ fun SafetyHandlingLoaderScreen(state: SafetyHandlingLoaderUiState, onRetry: () -
                     }
                     if (index < 2) HorizontalDivider(color = RlColor.Border)
                 }
-                Text("请稍候，原始内容仍然保留。", color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 23.sp)
             }
             if (compact) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 heading()

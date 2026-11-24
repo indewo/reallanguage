@@ -114,7 +114,7 @@ class AudioDictationScreenTest {
         )
         composeRule.setContent { RlTheme { AudioDictationScreen(state) {} } }
 
-        composeRule.onNodeWithText("本句没有已选择的重点词义、固定搭配或句式。请继续听音输入；提示不会临时增加学习目标。")
+        composeRule.onNodeWithText("本句暂无提示。")
             .performScrollTo().assertIsDisplayed()
     }
     @Test fun productionKeyboardHostPreservesLongInputAndRestoresSubmitAfterDismissal() {

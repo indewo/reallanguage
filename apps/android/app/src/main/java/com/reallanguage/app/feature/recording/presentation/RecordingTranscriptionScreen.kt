@@ -100,25 +100,14 @@ private fun TranscriptionFooter(onAction: (RecordingTranscriptionAction) -> Unit
     BoxWithConstraints(Modifier.fillMaxWidth()) {
         val stacked = maxWidth < 390.dp || LocalDensity.current.fontScale > 1.35f
         EditorialSheet(Modifier.fillMaxWidth(), contentPadding = 8.dp) {
-            val note: @Composable (Modifier) -> Unit = { noteModifier ->
-                Text("离开此页不会删除本机录音", noteModifier, color = RlColor.TextSecondary,
-                    fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
-                    fontSize = 13.sp, lineHeight = 22.sp)
-            }
             val home: @Composable (Modifier) -> Unit = { buttonModifier ->
                 com.reallanguage.app.core.designsystem.RlSecondaryButton("返回首页",
                     onClick = { onAction(RecordingTranscriptionAction.ReturnHomeRequested) },
                     modifier = buttonModifier.testTag("recording-transcription-home"))
             }
-            if (stacked) {
-                note(Modifier.fillMaxWidth())
-                home(Modifier.fillMaxWidth())
-            } else Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                note(Modifier.weight(1f))
-                // The shared button fills its available width. Bound it before
-                // measuring the weighted note so the note cannot receive 0 px.
-                home(Modifier.width(132.dp))
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End) {
+                home(if (stacked) Modifier.fillMaxWidth() else Modifier.width(132.dp))
             }
         }
     }

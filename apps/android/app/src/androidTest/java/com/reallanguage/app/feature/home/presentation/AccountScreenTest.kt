@@ -32,7 +32,7 @@ class AccountScreenTest {
         composeRule.onNodeWithTag("account-billing").performClick()
         composeRule.onNodeWithTag("account-delete").performScrollTo().performClick()
         composeRule.onNodeWithTag("account-logout").performClick()
-        composeRule.onNodeWithTag("account-return-home").performClick()
+        composeRule.onNodeWithTag("editorial-page-back").performClick()
 
         assertEquals(
             listOf(

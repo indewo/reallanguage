@@ -69,7 +69,7 @@ class SubsequentSettingsNavigationTest {
         composeRule.waitForIdle()
         // In production landscape the last group can exceed the viewport. Its final
         // real field, not a non-sticky heading, proves that scrolling reached the end.
-        composeRule.onNodeWithText("默认使用美式英语声音").assertIsDisplayed()
+        composeRule.onNodeWithText("语速").assertIsDisplayed()
         composeRule.onNodeWithTag("subsequent-settings-navigation-2").assertIsSelected()
         composeRule.onNodeWithTag("subsequent-settings-navigation-0").assertIsNotSelected()
         composeRule.onNode(hasScrollAction() and hasAnyDescendant(hasTestTag("subsequent-settings-group")))

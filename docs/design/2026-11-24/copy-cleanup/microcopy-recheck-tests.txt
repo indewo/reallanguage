@@ -1,0 +1,9 @@
+
+com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest:.
+com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest:.
+com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest:...
+com.reallanguage.app.feature.home.presentation.AccountScreenTest:.
+
+Time: 8.906
+
+OK (6 tests)

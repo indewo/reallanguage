@@ -50,7 +50,7 @@ class SettingsEffectScopeScreenTest {
 
         composeRule.onNodeWithTag("settings-effect-guide").assertIsDisplayed()
         composeRule.onNodeWithText("已确认的学习内容不会被直接覆盖").assertIsDisplayed()
-        composeRule.onNodeWithTag("settings-effect-confirm-note").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings-effect-confirm-note").assertDoesNotExist()
         composeRule.onAllNodesWithTag("settings-effect-option", useUnmergedTree = true)
             .assertCountEquals(2)
         composeRule.onNodeWithTag("settings-effect-confirm").performScrollTo().performClick()

@@ -75,7 +75,6 @@ internal fun EditorialVoiceSettings(state: InitialSettingsUiState, onAction: (In
     SettingsLine("语速") {
         (1..5).forEach { level -> SettingsChoice("$level", state.draft.speechSpeedLevel == level, !state.submitting, Modifier.weight(1f)) { onAction(InitialSettingsAction.SpeechSpeedChanged(level)) } }
     }
-    Text("默认使用美式英语声音", fontSize = 12.sp, color = RlColor.TextSecondary)
 }
 
 @Composable

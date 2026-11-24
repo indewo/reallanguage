@@ -74,8 +74,6 @@ private fun PausedOperation(state: InsufficientBalanceUiState, onAction: (Insuff
                 Text("余额不足", fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 18.sp, lineHeight = 25.sp, color = RlColor.Ink)
             }
             Text(stringResource(R.string.insufficient_balance_explanation), color = RlColor.Ink, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp))
-            HorizontalDivider(color = RlColor.Border)
-            Text("不会显示 Token 余额，也不会产生单次付费确认。", color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp, lineHeight = 17.sp)
             if (state.exitFailed) Text(stringResource(R.string.insufficient_balance_exit_failed), color = RlColor.Error)
             BillingAction("去充值", { onAction(InsufficientBalanceAction.RechargeRequested) }, Modifier.fillMaxWidth().testTag("insufficient-balance-recharge"), enabled = !state.applyingExitPolicy)
             BillingAction(stringResource(R.string.insufficient_balance_leave), { onAction(InsufficientBalanceAction.LeaveRequested) }, Modifier.fillMaxWidth().testTag("insufficient-balance-leave"), enabled = !state.applyingExitPolicy, secondary = true)

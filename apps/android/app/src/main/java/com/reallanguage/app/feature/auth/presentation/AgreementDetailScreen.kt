@@ -100,7 +100,7 @@ fun AgreementDetailScreen(state: AgreementDetailUiState, onAction: (AgreementDet
                     Spacer(Modifier.width(48.dp))
                 }
                 if (!wide) Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).testTag("agreement-toc"), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                    labels.forEachIndexed { index, label -> FilterChip(selectedSection == index, { select(index) }, label = { Text("${index + 1}. $label") }) }
+                    labels.forEachIndexed { index, label -> FilterChip(selectedSection == index, { select(index) }, label = { Text("${index + 1}. $label") }, modifier = Modifier.testTag("agreement-toc-item-$index")) }
                 }
                 Row(Modifier.weight(1f).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(22.dp)) {
                     if (wide) Column(Modifier.weight(.27f).fillMaxHeight().verticalScroll(rememberScrollState()).testTag("agreement-toc"), verticalArrangement = Arrangement.spacedBy(7.dp)) {
@@ -128,7 +128,7 @@ fun AgreementDetailScreen(state: AgreementDetailUiState, onAction: (AgreementDet
                 }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     BillingAction(stringResource(R.string.agreement_detail_return), { onAction(AgreementDetailAction.ReturnRequested) }, Modifier.weight(.4f).testTag("agreement-return"))
-                    Text("返回后保留已经填写的注册内容与勾选状态。", Modifier.weight(.6f), color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 11.sp, lineHeight = 18.sp)
+                    Spacer(Modifier.weight(.6f))
                 }
             }
         }

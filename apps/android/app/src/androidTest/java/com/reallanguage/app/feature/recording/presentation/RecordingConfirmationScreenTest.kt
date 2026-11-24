@@ -91,7 +91,7 @@ class RecordingConfirmationScreenTest {
         composeRule.onNodeWithTag("recording-confirmation-header").assertIsDisplayed()
         composeRule.onNodeWithTag("recording-confirmation-artwork").assertIsDisplayed()
         composeRule.onAllNodesWithTag("recording-confirmation-fact", useUnmergedTree = true)
-            .assertCountEquals(3)
+            .assertCountEquals(1)
         composeRule.onNodeWithTag("recording-confirmation-preview").performClick()
         composeRule.onNodeWithTag("recording-confirmation-delete").performClick()
         composeRule.onNodeWithTag("recording-confirmation-transcribe").performClick()

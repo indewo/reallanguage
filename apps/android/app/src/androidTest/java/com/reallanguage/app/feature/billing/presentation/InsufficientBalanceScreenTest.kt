@@ -1,7 +1,12 @@
 package com.reallanguage.app.feature.billing.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.activity.ComponentActivity
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
+import com.reallanguage.app.core.app.configureFocusedLearningWindow
+import org.junit.Before
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -13,7 +18,15 @@ import org.junit.Rule
 import org.junit.Test
 
 class InsufficientBalanceScreenTest {
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
+
+    @Before fun useProductionWindow() {
+        composeRule.activityRule.scenario.onActivity {
+            it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        composeRule.waitUntil(5_000) { composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
+        composeRule.activityRule.scenario.onActivity { configureFocusedLearningWindow(it.window) }
+    }
 
     @Test
     fun separatesLedgerAndPausedOperationAndDispatchesBothChoices() {

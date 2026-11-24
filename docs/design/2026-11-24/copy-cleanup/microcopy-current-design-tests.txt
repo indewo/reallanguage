@@ -1,0 +1,75 @@
+
+com.reallanguage.app.core.designsystem.DesignLayoutImplementationTest:....
+com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest:
+Error in rendersAgreementNavigationAndPreservesRegistrationReturnAction(com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest):
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'agreement-toc-item-0')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:401)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:59)
+	at com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest.rendersAgreementNavigationAndPreservesRegistrationReturnAction(AgreementDetailScreenTest.kt:59)
+
+com.reallanguage.app.feature.error.presentation.StartupConnectionScreenTest:..
+com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest:
+Error in separatesLedgerAndPausedOperationAndDispatchesBothChoices(com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'insufficient-balance-ledger' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest.separatesLedgerAndPausedOperationAndDispatchesBothChoices(InsufficientBalanceScreenTest.kt:28)
+
+com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest:.
+Error in rendersCompletedRecordingAndDispatchesEveryPrimaryAction(com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest):
+java.lang.AssertionError: Failed to assert count of nodes.
+Reason: Expected '3' nodes but found '1' node that satisfies: (TestTag = 'recording-confirmation-fact')
+Node found:
+Node #539 at (l=1213.0, t=541.0, r=2274.0, b=685.0)px, Tag: 'recording-confirmation-fact'
+IsContainer = 'true'
+Shape = 'RoundedCornerShape(topStart = CornerSize(size = 4.0.dp), topEnd = CornerSize(size = 4.0.dp), bottomEnd = CornerSize(size = 4.0.dp), bottomStart = CornerSize(size = 4.0.dp))'
+Has 2 children, 1 sibling
+
+	at androidx.compose.ui.test.AssertionsKt.assertCountEquals(Assertions.kt:282)
+	at com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest.rendersCompletedRecordingAndDispatchesEveryPrimaryAction(RecordingConfirmationScreenTest.kt:94)
+.
+com.reallanguage.app.feature.safety.presentation.SafetyCheckScreenTest:...
+com.reallanguage.app.feature.learning.presentation.HandwritingCopyScreenTest:..
+com.reallanguage.app.feature.formation.presentation.FormationProcessReferenceFitTest:.....
+com.reallanguage.app.feature.learning.presentation.AudioDictationScreenTest:.......
+com.reallanguage.app.feature.settings.presentation.SettingsDesignAlignmentTest:..
+com.reallanguage.app.feature.recording.presentation.RecordingTranscriptionScreenTest:..
+com.reallanguage.app.feature.billing.presentation.AiBillingScreenTest:..
+com.reallanguage.app.feature.home.presentation.AccountDesignAlignmentTest:.
+
+Time: 62.03
+There were 3 failures:
+1) rendersAgreementNavigationAndPreservesRegistrationReturnAction(com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest)
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'agreement-toc-item-0')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:401)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:59)
+	at com.reallanguage.app.feature.auth.presentation.AgreementDetailScreenTest.rendersAgreementNavigationAndPreservesRegistrationReturnAction(AgreementDetailScreenTest.kt:59)
+2) separatesLedgerAndPausedOperationAndDispatchesBothChoices(com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'insufficient-balance-ledger' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.billing.presentation.InsufficientBalanceScreenTest.separatesLedgerAndPausedOperationAndDispatchesBothChoices(InsufficientBalanceScreenTest.kt:28)
+3) rendersCompletedRecordingAndDispatchesEveryPrimaryAction(com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest)
+java.lang.AssertionError: Failed to assert count of nodes.
+Reason: Expected '3' nodes but found '1' node that satisfies: (TestTag = 'recording-confirmation-fact')
+Node found:
+Node #539 at (l=1213.0, t=541.0, r=2274.0, b=685.0)px, Tag: 'recording-confirmation-fact'
+IsContainer = 'true'
+Shape = 'RoundedCornerShape(topStart = CornerSize(size = 4.0.dp), topEnd = CornerSize(size = 4.0.dp), bottomEnd = CornerSize(size = 4.0.dp), bottomStart = CornerSize(size = 4.0.dp))'
+Has 2 children, 1 sibling
+
+	at androidx.compose.ui.test.AssertionsKt.assertCountEquals(Assertions.kt:282)
+	at com.reallanguage.app.feature.recording.presentation.RecordingConfirmationScreenTest.rendersCompletedRecordingAndDispatchesEveryPrimaryAction(RecordingConfirmationScreenTest.kt:94)
+
+FAILURES!!!
+Tests run: 35,  Failures: 3

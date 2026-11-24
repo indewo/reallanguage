@@ -53,10 +53,6 @@ fun StartupConnectionScreen(onRetry: () -> Unit) {
                         Text("当前暂时无法连接服务。\n请检查网络后重新连接。", color = RlColor.TextPrimary,
                             fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 21.sp,
                             textAlign = TextAlign.Center)
-                        HorizontalDivider(color = RlColor.Border)
-                        Text("已有内容不会因此被删除。", color = RlColor.TextSecondary,
-                            fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 19.sp,
-                            textAlign = TextAlign.Center)
                     }
                     ErrorPaperAction("重新连接", onClick = onRetry,
                         modifier = Modifier.fillMaxWidth(.72f).heightIn(min = 48.dp)

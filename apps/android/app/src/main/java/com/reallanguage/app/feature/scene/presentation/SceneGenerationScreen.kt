@@ -51,7 +51,7 @@ fun SceneGenerationScreen(
         title = if (state.error != null) stringResource(R.string.scene_generation_failed_title)
         else stringResource(R.string.scene_generation_title),
         supportingText = if (state.error != null) stringResource(R.string.scene_generation_failed_explanation)
-        else stringResource(R.string.scene_generation_explanation),
+        else "",
         stages = listOf("整理信息", "编排场景", "生成内容"),
         activeStage = 1,
         fixedStages = true,

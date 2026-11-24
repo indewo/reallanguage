@@ -337,14 +337,7 @@ private fun AiReadingFeedback(
                 modifier = Modifier.testTag("reading-feedback-details-toggle")) {
                 Text(if (expanded) "收起具体建议" else "查看具体建议")
             }
-            if (expanded && details.isEmpty()) {
-                Text(
-                    "旧记录只保留了本轮总评；下一次录音会显示词或短语、节奏和完整度依据。",
-                    color = RlColor.TextSecondary,
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp,
-                )
-            } else if (expanded) {
+            if (expanded) {
                 details.forEachIndexed { index, detail ->
                     if (index > 0) androidx.compose.material3.HorizontalDivider(color = RlColor.Divider)
                     Row(

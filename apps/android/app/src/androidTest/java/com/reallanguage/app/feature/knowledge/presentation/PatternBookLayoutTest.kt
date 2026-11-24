@@ -197,13 +197,12 @@ class PatternBookLayoutTest {
             })
         val search = composeRule.onNodeWithTag("pattern-book-search").fetchSemanticsNode().boundsInRoot
         val title = composeRule.onNodeWithText("句式本", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
-        val subtitle = composeRule.onNodeWithText("展示全部已收录句式，不受当前词汇范围过滤", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInRoot
+        composeRule.onNodeWithText("展示全部已收录句式，不受当前词汇范围过滤", useUnmergedTree = true).assertDoesNotExist()
         val list = composeRule.onNodeWithTag("pattern-book-list").fetchSemanticsNode().boundsInRoot
         val viewport = composeRule.onNodeWithTag("pattern-reference-viewport").fetchSemanticsNode().boundsInRoot
         assertTrue("Search must not collide with the actual title", !search.overlaps(title))
         assertTrue("Search must stay within the real viewport", search.left >= viewport.left && search.right <= viewport.right + 1f)
-        assertTrue("Measured caption/first-row gap must stay valid", subtitle.bottom <= list.top + 1f)
+        assertTrue("Search must remain above the list", search.bottom <= list.top + 1f)
     }
 
     private fun render(expanded: String? = null, patterns: List<PatternRecord> = records,

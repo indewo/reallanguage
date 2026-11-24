@@ -231,14 +231,9 @@ private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (Handwr
                 )
             }
     }
-    if (compact) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("手写只保留在当前页面，不上传、不识别、不判错。", color = RlColor.TextSecondary,
-            fontSize = 12.sp, lineHeight = 17.sp)
-        controls(Modifier.fillMaxWidth())
-    } else Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-        Text("手写只保留在当前页面，不上传、不识别、不判错。", Modifier.weight(1f), color = RlColor.TextSecondary,
-            fontSize = 12.sp, lineHeight = 17.sp)
-        controls(Modifier.weight(.7f))
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+        controls(Modifier.fillMaxWidth(if (compact) 1f else .412f))
     }
   }
 }

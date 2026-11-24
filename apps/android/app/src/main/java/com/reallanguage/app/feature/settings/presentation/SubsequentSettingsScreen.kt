@@ -131,7 +131,7 @@ fun SubsequentSettingsScreen(
                 HorizontalDivider(color = RlColor.Border.copy(alpha = .5f), modifier = Modifier.padding(bottom = 6.dp))
                 SettingsSaveStatus(state)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (selectedGroup == 3) "提醒设置保存后生效" else "新设置从下一份内容生效", Modifier.weight(1f), color = RlColor.TextSecondary, fontSize = 12.sp)
+                    Spacer(Modifier.weight(1f))
                     Button(
                         enabled = state.changed && !state.saving && !state.loading && state.error != SubsequentSettingsError.VERSION_CONFLICT,
                         onClick = { onAction(SubsequentSettingsAction.SaveRequested) },
@@ -181,9 +181,8 @@ fun SubsequentSettingsScreen(
                                     HorizontalDivider(color = RlColor.Border.copy(alpha = .55f))
                                     Row(Modifier.padding(top = 10.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         Text("•", color = RlColor.ActionVivid)
-                                        Text("表达风格／AI 角色参考", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                                        Text("表达风格／AI 角色参考（选填）", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                                     }
-                                    Text("选填。", color = RlColor.TextSecondary, fontSize = 12.sp, modifier = Modifier.padding(start = 24.dp))
                                     OutlinedTextField(value = state.draft.styleReference, onValueChange = { onAction(SubsequentSettingsAction.StyleReferenceChanged(it)) },
                                         enabled = !initial.submitting, modifier = Modifier.fillMaxWidth().height(84.dp).testTag("settings-style-reference"),
                                         minLines = 2, maxLines = 6, shape = RlShape.Small,

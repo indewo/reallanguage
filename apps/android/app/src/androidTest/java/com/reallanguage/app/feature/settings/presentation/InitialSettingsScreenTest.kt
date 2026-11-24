@@ -92,7 +92,7 @@ class InitialSettingsScreenTest {
         composeRule.onNodeWithText("更慢").assertIsDisplayed()
         composeRule.onNodeWithText("标准").assertIsDisplayed()
         composeRule.onNodeWithText("更快").assertIsDisplayed()
-        composeRule.onNodeWithText("默认使用美式英语声音，当前不提供声线选择。").assertIsDisplayed()
+        composeRule.onNodeWithText("默认使用美式英语声音，当前不提供声线选择。").assertDoesNotExist()
         composeRule.onNodeWithText("声线选择").assertDoesNotExist()
         composeRule.onNodeWithText("完成设置").assertIsNotEnabled()
         composeRule.onNodeWithTag("settings-voice-toggle").performClick()

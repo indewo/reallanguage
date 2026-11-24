@@ -94,10 +94,7 @@ fun RecordingConfirmationScreen(state: RecordingConfirmationUiState, onAction: (
             state.recording != null -> {
                 Text(stringResource(R.string.recording_confirmation_title), color = RlColor.ActionVivid,
                     fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 27.sp, lineHeight = 37.sp)
-                Text("你可以先试听，再决定如何继续。", color = RlColor.Ink, fontSize = 15.sp, lineHeight = 23.sp)
-                ConfirmationFact(Icons.Outlined.Save, "原始录音仍保存在本机", RlColor.Secondary)
                 ConfirmationFact(Icons.Outlined.CloudUpload, "开始转写后将发送到处理服务", RlColor.ActionVivid)
-                ConfirmationFact(Icons.Outlined.Home, "返回首页不会删除录音", RlColor.Primary)
                 if (state.error == RecordingConfirmationError.PLAYBACK_FAILED) Text(stringResource(R.string.recording_confirmation_playback_failed), color = RlColor.Error)
                 if (state.recording.endReason == null) Text("这份旧录音没有停止原因记录，可以试听；为避免错误截断，请重新录制后再转写。", color = RlColor.Error)
             }

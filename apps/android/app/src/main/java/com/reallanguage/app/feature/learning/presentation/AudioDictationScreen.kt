@@ -135,7 +135,7 @@ fun AudioDictationScreen(
                     )
                     if (state.lockedHintItems.isEmpty()) {
                         Text(
-                            "本句没有已选择的重点词义、固定搭配或句式。请继续听音输入；提示不会临时增加学习目标。",
+                            "本句暂无提示。",
                             color = RlColor.TextSecondary,
                             style = MaterialTheme.typography.bodyMedium,
                         )

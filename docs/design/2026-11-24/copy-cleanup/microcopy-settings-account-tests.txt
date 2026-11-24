@@ -1,0 +1,258 @@
+
+com.reallanguage.app.feature.settings.presentation.SettingsEffectScopeScreenTest:.
+com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest:
+Error in voiceOffDisablesAutoPlayAndShowsNoVoiceSelection(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-voice-editorial-intro' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.voiceOffDisablesAutoPlayAndShowsNoVoiceSelection(InitialSettingsScreenTest.kt:84)
+
+Error in expressionBasicsControlsDispatchRealSettingsActions(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-vocabulary-cet_6' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.expressionBasicsControlsDispatchRealSettingsActions(InitialSettingsScreenTest.kt:115)
+
+Error in stepTwoMatchesConfirmedPreferenceStructureAndDispatchesSelection(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-preferences-editorial-intro' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.stepTwoMatchesConfirmedPreferenceStructureAndDispatchesSelection(InitialSettingsScreenTest.kt:145)
+
+Error in stepOneShowsOnlyConfirmedSettingsAndNoSkip(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest):
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '俚语' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.stepOneShowsOnlyConfirmedSettingsAndNoSkip(InitialSettingsScreenTest.kt:47)
+
+com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest:
+Error in titleAndFirstRealGroupUseTheOriginalRegionsInsteadOfTheGenericLedgerFlow(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '学习设置' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.titleAndFirstRealGroupUseTheOriginalRegionsInsteadOfTheGenericLedgerFlow(SubsequentSettingsFrameTest.kt:85)
+
+Error in sidebarStartsAtCanvasOriginAndNavigationOccupiesTheOriginalPaperSlots(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Original blue lane starts at x0/y0; header must not push it down
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.sidebarStartsAtCanvasOriginAndNavigationOccupiesTheOriginalPaperSlots(SubsequentSettingsFrameTest.kt:73)
+
+Error in unrelatedGenericRedStripAndDocumentsAreAbsentFromTheirActualPixelRegions(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Original blue below navigation must not contain the generic process-document collage
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.unrelatedGenericRedStripAndDocumentsAreAbsentFromTheirActualPixelRegions(SubsequentSettingsFrameTest.kt:118)
+
+Error in allThreeGroupsKeepTheirEditorialTypeRolesAtBaseline(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '①  表达基础' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:80)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.assertTextRole(SubsequentSettingsFrameTest.kt:169)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.verifyAllGroupTypography(SubsequentSettingsFrameTest.kt:158)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.allThreeGroupsKeepTheirEditorialTypeRolesAtBaseline(SubsequentSettingsFrameTest.kt:146)
+
+Error in allThreeGroupsKeepTheirEditorialTypeRolesAtDoubleFont(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '①  表达基础' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:80)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.assertTextRole(SubsequentSettingsFrameTest.kt:169)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.verifyAllGroupTypography(SubsequentSettingsFrameTest.kt:158)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.allThreeGroupsKeepTheirEditorialTypeRolesAtDoubleFont(SubsequentSettingsFrameTest.kt:152)
+
+Error in shortLandscapeAtDoubleFontShowsTheEntireConflictAndKeepsItsSafeExit(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'subsequent-settings-return' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.shortLandscapeAtDoubleFontShowsTheEntireConflictAndKeepsItsSafeExit(SubsequentSettingsFrameTest.kt:140)
+
+Error in yellowNoteStaysInHeaderLayerAndNeverTakesSpaceInTheScrollableBody(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Assert failed: The component with TestTag = 'subsequent-settings-effect-note' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.yellowNoteStaysInHeaderLayerAndNeverTakesSpaceInTheScrollableBody(SubsequentSettingsFrameTest.kt:96)
+
+Error in shortLandscapeAtDoubleFontKeepsRealContentScrollableAndReturnAvailable(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((ScrollBy is defined) && (hasAnyDescendantThat(TestTag = 'subsequent-settings-group')))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.shortLandscapeAtDoubleFontKeepsRealContentScrollableAndReturnAvailable(SubsequentSettingsFrameTest.kt:127)
+
+com.reallanguage.app.feature.settings.presentation.SubsequentSettingsScreenTest:.
+com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest:.......
+Error in actualListOccupiesTheOriginalLedgerRegionWithoutAnInventedLeftContentColumn(com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest):
+java.lang.AssertionError: Collapsed rows preserve the reference's left illustration margin: Rect.fromLTRB(52.0, 132.0, 1622.0, 519.0)
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest.actualListOccupiesTheOriginalLedgerRegionWithoutAnInventedLeftContentColumn(PatternBookLayoutTest.kt:70)
+
+Error in searchIsARealInputInTheOriginalHeaderRegionAndFiltersOnlyCurrentSavedRows(com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest):
+java.lang.AssertionError: Search belongs in the right header: Rect.fromLTRB(1406.0, 8.0, 1746.0, 104.0)
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest.searchIsARealInputInTheOriginalHeaderRegionAndFiltersOnlyCurrentSavedRows(PatternBookLayoutTest.kt:94)
+
+com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest:
+Error in sidebarClickScrollsToActualGroupWithoutSavingOrMovingFooter(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest):
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'subsequent-settings-return')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest.sidebarClickScrollsToActualGroupWithoutSavingOrMovingFooter(SubsequentSettingsNavigationTest.kt:37)
+
+Error in selectionTracksManualContentScrollInsteadOfTheLastClickedCard(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest):
+java.lang.AssertionError: Failed to perform ScrollBy action.
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((ScrollBy is defined) && (hasAnyDescendantThat(TestTag = 'subsequent-settings-group')))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performSemanticsAction(Actions.kt:633)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest.selectionTracksManualContentScrollInsteadOfTheLastClickedCard(SubsequentSettingsNavigationTest.kt:64)
+.
+com.reallanguage.app.feature.learning.presentation.HandwritingCopyScreenTest:..
+com.reallanguage.app.feature.home.presentation.AccountScreenTest:
+Error in rendersPassportSectionsAndDispatchesEveryAccountAction(com.reallanguage.app.feature.home.presentation.AccountScreenTest):
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'account-return-home')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:401)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:59)
+	at com.reallanguage.app.feature.home.presentation.AccountScreenTest.rendersPassportSectionsAndDispatchesEveryAccountAction(AccountScreenTest.kt:35)
+
+
+Time: 33.717
+There were 17 failures:
+1) voiceOffDisablesAutoPlayAndShowsNoVoiceSelection(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-voice-editorial-intro' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.voiceOffDisablesAutoPlayAndShowsNoVoiceSelection(InitialSettingsScreenTest.kt:84)
+2) expressionBasicsControlsDispatchRealSettingsActions(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-vocabulary-cet_6' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.expressionBasicsControlsDispatchRealSettingsActions(InitialSettingsScreenTest.kt:115)
+3) stepTwoMatchesConfirmedPreferenceStructureAndDispatchesSelection(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'settings-preferences-editorial-intro' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.stepTwoMatchesConfirmedPreferenceStructureAndDispatchesSelection(InitialSettingsScreenTest.kt:145)
+4) stepOneShowsOnlyConfirmedSettingsAndNoSkip(com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest)
+java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains '俚语' (ignoreCase: false) is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.InitialSettingsScreenTest.stepOneShowsOnlyConfirmedSettingsAndNoSkip(InitialSettingsScreenTest.kt:47)
+5) titleAndFirstRealGroupUseTheOriginalRegionsInsteadOfTheGenericLedgerFlow(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '学习设置' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.titleAndFirstRealGroupUseTheOriginalRegionsInsteadOfTheGenericLedgerFlow(SubsequentSettingsFrameTest.kt:85)
+6) sidebarStartsAtCanvasOriginAndNavigationOccupiesTheOriginalPaperSlots(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Original blue lane starts at x0/y0; header must not push it down
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.sidebarStartsAtCanvasOriginAndNavigationOccupiesTheOriginalPaperSlots(SubsequentSettingsFrameTest.kt:73)
+7) unrelatedGenericRedStripAndDocumentsAreAbsentFromTheirActualPixelRegions(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Original blue below navigation must not contain the generic process-document collage
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.unrelatedGenericRedStripAndDocumentsAreAbsentFromTheirActualPixelRegions(SubsequentSettingsFrameTest.kt:118)
+8) allThreeGroupsKeepTheirEditorialTypeRolesAtBaseline(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '①  表达基础' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:80)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.assertTextRole(SubsequentSettingsFrameTest.kt:169)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.verifyAllGroupTypography(SubsequentSettingsFrameTest.kt:158)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.allThreeGroupsKeepTheirEditorialTypeRolesAtBaseline(SubsequentSettingsFrameTest.kt:146)
+9) allThreeGroupsKeepTheirEditorialTypeRolesAtDoubleFont(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains '①  表达基础' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:80)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.assertTextRole(SubsequentSettingsFrameTest.kt:169)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.verifyAllGroupTypography(SubsequentSettingsFrameTest.kt:158)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.allThreeGroupsKeepTheirEditorialTypeRolesAtDoubleFont(SubsequentSettingsFrameTest.kt:152)
+10) shortLandscapeAtDoubleFontShowsTheEntireConflictAndKeepsItsSafeExit(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'subsequent-settings-return' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.shortLandscapeAtDoubleFontShowsTheEntireConflictAndKeepsItsSafeExit(SubsequentSettingsFrameTest.kt:140)
+11) yellowNoteStaysInHeaderLayerAndNeverTakesSpaceInTheScrollableBody(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Assert failed: The component with TestTag = 'subsequent-settings-effect-note' is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.yellowNoteStaysInHeaderLayerAndNeverTakesSpaceInTheScrollableBody(SubsequentSettingsFrameTest.kt:96)
+12) shortLandscapeAtDoubleFontKeepsRealContentScrollableAndReturnAvailable(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((ScrollBy is defined) && (hasAnyDescendantThat(TestTag = 'subsequent-settings-group')))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsFrameTest.shortLandscapeAtDoubleFontKeepsRealContentScrollableAndReturnAvailable(SubsequentSettingsFrameTest.kt:127)
+13) actualListOccupiesTheOriginalLedgerRegionWithoutAnInventedLeftContentColumn(com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest)
+java.lang.AssertionError: Collapsed rows preserve the reference's left illustration margin: Rect.fromLTRB(52.0, 132.0, 1622.0, 519.0)
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest.actualListOccupiesTheOriginalLedgerRegionWithoutAnInventedLeftContentColumn(PatternBookLayoutTest.kt:70)
+14) searchIsARealInputInTheOriginalHeaderRegionAndFiltersOnlyCurrentSavedRows(com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest)
+java.lang.AssertionError: Search belongs in the right header: Rect.fromLTRB(1406.0, 8.0, 1746.0, 104.0)
+	at org.junit.Assert.fail(Assert.java:89)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternBookLayoutTest.searchIsARealInputInTheOriginalHeaderRegionAndFiltersOnlyCurrentSavedRows(PatternBookLayoutTest.kt:94)
+15) sidebarClickScrollsToActualGroupWithoutSavingOrMovingFooter(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest)
+java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'subsequent-settings-return')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode$default(SemanticsNodeInteraction.kt:83)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest.sidebarClickScrollsToActualGroupWithoutSavingOrMovingFooter(SubsequentSettingsNavigationTest.kt:37)
+16) selectionTracksManualContentScrollInsteadOfTheLastClickedCard(com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest)
+java.lang.AssertionError: Failed to perform ScrollBy action.
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((ScrollBy is defined) && (hasAnyDescendantThat(TestTag = 'subsequent-settings-group')))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performSemanticsAction(Actions.kt:633)
+	at com.reallanguage.app.feature.settings.presentation.SubsequentSettingsNavigationTest.selectionTracksManualContentScrollInsteadOfTheLastClickedCard(SubsequentSettingsNavigationTest.kt:64)
+17) rendersPassportSectionsAndDispatchesEveryAccountAction(com.reallanguage.app.feature.home.presentation.AccountScreenTest)
+java.lang.AssertionError: Failed to inject touch input.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'account-return-home')
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performTouchInput(Actions.kt:401)
+	at androidx.compose.ui.test.AndroidActions.performClickImpl(Actions.android.kt:23)
+	at androidx.compose.ui.test.ActionsKt.performClick(Actions.kt:59)
+	at com.reallanguage.app.feature.home.presentation.AccountScreenTest.rendersPassportSectionsAndDispatchesEveryAccountAction(AccountScreenTest.kt:35)
+
+FAILURES!!!
+Tests run: 29,  Failures: 17

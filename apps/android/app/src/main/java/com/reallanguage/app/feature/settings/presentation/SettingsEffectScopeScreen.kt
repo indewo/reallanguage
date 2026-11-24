@@ -122,15 +122,6 @@ fun SettingsEffectScopeScreen(
             }
             val form: @Composable (Modifier, Boolean) -> Unit = { formModifier, includeControls ->
                 Column(formModifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("选择这次修改如何应用", color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 22.sp)
-                        }
-                        if (wide) Box(Modifier.width(125.dp).height(68.dp).testTag("settings-effect-confirm-note"), contentAlignment = Alignment.Center) {
-                            Image(painterResource(R.drawable.rl_registration_age_note), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                            Text("确认后再继续", Modifier.padding(12.dp), color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 20.sp)
-                        }
-                    }
                     BillingPaper(Modifier.fillMaxWidth(), PaddingValues(20.dp), spacing = 16.dp) {
                         choices.forEachIndexed { index, choice -> EffectScopeOptionCard(choice, selectedIndex == index, canChoose) { if (canChoose) selectedIndex = index } }
                         if (includeControls) controls()
@@ -210,26 +201,6 @@ private fun EffectDiagramLabel(text: String, paper: Int, modifier: Modifier = Mo
         Image(painterResource(paper), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         Text(text, Modifier.padding(horizontal = 8.dp, vertical = 3.dp), color = RlColor.PaperWarm,
             fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 18.sp)
-    }
-}
-
-@Composable
-private fun SettingsEffectConfirmNote() {
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Box(Modifier.weight(1f))
-        Box(
-            modifier = Modifier.width(150.dp).height(54.dp)
-                .testTag("settings-effect-confirm-note"),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                painter = painterResource(R.drawable.rl_registration_age_note),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillBounds,
-            )
-            Text("确认后再继续", color = RlColor.Ink, style = MaterialTheme.typography.bodySmall)
-        }
     }
 }
 

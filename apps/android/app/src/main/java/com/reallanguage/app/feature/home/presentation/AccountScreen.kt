@@ -88,11 +88,11 @@ private fun AccountLedgerPage(state: AccountUiState, onAction: (AccountAction) -
             }
         }
         HorizontalDivider(color = RlColor.Border)
-        AccountActionRow(Icons.Outlined.FormatListBulleted, "AI 费用与记录", "查看使用记录与余额", Modifier.testTag("account-billing")) { onAction(AccountAction.BillingRequested) }
-        AccountActionRow(Icons.Outlined.MicNone, stringResource(R.string.account_local_recordings), "查看与管理本机保留的录音", Modifier.testTag("account-recordings")) { onAction(AccountAction.LocalRecordingsRequested) }
+        AccountActionRow(Icons.Outlined.FormatListBulleted, "AI 费用与记录", "", Modifier.testTag("account-billing")) { onAction(AccountAction.BillingRequested) }
+        AccountActionRow(Icons.Outlined.MicNone, stringResource(R.string.account_local_recordings), "", Modifier.testTag("account-recordings")) { onAction(AccountAction.LocalRecordingsRequested) }
         AccountActionRow(Icons.AutoMirrored.Outlined.Logout, stringResource(if (state.loggingOut) R.string.account_logging_out else R.string.account_logout), "", Modifier.testTag("account-logout"), enabled = !state.loggingOut) { onAction(AccountAction.LogoutRequested) }
         if (state.error == AccountError.LOGOUT_FAILED) Text(stringResource(R.string.account_logout_failed), color = RlColor.Error)
-        AccountActionRow(Icons.Outlined.DeleteOutline, stringResource(R.string.account_delete), "将按流程确认并处理账号数据", Modifier.testTag("account-delete"), RlColor.Error) { onAction(AccountAction.DeleteAccountRequested) }
+        AccountActionRow(Icons.Outlined.DeleteOutline, stringResource(R.string.account_delete), "", Modifier.testTag("account-delete"), RlColor.Error) { onAction(AccountAction.DeleteAccountRequested) }
     }
 }
 @Composable

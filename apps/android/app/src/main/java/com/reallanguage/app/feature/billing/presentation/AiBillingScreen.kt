@@ -99,13 +99,6 @@ fun AiBillingScreen(state: AiBillingUiState, onAction: (AiBillingAction) -> Unit
                 BillingLabel(stringResource(R.string.ai_billing_details_title))
             }
         }
-        if (wide) Row(Modifier.fillMaxWidth().padding(end = 48.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            BillingNotice(stringResource(R.string.ai_billing_non_ai_free), Modifier.weight(1f))
-            BillingNotice(stringResource(R.string.ai_billing_no_duplicate_charge), Modifier.weight(1f))
-        } else {
-            BillingNotice(stringResource(R.string.ai_billing_non_ai_free))
-            BillingNotice(stringResource(R.string.ai_billing_no_duplicate_charge))
-        }
     }
 }
 

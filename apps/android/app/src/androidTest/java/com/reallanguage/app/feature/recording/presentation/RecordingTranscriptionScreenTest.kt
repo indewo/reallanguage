@@ -33,7 +33,7 @@ class RecordingTranscriptionScreenTest {
 
         composeRule.onNodeWithTag("recording-transcription-header").assertIsDisplayed()
         composeRule.onNodeWithText("已完成").assertDoesNotExist()
-        composeRule.onNodeWithText("离开此页不会删除本机录音").assertIsDisplayed()
+        composeRule.onNodeWithText("离开此页不会删除本机录音").assertDoesNotExist()
         composeRule.onNodeWithTag("recording-transcription-artwork").assertIsDisplayed()
         composeRule.onAllNodesWithTag("recording-transcription-stage", useUnmergedTree = true)
             .assertCountEquals(3)
@@ -55,7 +55,7 @@ class RecordingTranscriptionScreenTest {
         composeRule.onNodeWithText("已完成").assertDoesNotExist()
         composeRule.onNodeWithTag("recording-transcription-live-progress").assertDoesNotExist()
         composeRule.onAllNodesWithTag("recording-transcription-stage", useUnmergedTree = true).assertCountEquals(3)
-        composeRule.onNodeWithText("离开此页不会删除本机录音").assertIsDisplayed()
+        composeRule.onNodeWithText("离开此页不会删除本机录音").assertDoesNotExist()
         composeRule.onNodeWithTag("recording-transcription-home").assertIsDisplayed()
     }
 }

@@ -39,11 +39,11 @@ import com.reallanguage.app.core.designsystem.RlPrimaryButton
 import com.reallanguage.app.core.designsystem.RlSpace
 
 data class ExplanationPreparationFailureDisplay(
-    val detail: String? = "已确认内容不受影响。",
+    val detail: String? = null,
     val backLabel: String = "返回章节",
     val showRetry: Boolean = true,
     val title: String = "准备基础讲解",
-    val supporting: String = "当前章节已确认，正在准备本句讲解。",
+    val supporting: String = "",
     val stageLabels: List<String> = listOf("确认当前句子", "整理用法与例句", "准备自然发音"),
 )
 
@@ -72,7 +72,7 @@ data class ExplanationPreparationFailureDisplay(
             Column(Modifier.fillMaxWidth().onSizeChanged { headingHeightPx = it.height },
                 verticalArrangement = Arrangement.spacedBy(8.dp)) {
             LearningHeading(failureDisplay.title, onBack = { onAction(ExplanationPreparationAction.BackRequested) }, showPreviousInHeader = true)
-            Text(failureDisplay.supporting, Modifier.align(Alignment.CenterHorizontally),
+            if (failureDisplay.supporting.isNotBlank()) Text(failureDisplay.supporting, Modifier.align(Alignment.CenterHorizontally),
                 color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 15.sp, lineHeight = 21.sp)
             // The real state belongs above decorative art and generic stage labels,
             // especially when this presentation is reused for a save gate.

@@ -28,7 +28,7 @@ class StartupConnectionScreenTest {
             }
         }
         rule.onNodeWithTag("startup-connection-retry").assertIsDisplayed()
-        rule.onNodeWithText("已有内容不会因此被删除。").performScrollTo().assertIsDisplayed()
+        rule.onNodeWithText("当前暂时无法连接服务。\n请检查网络后重新连接。").performScrollTo().assertIsDisplayed()
         rule.onNodeWithTag("startup-connection-retry").assertIsDisplayed().performClick()
     }
 }

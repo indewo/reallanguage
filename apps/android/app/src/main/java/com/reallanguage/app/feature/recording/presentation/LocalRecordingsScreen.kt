@@ -66,6 +66,5 @@ fun LocalRecordingsScreen(state: LocalRecordingsUiState, onAction: (LocalRecordi
                 }
             }
         }
-        Text("录音只保存在本机，可稍后继续处理。", color = RlColor.TextSecondary, fontSize = 13.sp, lineHeight = 22.sp)
     }
 }

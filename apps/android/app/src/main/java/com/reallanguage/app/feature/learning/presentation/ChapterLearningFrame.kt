@@ -55,7 +55,7 @@ fun ChapterLearningFrame(
     showCurrentFocusEnglish: Boolean = true,
     hideAllFocusEnglish: Boolean = false,
     stageTitle: String = "真实表达",
-    stageSupporting: String = "把熟悉的内容，变成真正会用的英语。",
+    stageSupporting: String = "",
     onBack: (() -> Unit)? = null,
     leftPaneWeight: Float = .88f,
     rightPaneWeight: Float = 1.36f,
@@ -141,7 +141,7 @@ fun ChapterLearningFrame(
                         else {
                             Text(stageTitle, color = Color.White, fontFamily = EditorialFont.Serif,
                                 fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 35.sp)
-                            Text(stageSupporting, color = Color.White.copy(alpha = .88f), fontSize = 15.sp, lineHeight = 22.sp)
+                            if (stageSupporting.isNotBlank()) Text(stageSupporting, color = Color.White.copy(alpha = .88f), fontSize = 15.sp, lineHeight = 22.sp)
                         }
                     }
                   }

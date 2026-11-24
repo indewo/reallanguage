@@ -39,7 +39,7 @@ class SafetyCheckScreenTest {
 
         composeRule.onNodeWithText("安全检查").assertIsDisplayed()
         composeRule.onNodeWithText("正在确认这份内容可以进入学习").assertIsDisplayed()
-        composeRule.onNodeWithText("我们只检查本次确认的中文来源，不会改变你的原意。").assertIsDisplayed()
+        composeRule.onNodeWithText("我们只检查本次确认的中文来源，不会改变你的原意。").assertDoesNotExist()
         composeRule.onNodeWithText("来源识别").assertIsDisplayed()
         composeRule.onNodeWithText("内容安全").assertIsDisplayed()
         composeRule.onNodeWithText("隐私保护").assertIsDisplayed()
@@ -69,10 +69,10 @@ class SafetyCheckScreenTest {
     @Test
     fun checklistNeverCoversTheSourcePromiseAndAllFourSubtitlesFit() {
         composeRule.setContent { RlTheme { SafetyCheckScreen(SafetyCheckUiState(source, processing = true), {}) } }
-        val promise = composeRule.onNodeWithText("我们只检查本次确认的中文来源，不会改变你的原意。")
+        val heading = composeRule.onNodeWithText("正在确认这份内容可以进入学习")
             .fetchSemanticsNode().boundsInRoot
         val checklist = composeRule.onNodeWithTag("safety-check-list").fetchSemanticsNode().boundsInRoot
-        assertTrue("Checklist must start below the explanatory copy: $promise / $checklist", checklist.top >= promise.bottom)
+        assertTrue("Checklist must start below the heading: $heading / $checklist", checklist.top >= heading.bottom)
         for (text in listOf("确认中文来源", "检查不当或敏感信息", "隐藏个人信息", "保留原意与上下文")) {
             val layouts = mutableListOf<TextLayoutResult>()
             composeRule.onNodeWithText(text).performScrollTo().assertIsDisplayed()
