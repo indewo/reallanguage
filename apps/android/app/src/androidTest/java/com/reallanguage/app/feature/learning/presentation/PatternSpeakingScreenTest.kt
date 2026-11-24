@@ -23,6 +23,22 @@ import org.junit.Before
 class PatternSpeakingScreenTest {
     @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+    @Test
+    fun failedResponseRevealsItsErrorWithoutManualScrolling() {
+        val state = androidx.compose.runtime.mutableStateOf(PatternSpeakingUiState(
+            FixedLearningChapter("c1", 1, listOf(FixedLearningSentence("s1", "Original sentence.", "原句。", true))),
+            "s1", listOf(LockedSpeakingPattern("p1", "s1", "without [noun]", "不加……")),
+            stage = PatternSpeakingStage.RESPONDING,
+            examples = listOf(PatternPracticeExample("e1", "在咖啡馆点单。", "You want to order an iced Americano without sugar.", "Can I get an iced Americano without sugar?", "我可以要一杯不加糖的冰美式咖啡吗？")),
+            recording = true,
+        ))
+        composeRule.setContent { RlTheme { PatternSpeakingScreen(state.value, {}) } }
+        composeRule.runOnIdle { state.value = state.value.copy(recording = false, failureMessageVisible = true) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("本次无法可靠反馈，请重读。").assertIsDisplayed()
+        composeRule.onNodeWithText("重新回应").assertIsDisplayed().assertIsEnabled()
+    }
+
     @Before fun useProductionLandscapeOrientation() {
         composeRule.activityRule.scenario.onActivity {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE

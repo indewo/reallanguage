@@ -1,0 +1,6 @@
+
+com.reallanguage.app.feature.learning.presentation.PatternSpeakingScreenTest:....
+
+Time: 5.809
+
+OK (4 tests)

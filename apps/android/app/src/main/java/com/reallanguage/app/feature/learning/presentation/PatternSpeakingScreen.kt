@@ -26,6 +26,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +64,13 @@ fun PatternSpeakingScreen(
     targetAssessment: @Composable (com.reallanguage.app.feature.learning.domain.LockedSpeakingPattern) -> Unit,
 ) {
     val currentExample = state.currentResponseExample
+    val feedbackVisibility = remember { BringIntoViewRequester() }
+    LaunchedEffect(state.failureMessageVisible, state.feedbackZh) {
+        if (state.failureMessageVisible || state.feedbackZh != null) {
+            androidx.compose.runtime.withFrameNanos { }
+            feedbackVisibility.bringIntoView()
+        }
+    }
     // New content starts at its own heading; feedback/busy/retry emissions for the same
     // target and example retain the user's local reading position.
     val moduleScroll = key(state.currentFocusSentenceId, state.currentPattern?.patternId, state.stage,
@@ -153,7 +164,8 @@ fun PatternSpeakingScreen(
                 ) { Text(stringResource(R.string.pattern_speaking_skip_scene)) }
             }
             RlPrimaryButton(
-                text = stringResource(
+                text = if (state.stage == PatternSpeakingStage.RESPONDING && state.failureMessageVisible &&
+                    !state.technicalRetryPending && !state.technicalRetryBlocked && !state.recording) "重新回应" else stringResource(
                     if (state.progressFailed) R.string.full_sentence_speaking_retry_save else when (state.stage) {
                         PatternSpeakingStage.LOADING -> if (state.failureMessageVisible) {
                             R.string.read_speak_retry
@@ -321,13 +333,13 @@ fun PatternSpeakingScreen(
                         Icon(Icons.Outlined.PlayCircleOutline, contentDescription = null)
                         Text(stringResource(R.string.pattern_speaking_pronounce))
                     }
-                    state.feedbackZh?.let { Text(it) }
+                    state.feedbackZh?.let { Text(it, Modifier.bringIntoViewRequester(feedbackVisibility)) }
                     if (state.failureMessageVisible) {
                         Text(stringResource(when {
                             state.technicalRetryPending -> R.string.learning_audio_retry_pending
                             state.technicalRetryBlocked -> R.string.full_sentence_speaking_retry_blocked
                             else -> R.string.pattern_speaking_capture_failed
-                        }), color = RlColor.Error)
+                        }), modifier = Modifier.bringIntoViewRequester(feedbackVisibility), color = RlColor.Error)
                     }
                     if (!state.technicalRetryPending && !state.technicalRetryBlocked && (state.repeatRecommended || state.failureMessageVisible)) {
                         OutlinedButton(onClick = { onAction(PatternSpeakingAction.RetryResponseRequested) }) {
