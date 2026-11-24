@@ -1,0 +1,6 @@
+
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:.
+
+Time: 2.378
+
+OK (1 test)

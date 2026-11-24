@@ -1,0 +1,219 @@
+{
+  "sourceFilesScanned": 1232,
+  "drawableFiles": 217,
+  "dynamicLookupFiles": [],
+  "unusedCount": 42,
+  "unusedBytes": 74967098,
+  "unused": [
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/home_diary_collage_v2.png",
+      "bytes": 1912989,
+      "sha256": "25a1528b3ed8ce7d488f5774d9fdde512777d8fbb93ac4ca2ebe7c689b147f72"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/home_diary_collage.png",
+      "bytes": 1508781,
+      "sha256": "8b7d5d60b1c77f1fae48c14a935b650394aa2739a8fe8cee7752e38e1823a4d1"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/home_scene_collage.png",
+      "bytes": 1075518,
+      "sha256": "daacde26db3653a4e4655feac00df9b80fc7d993b22e6116d8ac3ad35eae3174"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_account_ledger_page.png",
+      "bytes": 2220127,
+      "sha256": "b82d29bf01b7d631228a0e83c228fd8833103ffaf127fb62bc54bc9ea2e22102"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_account_passport_collage.png",
+      "bytes": 3232117,
+      "sha256": "6a9bb60874a9528fe2a48d2b85c364c046c9e914174e7507d3be5dce2200f266"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_complete_writing_typewriter_v2.png",
+      "bytes": 2105354,
+      "sha256": "f6f3599ee09b9d7e65f9ea29c1ff4751976f07cb69ac34c15debfc99a51a5b7e"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_complete_writing_typewriter_v3.png",
+      "bytes": 1650549,
+      "sha256": "918f8910b52a2c85f39fdee6f96dac0b618b605dd4ea80118d1270311dd59c72"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_daily_reminder_calendar_collage.png",
+      "bytes": 2140716,
+      "sha256": "658304e2f63ea844ab8aff5d8e0637d80c8c3afb94a06db7756152b84140671d"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_diary_brass_seal.png",
+      "bytes": 2705004,
+      "sha256": "429a8973724fae59736a40c9411554642a264c90b0427698be5c8b0abadabfd6"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_diary_processing_lower_collage.png",
+      "bytes": 1916016,
+      "sha256": "91c36db029f7b765692b6c35ec7ec1e7b1034b270988e63a0a48cbaaee277218"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_diary_processing_source_note.png",
+      "bytes": 1708593,
+      "sha256": "520fa43656ffff273f8215ddfbf88d8140c6de7fecc7573d86f4b58d4e7ca2bb"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_diary_processing_upper_collage.png",
+      "bytes": 1640969,
+      "sha256": "d052c7d99943ff5993f9932728a69c81e0776a5b8e37ab1cd23f1e23450f21b3"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_cover_record.webp",
+      "bytes": 63274,
+      "sha256": "038352fabdc4d36345a4e742a3e258c47576abb1a6c3680ff5756619011a13d8"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_incomplete_green_tape.png",
+      "bytes": 103291,
+      "sha256": "bb017e71b5b7d7a0f55d260a0c5d6931b51348aeb69506e8b38b87c5fa552f52"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_quick_recording_tape.png",
+      "bytes": 978634,
+      "sha256": "993759470b5a1a87f56b0885f1c64a9cd4140a432d6214e742ec60125b78b53f"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_review_pin.png",
+      "bytes": 35902,
+      "sha256": "e942dfa1945759571425e4c367148e32f4194311cf0bf2392c98011ae5508019"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_task_note_plain.png",
+      "bytes": 1083130,
+      "sha256": "a03bdb05e1f686cc036722debab30bffcb0fa40f45794d9599c114b9bf679241"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_white_underline_v2.png",
+      "bytes": 106491,
+      "sha256": "c7dc47e0abb8812b5c7bba560761d19e52afe010ab5357d402d6e31b72324bcc"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_home_white_underline.png",
+      "bytes": 14764,
+      "sha256": "8547f0c7daf88de33987db53dbf17c775b679df56db49db0de0ba0cbe0b12f2e"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_incomplete_learning_book_collage.png",
+      "bytes": 2810873,
+      "sha256": "765ee693069882e70173012a65fef887eab80a3125f05e0d31321d0a90b86a65"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_review_dossier.png",
+      "bytes": 2838091,
+      "sha256": "a5a09316657da17792aea83d4018f39dfa350a6403a60a8984d1d7c79c97cc6d"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_service_failure_press_v2.png",
+      "bytes": 1945683,
+      "sha256": "9d290d651b67ad13d071f4d9003e4bfa55e4eaa160d48051f8d940f6330f640f"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_service_failure_press.png",
+      "bytes": 1906182,
+      "sha256": "175dc717a48387b1537150ddf49e8072c61375e8e2238463f08eff198a98a8b5"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_settings_selected_stamp.png",
+      "bytes": 1547241,
+      "sha256": "68f1ad0971c25700fdcdf1f523236e7ec78114abae332676fee3740cc66a22d2"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_account_avatar.png",
+      "bytes": 2014520,
+      "sha256": "9c84e2a9b25cb08b297006d4dcbeff230a9a96c5ba08ffad100cb1bfb6d4168e"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_account_passport.png",
+      "bytes": 2891256,
+      "sha256": "819ad61e85bbc0aa44a77e3fb3c6854fbf425092e1bc9e1dad24bd88668efdac"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_diary_failure_notebook.png",
+      "bytes": 2396822,
+      "sha256": "a5859a703514107bc01f7f715a38786cdd38abc8074b201f703b6b98aeaa96a6"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_diary_failure_paper.png",
+      "bytes": 2246080,
+      "sha256": "d6edc74b34614935d80331ef3b9589a8d9aa6dbd401f33aff5a11d3178284f05"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_diary_processing_segments.png",
+      "bytes": 1412949,
+      "sha256": "9fb2bd8e3ec2f828354f1a1dffe38f89bab9c2bb5747ffb13a4240a171d77d99"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_diary_source_note.png",
+      "bytes": 2121530,
+      "sha256": "eae90b4a6a6b5aecbb344bce93925f8a05523ca3231305294784586a10cf3b28"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_english_poster.png",
+      "bytes": 2807098,
+      "sha256": "6dbff6e129451e07d2b4fccf09353229cf88215b63183840786101c0cbdcbeb0"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_error_preserved_dossier.png",
+      "bytes": 2413358,
+      "sha256": "249cdbb47313a086613603fd743b8faf1883813641a822b2893cbbdeaeb47a0e"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_incomplete_paper.png",
+      "bytes": 1541872,
+      "sha256": "b12cd211e9111f9d66b3963966237c8dd11a831ebdd7b0565d1b6cb7abc1a513"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_incomplete_ribbon.png",
+      "bytes": 1787884,
+      "sha256": "12251bcde957c7c6a1644e0c3379ffa599161fc59e4f83473df469f1d8425198"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_knowledge_pattern_ledger.png",
+      "bytes": 2184296,
+      "sha256": "487988bd468f32727e85b440ba79b11f097d5c3fa8e95187b51ad3aafc84332b"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_learning_preparation_notebook.png",
+      "bytes": 1829246,
+      "sha256": "ab62c70b055f57b44b7bdb4c9b897f8c6dd6215c8108b7e9e6777e4c7c4a54c7"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_pattern_botanical_v2.png",
+      "bytes": 446947,
+      "sha256": "258b374b49f1a9cad9974db9510c8abdb0eec16ac482bb366a9d4540cd266fba"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_recording_delete_paper.png",
+      "bytes": 2019199,
+      "sha256": "ae21201450ef1092493213e8206974f6f4ecbe04892217b0808f0a9f92891686"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_review_source_basket.png",
+      "bytes": 2598993,
+      "sha256": "1f581769627cfbbdee47b1cd9afacd98d834db1a5d171518e027ed8c30ab30ff"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_semantic_poster.png",
+      "bytes": 2775655,
+      "sha256": "d0d53f5319fe438d5a5b9f4066bbcc4ea6dd0a376d359c2e3bd54f164cb5b873"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_v73_target_poster.png",
+      "bytes": 2709502,
+      "sha256": "8dede2cebd436e4dca3997ec93c4e27335636e07a21c2096c6bab08da248bc6d"
+    },
+    {
+      "path": "apps/android/app/src/main/res/drawable-nodpi/rl_vocabulary_alphabet_rail_v2.png",
+      "bytes": 1519602,
+      "sha256": "dc876ae3131c2598d9aa2df254a80d54a0c9587c12fa28145505a21d4ba1707e"
+    }
+  ]
+}

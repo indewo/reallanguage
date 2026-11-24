@@ -1,0 +1,28 @@
+
+com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest:
+Error in expandedPatternShowsRealExamplesCountsAndWorkingActions(com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest):
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestOwnerKt.getAllSemanticsNodes(TestOwner.kt:106)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test(SemanticsNodeInteraction.kt:64)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test$default(SemanticsNodeInteraction.kt:59)
+	at androidx.compose.ui.test.AndroidAssertions_androidKt.checkIsDisplayed(AndroidAssertions.android.kt:29)
+	at androidx.compose.ui.test.AssertionsKt.isDisplayed(Assertions.kt:351)
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:33)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest.expandedPatternShowsRealExamplesCountsAndWorkingActions(PatternDetailScreenTest.kt:54)
+
+com.reallanguage.app.core.designsystem.NotebookScreenFitTest:....
+
+Time: 20.987
+There was 1 failure:
+1) expandedPatternShowsRealExamplesCountsAndWorkingActions(com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest)
+java.lang.IllegalStateException: No compose hierarchies found in the app. Possible reasons include: (1) the Activity that calls setContent did not launch; (2) setContent was not called; (3) setContent was called before the ComposeTestRule ran. If setContent is called by the Activity, make sure the Activity is launched after the ComposeTestRule runs
+	at androidx.compose.ui.test.TestOwnerKt.getAllSemanticsNodes(TestOwner.kt:106)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test(SemanticsNodeInteraction.kt:64)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNodes$ui_test$default(SemanticsNodeInteraction.kt:59)
+	at androidx.compose.ui.test.AndroidAssertions_androidKt.checkIsDisplayed(AndroidAssertions.android.kt:29)
+	at androidx.compose.ui.test.AssertionsKt.isDisplayed(Assertions.kt:351)
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:33)
+	at com.reallanguage.app.feature.knowledge.presentation.PatternDetailScreenTest.expandedPatternShowsRealExamplesCountsAndWorkingActions(PatternDetailScreenTest.kt:54)
+
+FAILURES!!!
+Tests run: 5,  Failures: 1
