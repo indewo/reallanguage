@@ -111,6 +111,9 @@ sealed interface LearningTargetExtractionResult {
     data object Failed : LearningTargetExtractionResult
 }
 
+enum class LearningTargetExtractionStage { ANALYZING_SENTENCES, EXTRACTING_TARGETS, ORGANIZING_TARGETS }
+
 interface LearningTargetExtractionRepository : LearningTargetGenerator {
     suspend fun extract(): LearningTargetExtractionResult
+    suspend fun extract(onProgress: (LearningTargetExtractionStage) -> Unit): LearningTargetExtractionResult = extract()
 }

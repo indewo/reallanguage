@@ -1,212 +1,236 @@
 package com.reallanguage.app.feature.scene.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material3.Icon
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import com.reallanguage.app.R
-import com.reallanguage.app.core.designsystem.RlColor
-import com.reallanguage.app.core.designsystem.RlEditorialHeader
-import com.reallanguage.app.core.designsystem.RlPrimaryButton
-import com.reallanguage.app.core.designsystem.RlScrollablePage
-import com.reallanguage.app.core.designsystem.RlSpace
+import com.reallanguage.app.core.designsystem.*
+import com.reallanguage.app.feature.formation.presentation.ProcessingNotebookArtwork
 
 @Composable
 fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestionsAction) -> Unit) {
-    BackHandler { onAction(SceneQuestionsAction.BackRequested) }
-    val previous = state.history.lastOrNull().takeIf { state.loading }
-    val visibleQuestion = state.currentQuestion ?: previous?.question
-    val visibleAnswer = previous?.answer?.answerZh ?: state.answerText
-    val customAnswerFocus = remember { FocusRequester() }
-    // Returning from a failed generation can restore this screen after its last request
-    // already cleared currentQuestion. That state has neither a question nor an error, so
-    // rendering it as "submit answer" leaves an enabled-looking blank page. Treat the
-    // missing question as a recoverable request failure and expose the retry action.
-    val missingQuestion = !state.loading && state.error == null && visibleQuestion == null
-    val effectiveError = state.error ?: SceneQuestionsError.REQUEST_FAILED.takeIf { missingQuestion }
-    SceneEditorialFrame(
-        title = stringResource(R.string.scene_questions_title),
-        supporting = "让场景更像\n你真实经历的",
-        footer = {
-            TextButton(
-                onClick = { onAction(SceneQuestionsAction.ExitRequested) },
-                modifier = Modifier.weight(.4f),
-            ) { Text(stringResource(R.string.scene_questions_exit)) }
-            if (state.history.isNotEmpty() && effectiveError != SceneQuestionsError.INSUFFICIENT_INFORMATION) {
-                OutlinedButton(
-                    onClick = { onAction(SceneQuestionsAction.PreviousRequested) },
-                    modifier = Modifier.weight(.45f).testTag("scene-questions-previous"),
-                    enabled = !state.loading,
-                ) { Text(stringResource(R.string.scene_questions_previous)) }
+    val back = { onAction(SceneQuestionsAction.BackRequested) }
+    BackHandler(onBack = back)
+    val question = state.currentQuestion ?: state.history.lastOrNull()?.question.takeIf { state.loading }
+    val options = question?.options.orEmpty().distinct()
+    var custom by rememberSaveable(question?.questionId) {
+        mutableStateOf(options.isEmpty() || (state.answerText.isNotBlank() && state.answerText !in options))
+    }
+    var customDraft by rememberSaveable(question?.questionId) {
+        mutableStateOf(state.answerText.takeIf { it !in options }.orEmpty())
+    }
+    val selected = if (state.loading && state.currentQuestion == null)
+        state.history.lastOrNull()?.answer?.answerZh.orEmpty() else state.answerText
+    val error = state.error ?: SceneQuestionsError.REQUEST_FAILED.takeIf { !state.loading && question == null }
+    val insufficient = error == SceneQuestionsError.INSUFFICIENT_INFORMATION
+    val questionNumber = (state.confirmedAnswers.size + if (state.loading && state.history.isNotEmpty()) 0 else 1)
+        .coerceIn(1, 10)
+
+    RlPaperBackground {
+        Column(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing.union(WindowInsets.ime))
+            .padding(horizontal = 18.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box(Modifier.fillMaxWidth().testTag("scene-questions-header")) {
+                EditorialPageHeader("补充场景细节", back, backLabel = "返回")
             }
-            RlPrimaryButton(
-                text = if (state.loading) stringResource(R.string.scene_questions_loading) else stringResource(
-                    when (effectiveError) {
-                        SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_return_edit
-                        null -> R.string.scene_questions_submit
-                        else -> R.string.diary_retry
-                    },
-                ),
-                enabled = !state.loading && (effectiveError != null || state.answerText.isNotBlank()),
-                onClick = {
-                    onAction(
-                        when (effectiveError) {
-                            SceneQuestionsError.INSUFFICIENT_INFORMATION -> SceneQuestionsAction.PreviousRequested
-                            null -> SceneQuestionsAction.AnswerSubmitted
-                            else -> SceneQuestionsAction.RetryRequested
-                        },
-                    )
-                },
-                modifier = Modifier.weight(1f).testTag("scene-questions-submit"),
-            )
-        },
-    ) {
-        SceneQuestionProgress(if (state.loading && state.history.isNotEmpty()) state.confirmedAnswers.size - 1 else state.confirmedAnswers.size)
-        when {
-            state.loading && visibleQuestion == null -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                androidx.compose.material3.CircularProgressIndicator(Modifier.size(18.dp), color = RlColor.Secondary, strokeWidth = 2.dp)
-                Text(stringResource(R.string.scene_questions_loading), color = RlColor.TextSecondary, fontSize = 14.sp)
-            }
-            state.error != null || missingQuestion -> {
-                Text(
-                    stringResource(
-                        when (effectiveError) {
-                            SceneQuestionsError.INVALID_RESPONSE -> R.string.scene_questions_invalid
-                            SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_insufficient
-                            else -> R.string.scene_questions_failed
-                        },
-                    ),
-                    color = RlColor.Error,
-                    modifier = Modifier.testTag("scene-questions-error"),
-                )
-            }
-            visibleQuestion != null -> {
-                Text(visibleQuestion.questionZh, modifier = Modifier.testTag("scene-questions-prompt"), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
-                    fontSize = 22.sp, lineHeight = 30.sp, fontWeight = FontWeight.Bold)
-                if (visibleQuestion.options.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().testTag("scene-questions-options"),
-                        verticalArrangement = Arrangement.spacedBy(RlSpace.Space8),
-                    ) {
-                        visibleQuestion.options.chunked(2).forEach { options ->
-                          Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
-                          options.forEach { option ->
-                            val selected = visibleAnswer == option
-                            BoxWithConstraints(Modifier.weight(1f).heightIn(min = 48.dp).padding(bottom = 8.dp)
-                                .clickable(enabled = !state.loading) { onAction(SceneQuestionsAction.AnswerChanged(option)) }
-                                .testTag("scene-option-$option")) {
-                                Image(painterResource(if (selected) R.drawable.rl_scene_recent_ticket_sage_v2 else R.drawable.rl_scene_recent_ticket_blue_v2),
-                                    null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-                                Row(Modifier.fillMaxWidth().padding(start = maxWidth * .16f, end = maxWidth * .16f, top = 12.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically,
+            BoxWithConstraints(Modifier.fillMaxWidth().weight(1f)) {
+                val compact = maxWidth < 580.dp || maxHeight < 175.dp || LocalDensity.current.fontScale > 1.35f
+                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (!compact) NotebookPanel(Modifier.weight(.28f).fillMaxHeight().testTag("scene-questions-artwork"),
+                        padding = PaddingValues(horizontal = 14.dp, vertical = 12.dp), trimOuterMargin = true) {
+                        LearningContextTitle()
+                        ProcessingNotebookArtwork(Modifier.weight(1f).fillMaxWidth(), state.start.displayTopic())
+                    }
+                    NotebookPanel(Modifier.weight(if (compact) 1f else .72f).fillMaxHeight(),
+                        padding = PaddingValues(start = 20.dp, end = 18.dp, top = 12.dp, bottom = 14.dp),
+                        trimOuterMargin = true, header = {
+                        if (!compact) QuestionHeading(questionNumber, if (error == null) question?.questionZh else null)
+                    }) {
+                        key(question?.questionId) {
+                            val scroll = rememberScrollState()
+                            Column(Modifier.fillMaxSize().drawWithContent {
+                                drawContent()
+                                val overflow = scroll.maxValue
+                                if (overflow in 1 until Int.MAX_VALUE) {
+                                    val thumb = (size.height * size.height / (size.height + overflow)).coerceAtLeast(14.dp.toPx())
+                                    val top = (size.height - thumb) * scroll.value / overflow
+                                    drawRoundRect(RlColor.Secondary.copy(alpha = .65f),
+                                        Offset(size.width - 3.dp.toPx(), top), Size(2.dp.toPx(), thumb), CornerRadius(2.dp.toPx()))
+                                }
+                            }.padding(end = 6.dp).verticalScroll(scroll),
+                                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                                if (compact) QuestionHeading(questionNumber, if (error == null) question?.questionZh else null)
+                                when {
+                                    error != null -> Text(stringResource(when (error) {
+                                        SceneQuestionsError.INVALID_RESPONSE -> R.string.scene_questions_invalid
+                                        SceneQuestionsError.INSUFFICIENT_INFORMATION -> R.string.scene_questions_insufficient
+                                        SceneQuestionsError.REQUEST_FAILED -> R.string.scene_questions_failed
+                                    }), Modifier.testTag("scene-questions-error"), color = RlColor.Error)
+                                    question != null -> {
+                                        SceneAnswerOptions(options, selected, custom, !state.loading,
+                                            onPreset = {
+                                                custom = false
+                                                onAction(SceneQuestionsAction.AnswerChanged(it))
+                                            },
+                                            onCustom = {
+                                                custom = true
+                                                onAction(SceneQuestionsAction.AnswerChanged(customDraft))
+                                            })
+                                        if (custom) {
+                                            RlKeyboardAwareOutlinedTextField(
+                                                value = customDraft,
+                                                readOnly = state.loading,
+                                                onValueChange = {
+                                                    customDraft = it
+                                                    onAction(SceneQuestionsAction.AnswerChanged(it))
+                                                },
+                                                label = { Text("我的回答") },
+                                                modifier = Modifier.fillMaxWidth().testTag("scene-questions-answer"),
+                                            )
+                                        }
+                                    }
+                                }
+                                if (state.loading) Row(verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    if (selected) Icon(Icons.Outlined.CheckCircle,
-                                        "已选择", tint = RlColor.Secondary, modifier = Modifier.size(20.dp))
-                                    Text(option, modifier = Modifier.weight(1f), color = RlColor.Ink, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 15.sp,
-                                        lineHeight = 22.sp, fontWeight = FontWeight.Medium)
+                                    CircularProgressIndicator(Modifier.size(17.dp), strokeWidth = 2.dp)
+                                    Text(stringResource(R.string.scene_questions_loading))
                                 }
                             }
-                          }
-                          if (options.size == 1) Spacer(Modifier.weight(1f))
-                          }
                         }
                     }
-                    TextButton(
-                        enabled = !state.loading,
-                        modifier = Modifier.testTag("scene-questions-custom-answer"),
-                        onClick = {
-                            onAction(SceneQuestionsAction.AnswerChanged(""))
-                            customAnswerFocus.requestFocus()
-                        },
-                    ) { Text("其他／自定义回答") }
                 }
-                com.reallanguage.app.core.designsystem.RlKeyboardAwareOutlinedTextField(
-                    value = visibleAnswer,
-                    readOnly = state.loading,
-                    onValueChange = { onAction(SceneQuestionsAction.AnswerChanged(it)) },
-                    label = { Text("你的回答（可自行填写或修改）") },
-                    minLines = 1,
-                    modifier = Modifier.fillMaxWidth().focusRequester(customAnswerFocus).testTag("scene-questions-answer"),
-                )
             }
-        }
-        if (state.confirmedAnswers.isNotEmpty()) {
-            androidx.compose.material3.HorizontalDivider(color = RlColor.Border.copy(alpha = .5f))
-            Text("${stringResource(R.string.scene_questions_answered)}：${state.confirmedAnswers.joinToString(" · ") { it.answerZh }}",
-                color = RlColor.TextSecondary, fontSize = 12.sp, lineHeight = 20.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (LocalDensity.current.fontScale <= 1.3f) Spacer(Modifier.weight(.95f))
+                NotebookAction("退出", { onAction(SceneQuestionsAction.ExitRequested) }, Modifier.weight(.65f), neutral = true)
+                if (!insufficient) {
+                    NotebookAction("上一问", { onAction(SceneQuestionsAction.PreviousRequested) },
+                        Modifier.weight(.8f).testTag("scene-questions-previous"),
+                        enabled = !state.loading && state.confirmedAnswers.isNotEmpty())
+                }
+                val label = when {
+                    state.loading -> stringResource(R.string.scene_questions_loading)
+                    insufficient -> stringResource(R.string.scene_questions_return_edit)
+                    error != null -> stringResource(R.string.diary_retry)
+                    else -> "确认回答"
+                }
+                NotebookAction(label, {
+                    onAction(when {
+                        insufficient -> SceneQuestionsAction.PreviousRequested
+                        error != null -> SceneQuestionsAction.RetryRequested
+                        else -> SceneQuestionsAction.AnswerSubmitted
+                    })
+                }, Modifier.weight(1.2f).testTag("scene-questions-submit"), primary = true,
+                    enabled = !state.loading && (error != null || state.answerText.isNotBlank()),
+                    leadingIcon = Icons.AutoMirrored.Outlined.ArrowForward)
+            }
         }
     }
 }
 
-/** Reflects the existing ten-question contract; the visual draft's five dots are not a new limit. */
 @Composable
-private fun SceneQuestionProgress(confirmedCount: Int) {
-    val maximum = 10
-    val current = (confirmedCount + 1).coerceIn(1, maximum)
-    BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val stacked = maxWidth < 420.dp || LocalDensity.current.fontScale > 1.35f
-        val label: @Composable (Modifier) -> Unit = { labelModifier ->
-            Text("问题 $current / 最多 $maximum 个", color = RlColor.Ink,
-                modifier = labelModifier.testTag("scene-questions-progress"),
-                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif,
-                fontSize = 15.sp, lineHeight = 21.sp)
-        }
-        val indicators: @Composable () -> Unit = {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                repeat(maximum) { index ->
-                    Box(Modifier.size(12.dp).testTag("scene-question-progress-${index + 1}")
-                        .border(1.dp, RlColor.Border, androidx.compose.foundation.shape.CircleShape)
-                        .background(if (index + 1 == current) RlColor.ActionVivid else androidx.compose.ui.graphics.Color.Transparent,
-                            androidx.compose.foundation.shape.CircleShape))
+private fun LearningContextTitle() {
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Text("当前场景", Modifier.background(RlColor.Secondary, RoundedCornerShape(5.dp))
+            .padding(horizontal = 12.dp, vertical = 3.dp), color = androidx.compose.ui.graphics.Color.White,
+            fontFamily = EditorialFont.Serif, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun QuestionHeading(number: Int, question: String?) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Text("第${number}问 / 最多10问", Modifier.align(Alignment.End).testTag("scene-questions-progress"),
+            color = RlColor.TextSecondary, fontFamily = EditorialFont.Serif, fontSize = 13.sp)
+        if (question != null) Text(question, Modifier.fillMaxWidth().heightIn(max = 78.dp)
+            .verticalScroll(rememberScrollState()).testTag("scene-questions-prompt"),
+            color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 22.sp,
+            lineHeight = 30.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+    }
+}
+
+@Composable
+private fun SceneAnswerOptions(options: List<String>, selected: String, custom: Boolean, enabled: Boolean,
+    onPreset: (String) -> Unit, onCustom: () -> Unit) {
+    if (options.isEmpty()) return
+    BoxWithConstraints(Modifier.fillMaxWidth().selectableGroup().testTag("scene-questions-options")) {
+        val measurer = rememberTextMeasurer()
+        val density = LocalDensity.current
+        val style = MaterialTheme.typography.bodyLarge.copy(fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 23.sp)
+        val maximumHalfWidth = with(density) { ((maxWidth - 8.dp) / 2 - 56.dp).roundToPx() }
+        val rows = buildList {
+            var pending: String? = null
+            for (option in options) {
+                val fullWidth = maximumHalfWidth <= 0 ||
+                    measurer.measure(option, style, maxLines = 1).size.width > maximumHalfWidth
+                if (fullWidth) {
+                    pending?.let { add(listOf(it)) }
+                    pending = null
+                    add(listOf(option))
+                } else if (pending == null) {
+                    pending = option
+                } else {
+                    add(listOf(pending, option))
+                    pending = null
                 }
             }
+            pending?.let { add(listOf(it)) }
         }
-        if (stacked) Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            label(Modifier.fillMaxWidth())
-            indicators()
-        } else Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            label(Modifier.weight(1f))
-            indicators()
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            rows.forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    row.forEach { option ->
+                        AnswerPaper(option, !custom && selected == option, enabled, Modifier.weight(1f)
+                            .testTag("scene-option-$option")) { onPreset(option) }
+                    }
+                }
+            }
+            AnswerPaper("自己填写", custom, enabled, Modifier.fillMaxWidth().testTag("scene-questions-custom-answer"), onCustom)
+        }
+    }
+}
+
+@Composable
+private fun AnswerPaper(text: String, selected: Boolean, enabled: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Box(modifier.heightIn(min = 44.dp).selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)) {
+        Image(painterResource(R.drawable.rl_notebook_panel_20261124), null, Modifier.matchParentSize(),
+            contentScale = ContentScale.FillBounds, colorFilter = if (selected)
+                ColorFilter.tint(androidx.compose.ui.graphics.Color(0xFFD7DDB8), BlendMode.Modulate) else null)
+        Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Icon(if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked, null,
+                Modifier.size(20.dp), tint = RlColor.Secondary)
+            Text(text, Modifier.weight(1f), fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 23.sp, color = RlColor.Ink)
         }
     }
 }

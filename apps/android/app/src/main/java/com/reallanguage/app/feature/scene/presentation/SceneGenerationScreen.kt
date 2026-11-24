@@ -1,83 +1,41 @@
 package com.reallanguage.app.feature.scene.presentation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import com.reallanguage.app.R
-import com.reallanguage.app.core.designsystem.RlColor
-import com.reallanguage.app.core.designsystem.RlPrimaryButton
-import com.reallanguage.app.core.designsystem.RlShape
-import com.reallanguage.app.core.designsystem.RlSpace
-import com.reallanguage.app.feature.formation.presentation.EditorialProcessWorkspace
-import com.reallanguage.app.core.designsystem.RlSecondaryButton
+import com.reallanguage.app.feature.formation.presentation.PaperProcessingScreen
+import com.reallanguage.app.feature.formation.presentation.ProcessPaperStage
 import com.reallanguage.app.feature.scene.domain.SceneStart
-import com.reallanguage.app.feature.scene.domain.SceneContentType
+
+internal fun SceneStart.displayTopic(): String = when (this) {
+    is SceneStart.DirectDescription -> description
+    is SceneStart.Recommendation -> recommendation.shortTopicZh
+    is SceneStart.Template -> template.titleZh
+}
 
 @Composable
-fun SceneGenerationScreen(
-    state: SceneGenerationUiState,
-    onAction: (SceneGenerationAction) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    EditorialProcessWorkspace(
-        poster = R.drawable.rl_v73_scene_context,
-        artwork = { posterModifier ->
-            val topic = when (val start = state.session.start) {
-                is SceneStart.DirectDescription -> start.description
-                is SceneStart.Recommendation -> start.recommendation.shortTopicZh
-                is SceneStart.Template -> start.template.titleZh
-            }
-            SceneSummaryPoster(topic, if (state.session.contentType == SceneContentType.DIALOGUE) "对话" else "短文",
-                state.session.answers.firstOrNull()?.answerZh?.takeIf(String::isNotBlank), posterModifier)
-        },
-        pageTitle = "生成场景内容",
-        title = if (state.error != null) stringResource(R.string.scene_generation_failed_title)
-        else stringResource(R.string.scene_generation_title),
-        supportingText = if (state.error != null) stringResource(R.string.scene_generation_failed_explanation)
-        else "",
-        stages = listOf("整理信息", "编排场景", "生成内容"),
-        activeStage = 1,
-        fixedStages = true,
-        failed = state.error != null,
+fun SceneGenerationScreen(state: SceneGenerationUiState, onAction: (SceneGenerationAction) -> Unit,
+    modifier: Modifier = Modifier) {
+    PaperProcessingScreen(
         modifier = modifier.testTag("scene-generation-workspace"),
-    ) {
-        if (state.generating) {
-            CircularProgressIndicator(
-                modifier = Modifier.testTag("scene-generation-progress"),
-                color = RlColor.Primary,
-            )
-        }
-        if (state.error != null) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            RlPrimaryButton(
-                text = stringResource(R.string.scene_generation_retry),
-                enabled = true,
-                onClick = { onAction(SceneGenerationAction.RetryRequested) },
-                modifier = Modifier.weight(1f),
-            )
-            RlSecondaryButton(
-                text = stringResource(R.string.scene_generation_return),
-                onClick = { onAction(SceneGenerationAction.ReturnRequested) },
-                modifier = Modifier.weight(1f),
-            )
-            }
-        }
-    }
+        title = if (state.error == null) "正在生成场景内容" else "暂时无法生成",
+        topic = state.session.start.displayTopic(),
+        stages = listOf(
+            ProcessPaperStage("整理信息", Icons.Outlined.Description, completed = "已整理"),
+            ProcessPaperStage("编排场景", Icons.Outlined.ChatBubbleOutline, "正在编排"),
+            ProcessPaperStage("生成内容", Icons.Outlined.MenuBook, "正在生成", pending = "待生成"),
+        ),
+        active = state.stage,
+        busy = state.generating,
+        error = state.error?.let { "可重试生成，或返回修改回答。" },
+        retryLabel = "重试生成",
+        backLabel = "返回修改问答",
+        onRetry = { onAction(SceneGenerationAction.RetryRequested) },
+        onBack = { onAction(SceneGenerationAction.ReturnRequested) },
+        progressTag = "scene-generation-progress",
+    )
 }

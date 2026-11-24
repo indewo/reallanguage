@@ -299,11 +299,33 @@ export class GenerateSceneDraft {
         value.units.length > command.remainingContentBudget
       )
         throw new Error("Invalid scene generation output");
-      const units = value.units.map(parseUnit);
+      const originalUnits = value.units.map(parseUnit);
+      if (new Set(originalUnits.map((unit) => unit.unitId)).size !== originalUnits.length)
+        throw new Error("Duplicate scene unit identity");
       const maximumUnitCodePoints =
         command.session.contentType === "DIALOGUE" ? 48 : 80;
+      // Preserve every character and its source references. Never split a
+      // dialogue turn or cut a sentence in the middle to satisfy the limit.
+      const units = originalUnits.flatMap((unit, index) => {
+        if (command.session.contentType !== "ARTICLE" ||
+            Array.from(unit.textZh.trim()).length <= maximumUnitCodePoints) return [unit];
+        const sentences = unit.textZh.split(/(?<=[。！？；!?;])(?![”’」』）】])/u);
+        const segments: string[] = [];
+        for (const sentence of sentences) {
+          const previous = segments.at(-1);
+          if (previous !== undefined && Array.from((previous + sentence).trim()).length <= maximumUnitCodePoints)
+            segments[segments.length - 1] = previous + sentence;
+          else if (sentence.trim()) segments.push(sentence);
+        }
+        if (segments.length < 2) return [unit];
+        return segments.map((textZh, part) => ({
+          ...unit,
+          textZh,
+          unitId: `article-part:${index}:${part}:${createHash("sha256").update(unit.unitId).digest("hex").slice(0, 16)}`,
+        }));
+      });
       if (
-        units.some(
+        units.length > command.remainingContentBudget || units.some(
           (unit) =>
             Array.from(unit.textZh.trim()).length > maximumUnitCodePoints,
         )

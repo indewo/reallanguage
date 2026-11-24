@@ -7,6 +7,7 @@ import com.reallanguage.app.feature.formation.domain.EnglishChapterDraft
 import com.reallanguage.app.feature.formation.domain.LearningTarget
 import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionRepository
 import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionResult
+import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionStage
 import com.reallanguage.app.feature.formation.domain.LearningTargetGenerationResult
 import com.reallanguage.app.feature.formation.domain.LearningTargetType
 import com.reallanguage.app.feature.formation.domain.QueryableExpression
@@ -70,8 +71,10 @@ class HttpLearningTargetRepository(
     private val sentenceWords = chapters.flatMap { it.sentences }.filter { it.isFocus }.flatMap { it.wordExpressions(selections[it.unitId]) }
     private var knownExpressions = sentenceWords + initialQueryableExpressions.filterNot { it.expressionId.startsWith("word:") }
     private var acceptedTargets = initialTargets.toList()
-    override suspend fun extract(): LearningTargetExtractionResult {
-        val payload = try { request(null) } catch (_: TargetReconciliationRequired) {
+    override suspend fun extract(): LearningTargetExtractionResult = extract {}
+    override suspend fun extract(onProgress: (LearningTargetExtractionStage) -> Unit): LearningTargetExtractionResult {
+        onProgress(LearningTargetExtractionStage.ANALYZING_SENTENCES)
+        val payload = try { request(null, onProgress = onProgress) } catch (_: TargetReconciliationRequired) {
             return LearningTargetExtractionResult.ReconciliationRequired
         } ?: return LearningTargetExtractionResult.Failed
         if (!isCurrentOwner()) return LearningTargetExtractionResult.Failed
@@ -142,7 +145,8 @@ class HttpLearningTargetRepository(
         return explanations.singleOrNull()
     }
 
-    private suspend fun request(requested: Pair<String, String>?, acceptedVocabulary: AcceptedVocabularyContext? = null): LearningTargetPayload? {
+    private suspend fun request(requested: Pair<String, String>?, acceptedVocabulary: AcceptedVocabularyContext? = null,
+        onProgress: (LearningTargetExtractionStage) -> Unit = {}): LearningTargetPayload? {
         if (!validSource || runtime.accountId != ownerAccountId || runtime.accountEpoch != ownerEpoch) return null
         if (requested != null && requested.first !in focusIds) return null
         val token = runtime.accessToken ?: return null
@@ -167,6 +171,7 @@ class HttpLearningTargetRepository(
                 val base = codec.requestWithKnowledge(chapters, selections, requestId, requested, expression?.display, perSentence)
                 codec.requestWithKnowledge(chapters, selections, "target-known-v1:${knowledgeDigest(base)}", requested, expression?.display, perSentence)
             }
+            onProgress(LearningTargetExtractionStage.EXTRACTING_TARGETS)
             val response = transport.execute(HttpRequest("POST", "/api/v1/content-formation/learning-targets", body, mapOf("Authorization" to "Bearer $token")))
             currentCoroutineContext().ensureActive()
             if (isCurrentOwner() && requested == null && response.statusCode == 409 &&
@@ -175,6 +180,7 @@ class HttpLearningTargetRepository(
             }
             if (!isCurrentOwner() || response.statusCode != 200) null
             else {
+                onProgress(LearningTargetExtractionStage.ORGANIZING_TARGETS)
                 diagnosticStage = "decode"
                 val decoded = codec.payload(response.body)
                 diagnosticStage = "catalog"

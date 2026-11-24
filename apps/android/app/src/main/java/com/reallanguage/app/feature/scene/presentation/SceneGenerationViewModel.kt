@@ -46,7 +46,7 @@ class SceneGenerationViewModel(
 
     private fun generate() {
         if (mutableUiState.value.generating) return
-        mutableUiState.update { it.copy(generating = true, error = null) }
+        mutableUiState.update { it.copy(generating = true, error = null, stage = 0) }
         val request = SceneGenerationRequest(
             task = when (session.contentType) {
                 SceneContentType.DIALOGUE -> SceneGenerationTask.DIALOGUE_TURN
@@ -58,6 +58,7 @@ class SceneGenerationViewModel(
         )
         viewModelScope.launch {
             val result = try {
+                mutableUiState.update { it.copy(stage = 1) }
                 repository.generate(request, commandId)
             } catch (cancellation: CancellationException) {
                 throw cancellation
@@ -72,6 +73,7 @@ class SceneGenerationViewModel(
     }
 
     private suspend fun handleGenerated(draft: SceneGeneratedDraft) {
+        mutableUiState.update { it.copy(stage = 2) }
         if (!draft.isValidFor(session.contentType, contentBudget)) {
             fail()
             return

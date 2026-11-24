@@ -68,17 +68,8 @@ class SceneQuestionsScreenTest {
         composeRule.onNodeWithTag("scene-questions-header").assertIsDisplayed()
         composeRule.onNodeWithTag("scene-questions-artwork").assertIsDisplayed()
         composeRule.onNodeWithTag("scene-questions-options").assertIsDisplayed()
-        composeRule.onNodeWithText("问题 2 / 最多 10 个").assertIsDisplayed()
-        val lastHoleRight = composeRule.onNodeWithTag("process_spine_hole_6", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInRoot.right
-        val contentLeft = composeRule.onNodeWithTag("scene-questions-progress")
-            .fetchSemanticsNode().boundsInRoot.left
-        assertTrue(
-            "loose-leaf punch holes need visible breathing room before content: " +
-                "holeRight=$lastHoleRight contentLeft=$contentLeft",
-            contentLeft - lastHoleRight >= with(composeRule.density) { 8.dp.toPx() },
-        )
-        composeRule.onNodeWithTag("scene-questions-answer").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("第2问 / 最多10问").assertIsDisplayed()
+        composeRule.onNodeWithTag("scene-questions-answer").assertDoesNotExist()
         composeRule.onNodeWithTag("scene-questions-previous").performClick()
         composeRule.onNodeWithTag("scene-questions-submit").performClick()
 
@@ -89,18 +80,16 @@ class SceneQuestionsScreenTest {
     }
 
     @Test
-    fun sixthQuestionIsNotClampedToFiveAndAllTenIndicatorsRemain() {
+    fun sixthQuestionIsNotClampedToFive() {
         showProgress(5)
-        composeRule.onNodeWithText("问题 6 / 最多 10 个").assertIsDisplayed()
-        (1..10).forEach { composeRule.onNodeWithTag("scene-question-progress-$it").assertIsDisplayed() }
+        composeRule.onNodeWithText("第6问 / 最多10问").assertIsDisplayed()
     }
 
     @Test
     fun tenthQuestionUsesActualExistingMaximum() {
         showProgress(9)
-        composeRule.onNodeWithText("问题 10 / 最多 10 个").assertIsDisplayed()
+        composeRule.onNodeWithText("第10问 / 最多10问").assertIsDisplayed()
         composeRule.onNodeWithText("问题 5 / 最多 5 个").assertDoesNotExist()
-        (1..10).forEach { composeRule.onNodeWithTag("scene-question-progress-$it").assertIsDisplayed() }
     }
 
     @Test
@@ -121,7 +110,7 @@ class SceneQuestionsScreenTest {
         }
 
         composeRule.onNodeWithTag("scene-questions-error").assertIsDisplayed()
-        composeRule.onNodeWithText("提交当前回答").assertDoesNotExist()
+        composeRule.onNodeWithText("确认回答").assertDoesNotExist()
         composeRule.onNodeWithTag("scene-questions-submit").performClick()
         assertEquals(listOf(SceneQuestionsAction.RetryRequested), actions)
     }
@@ -147,9 +136,9 @@ class SceneQuestionsScreenTest {
         }
         val tags = listOf(
             "scene-questions-header", "scene-questions-artwork", "scene-questions-progress",
-            "scene-questions-options", "scene-questions-answer", "scene-questions-submit",
+            "scene-questions-options", "scene-questions-submit",
         )
-        composeRule.onNodeWithTag("scene-questions-answer").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("scene-questions-answer").assertDoesNotExist()
         val ordinary = tags.associateWith { tag ->
             composeRule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
         }
@@ -160,7 +149,7 @@ class SceneQuestionsScreenTest {
                 ordinary.getValue(tag), composeRule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot)
         }
         composeRule.onNodeWithText(question.questionZh).assertExists()
-        composeRule.onNodeWithTag("scene-questions-answer").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithTag("scene-questions-answer").assertDoesNotExist()
         composeRule.onNodeWithTag("scene-questions-submit").assertIsNotEnabled()
         composeRule.onNodeWithTag("scene-option-办公室").performScrollTo().performClick()
         assertTrue("A loading fallback must not dispatch another answer", actions.isEmpty())

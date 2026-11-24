@@ -1,5 +1,7 @@
 # v73 主域补充素材记录
 
+旧学习目标海报 `rl_v73_target_poster_r2.png` 已被通用无字笔记本拼贴替换，从 Android 运行资源中移除。
+
 2026-11-24：本文是历史生成记录。部分已被新版替换且无代码/布局/测试引用的运行素材已清理，详见[清理清单与验收](APK_RESOURCE_CLEANUP_2026-11-24.md)；原始提示词及Git历史保留，不应按素材表重新加入APK。
 
 本轮使用内置 ImageGen，未使用外部 API/CLI。参考先由主代理查看，生成结果保存在项目 `apps/android/app/src/main/res/drawable-nodpi/`；原始输出保留在 Codex generated_images 目录。所有文字、字段、按钮及学习状态仍为原生控件，不烘焙为整屏截图。

@@ -7,6 +7,7 @@ data class SceneGenerationUiState(
     val session: SceneQuestionSession,
     val generating: Boolean = false,
     val error: SceneGenerationError? = null,
+    val stage: Int? = null,
 )
 
 enum class SceneGenerationError { GENERATION_FAILED }

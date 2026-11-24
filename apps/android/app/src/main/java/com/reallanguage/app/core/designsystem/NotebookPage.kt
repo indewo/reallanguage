@@ -54,17 +54,17 @@ internal fun NotebookPage(title: String, onBack: () -> Unit, backLabel: String =
 
 @Composable
 internal fun NotebookAction(text: String, onClick: () -> Unit, modifier: Modifier = Modifier,
-    enabled: Boolean = true, primary: Boolean = false, leadingIcon: ImageVector? = null) {
+    enabled: Boolean = true, primary: Boolean = false, leadingIcon: ImageVector? = null, neutral: Boolean = false) {
     Box(modifier.heightIn(min = 50.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center) {
         val paper = ImageBitmap.imageResource(R.drawable.rl_notebook_panel_20261124)
         Image(BitmapPainter(paper, srcOffset = IntOffset(15, 50), srcSize = IntSize(paper.width - 30, paper.height - 80)),
             null, Modifier.matchParentSize().clip(RoundedCornerShape(7.dp)), contentScale = ContentScale.FillBounds, alpha = if (enabled) 1f else .45f,
-            colorFilter = ColorFilter.tint(if (primary) Color(0xFFB55232) else Color(0xFF777C4B), androidx.compose.ui.graphics.BlendMode.Modulate))
+            colorFilter = if (neutral) null else ColorFilter.tint(if (primary) Color(0xFFB55232) else Color(0xFF777C4B), androidx.compose.ui.graphics.BlendMode.Modulate))
         Row(Modifier.padding(horizontal = 10.dp, vertical = 9.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
           leadingIcon?.let { Icon(it, null, Modifier.size(18.dp), tint = Color.White) }
-          Text(text, color = Color.White,
+          Text(text, color = if (neutral) RlColor.Ink else Color.White,
             fontFamily = EditorialFont.Serif, fontSize = 14.sp, lineHeight = 20.sp,
             textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
@@ -91,10 +91,17 @@ internal fun NotebookTwoPane(modifier: Modifier, left: @Composable (Modifier) ->
 internal fun NotebookPanel(modifier: Modifier = Modifier, scroll: ScrollState? = null,
     tint: Color? = null, padding: PaddingValues? = null, scrollTag: String? = null,
     header: (@Composable () -> Unit)? = null,
+    trimOuterMargin: Boolean = false,
     content: @Composable ColumnScope.() -> Unit) {
     BoxWithConstraints(modifier.clipToBounds()) {
         val safePadding = padding ?: PaddingValues(start = 18.dp, end = 18.dp, top = maxHeight * .11f, bottom = maxHeight * .13f)
-        Image(painterResource(R.drawable.rl_notebook_panel_20261124), null,
+        val paper = if (trimOuterMargin) {
+            val bitmap = ImageBitmap.imageResource(R.drawable.rl_notebook_panel_20261124)
+            val top = (bitmap.height * .085f).toInt()
+            val bottom = (bitmap.height * .095f).toInt()
+            BitmapPainter(bitmap, srcOffset = IntOffset(0, top), srcSize = IntSize(bitmap.width, bitmap.height - top - bottom))
+        } else painterResource(R.drawable.rl_notebook_panel_20261124)
+        Image(paper, null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
             colorFilter = tint?.let { ColorFilter.tint(it, androidx.compose.ui.graphics.BlendMode.Modulate) })
         Column(Modifier.fillMaxSize().padding(safePadding).clipToBounds(), verticalArrangement = Arrangement.spacedBy(6.dp)) {

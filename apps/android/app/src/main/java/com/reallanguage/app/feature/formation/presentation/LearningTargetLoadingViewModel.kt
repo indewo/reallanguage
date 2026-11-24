@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.reallanguage.app.feature.formation.domain.LearningTarget
 import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionRepository
 import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionResult
+import com.reallanguage.app.feature.formation.domain.LearningTargetExtractionStage
 import com.reallanguage.app.feature.formation.domain.QueryableExpression
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.CancellationException
@@ -17,7 +18,8 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class LearningTargetLoadingUiState(val processing: Boolean = false, val failed: Boolean = false, val reconciliationRequired: Boolean = false)
+data class LearningTargetLoadingUiState(val processing: Boolean = false, val failed: Boolean = false,
+    val reconciliationRequired: Boolean = false, val stage: LearningTargetExtractionStage? = null)
 sealed interface LearningTargetLoadingAction { data object RetryRequested : LearningTargetLoadingAction; data object BackRequested : LearningTargetLoadingAction }
 sealed interface LearningTargetLoadingEffect {
     data class OpenSelection(val targets: List<LearningTarget>, val queryableExpressions: List<QueryableExpression>) : LearningTargetLoadingEffect
@@ -60,15 +62,20 @@ class LearningTargetLoadingViewModel(private val repository: LearningTargetExtra
         mutableUiState.update { LearningTargetLoadingUiState(processing = true) }
         loadJob = viewModelScope.launch {
             try {
-                val result = try { repository.extract() }
+                val result = try { repository.extract { stage ->
+                    if (!departed && version == currentVersion) {
+                        mutableUiState.update { it.copy(stage = stage) }
+                        runCatching { android.util.Log.i("RLTargetProgress", "stage=${stage.name}") }
+                    }
+                } }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (_: Exception) { LearningTargetExtractionResult.Failed }
                 currentCoroutineContext().ensureActive()
                 if (departed || version != currentVersion) return@launch
                 when (result) {
                     is LearningTargetExtractionResult.Extracted -> leave(LearningTargetLoadingEffect.OpenSelection(result.targets, result.queryableExpressions))
-                    LearningTargetExtractionResult.ReconciliationRequired -> mutableUiState.update { LearningTargetLoadingUiState(failed = true, reconciliationRequired = true) }
-                    LearningTargetExtractionResult.Failed -> mutableUiState.update { LearningTargetLoadingUiState(failed = true) }
+                    LearningTargetExtractionResult.ReconciliationRequired -> mutableUiState.update { it.copy(processing = false, failed = true, reconciliationRequired = true) }
+                    LearningTargetExtractionResult.Failed -> mutableUiState.update { it.copy(processing = false, failed = true) }
                 }
             } finally {
                 if (!departed && version == currentVersion) mutableUiState.update { it.copy(processing = false) }

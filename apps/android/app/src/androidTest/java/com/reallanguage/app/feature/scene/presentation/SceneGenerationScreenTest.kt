@@ -30,12 +30,12 @@ class SceneGenerationScreenTest {
             SceneStart.DirectDescription("项目延期"), SceneContentType.DIALOGUE, emptyList(), operationId = "op",
         )
         composeRule.setContent {
-            RlTheme { SceneGenerationScreen(SceneGenerationUiState(session, generating = true), {}) }
+            RlTheme { SceneGenerationScreen(SceneGenerationUiState(session, generating = true, stage = 1), {}) }
         }
         composeRule.onNodeWithTag("scene-generation-workspace").assertIsDisplayed()
         composeRule.onNodeWithTag("scene-generation-progress").assertIsDisplayed()
         composeRule.onNodeWithText("项目延期").assertIsDisplayed()
-        composeRule.onNodeWithText("形式 · 对话").assertIsDisplayed()
+        composeRule.onNodeWithText("正在编排").assertIsDisplayed()
         java.io.File(composeRule.activity.filesDir, "scene-generation-layout.png").outputStream().use {
             composeRule.onRoot().captureToImage().asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it)
         }

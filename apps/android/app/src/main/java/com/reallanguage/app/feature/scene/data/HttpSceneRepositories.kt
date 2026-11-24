@@ -270,12 +270,21 @@ class HttpSceneFormationRepositories(
                 .apply { if (request.previousUnits.isNotEmpty()) put("previousUnits", JSONArray(request.previousUnits.map(SceneDraftUnit::json))) }
                 .toString()
             val response = transport.execute(authorized("POST", "/api/v1/sources/scenes/drafts", body, token))
-            if (response.statusCode != 200) return@runCatching SceneGenerationResult.Failed
+            if (response.statusCode != 200) {
+                val code = runCatching { JSONObject(response.body).optJSONObject("error")?.optString("code") }
+                    .getOrNull()?.takeIf { it.matches(Regex("[A-Z_]{1,64}")) } ?: "UNKNOWN"
+                android.util.Log.w("RLSceneDraft", "HTTP ${response.statusCode} code=$code")
+                return@runCatching SceneGenerationResult.Failed
+            }
             val value = JSONObject(response.body)
             val type = SceneContentType.valueOf(value.getString("contentType"))
             val units = value.getJSONArray("units").let { values -> List(values.length()) { index -> values.getJSONObject(index).unit() } }
             SceneGenerationResult.Generated(SceneGeneratedDraft(value.getString("draftId"), type, units))
-        }.getOrDefault(SceneGenerationResult.Failed)
+        }.getOrElse { error ->
+            if (error is CancellationException) throw error
+            runCatching { android.util.Log.w("RLSceneDraft", "failure=${error.javaClass.simpleName}") }
+            SceneGenerationResult.Failed
+        }
     }
 
     override suspend fun review(request: SceneEditReviewRequest, commandId: String): SceneEditReviewResult {

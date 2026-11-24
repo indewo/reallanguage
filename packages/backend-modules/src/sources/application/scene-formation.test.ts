@@ -229,6 +229,34 @@ describe("scene formation application boundary", () => {
     expect(first.draftId).toBe(retry.draftId);
     expect(regenerated.draftId).not.toBe(first.draftId);
   });
+  it("splits an oversized article paragraph without changing its text or facts", async () => {
+    const sentence = "我计划到北京参加商务会议，抵达后先前往酒店，再核对自己已安排的出差行程。";
+    const textZh = sentence.repeat(3);
+    const first = { unitId: "u1", speaker: null, textZh, factReferences: ["商务出差"] };
+    const provider = { execute: vi.fn().mockResolvedValue({
+      draftId: "draft",
+      contentType: "ARTICLE",
+      units: [first, { ...first, unitId: "u2", textZh: "我会核对行程。" },
+        { ...first, unitId: "u3", textZh: "我计划参加会议。" }],
+    }) };
+    const app = generationWithIsolatedFidelityPass(provider);
+    const command = {
+      accountId: "account", commandId: "article-bounds", task: "SCENE_ARTICLE_DRAFT_V1" as const,
+      session: {
+        operationId: "operation",
+        start: { kind: "DIRECT_DESCRIPTION" as const, description: "北京出差" },
+        contentType: "ARTICLE" as const,
+        answers: [{ questionId: "q1", answerZh: "商务出差" }],
+        collectedFacts: ["商务出差"], missingNonBlockingFacts: [],
+      },
+      remainingContentBudget: 4,
+    };
+    const result = await app.execute(command);
+    expect(result.units).toHaveLength(4);
+    expect(result.units.slice(0, 2).map((unit) => unit.textZh).join("")).toBe(textZh);
+    expect(result.units.slice(0, 2).map((unit) => unit.factReferences)).toEqual([["商务出差"], ["商务出差"]]);
+    await expect(app.execute({ ...command, remainingContentBudget: 3 })).rejects.toThrow("too long");
+  });
   it("uses the account learning range when choosing the generated scene", async () => {
     const execute = vi.fn().mockResolvedValue({
       draftId: "draft",
