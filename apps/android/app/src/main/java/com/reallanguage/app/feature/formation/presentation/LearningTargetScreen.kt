@@ -50,7 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -199,18 +199,15 @@ private fun LearningSentencePanel(
     Box(modifier.testTag("learning_targets_sentence")) {
         Image(painterResource(R.drawable.rl_torn_note), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
         Row(
-            Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(horizontal = 16.dp, vertical = 8.dp),
+            Modifier.fillMaxWidth().height(IntrinsicSize.Min)
+                .padding(start = 24.dp, end = 24.dp, top = 14.dp, bottom = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                "${state.currentSentenceNumber()}", Modifier.width(38.dp), color = RlColor.ActionVivid,
-                fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 20.sp,
-            )
             HighlightedEnglishSentence(
                 english, sentence.unitId, state.currentTargets, state.selectedTargetIds,
                 sentence.wordExpressions(state.selectedCandidateIds[sentence.unitId]),
                 !state.generating && !state.submitting, onAction,
-                Modifier.weight(1.22f).testTag("learning_targets_english"),
+                Modifier.weight(1.22f).padding(end = 10.dp).testTag("learning_targets_english"),
             )
             Box(Modifier.width(1.dp).fillMaxHeight().background(RlColor.BorderStrong.copy(alpha = .48f)))
             Text(
@@ -247,7 +244,7 @@ private fun HighlightedEnglishSentence(
                     !english.substring(evidence.startUtf16, evidence.endUtf16).equals(evidence.surfaceForm, ignoreCase = true)) return@mapNotNull null
                 evidence.startUtf16
             } else english.indexOf(literal, ignoreCase = true)
-            if (start < 0) null else Triple(start, start + literal.length, targetAccent(target.type))
+            if (start < 0) null else Triple(start, start + literal.length, target.type)
         }
     }
     var layout by remember(english, sentenceId) { mutableStateOf<TextLayoutResult?>(null) }
@@ -260,7 +257,7 @@ private fun HighlightedEnglishSentence(
             addLink(
                 LinkAnnotation.Clickable(
                     tag = expression.expressionId,
-                    styles = TextLinkStyles(SpanStyle(color = RlColor.Ink, textDecoration = TextDecoration.None)),
+                    styles = TextLinkStyles(SpanStyle(textDecoration = TextDecoration.None)),
                 ) {
                     if (enabled) {
                         val existing = targets.firstOrNull { target ->
@@ -274,13 +271,11 @@ private fun HighlightedEnglishSentence(
                 start, end,
             )
         }
-        marked.forEach { (start, end, color) ->
+        marked.filter { (_, _, type) -> type == LearningTargetType.WORD }.forEach { (start, end, type) ->
             addStyle(
                 SpanStyle(
-                    color = color,
-                    background = color.copy(alpha = .09f),
+                    color = targetAccent(type),
                     fontWeight = FontWeight.SemiBold,
-                    textDecoration = TextDecoration.Underline,
                 ),
                 start,
                 end,
@@ -291,7 +286,12 @@ private fun HighlightedEnglishSentence(
         text,
         modifier.drawBehind {
             val result = layout ?: return@drawBehind
-            marked.forEach { (start, end, color) ->
+            marked.forEach { (start, end, type) ->
+                val underlineOffset = when (type) {
+                    LearningTargetType.WORD -> 2.dp
+                    LearningTargetType.FIXED_EXPRESSION -> 4.5.dp
+                    LearningTargetType.PATTERN -> 7.dp
+                }.toPx()
                 var current = start
                 while (current < end && current < result.layoutInput.text.length) {
                     val line = result.getLineForOffset(current)
@@ -299,12 +299,12 @@ private fun HighlightedEnglishSentence(
                     if (lineEnd > current) {
                         val first = result.getBoundingBox(current)
                         val last = result.getBoundingBox(lineEnd - 1)
-                        drawRoundRect(
-                            color = color.copy(alpha = .82f),
-                            topLeft = androidx.compose.ui.geometry.Offset(first.left - 3.dp.toPx(), first.top - 1.dp.toPx()),
-                            size = androidx.compose.ui.geometry.Size(last.right - first.left + 6.dp.toPx(), max(first.height, last.height) + 2.dp.toPx()),
-                            cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.dp.toPx()),
-                            style = Stroke(width = 1.15.dp.toPx()),
+                        val y = result.getLineBaseline(line) + underlineOffset
+                        drawLine(
+                            color = targetAccent(type),
+                            start = Offset(first.left, y),
+                            end = Offset(last.right, y),
+                            strokeWidth = 1.dp.toPx(),
                         )
                     }
                     current = max(current + 1, lineEnd)
@@ -546,7 +546,6 @@ private fun AdditionalExpressionCard(
                 color = RlColor.TextSecondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 11.sp, lineHeight = 15.sp,
             )
         }
-        Text("可多选", color = RlColor.Secondary, fontFamily = com.reallanguage.app.core.designsystem.EditorialFont.Serif, fontSize = 10.sp)
     }
 }
 
@@ -625,13 +624,3 @@ private fun LearningTargetTabs(modifier: Modifier = Modifier) {
         }
     }
 }
-
-private fun LearningTargetUiState.currentSentenceNumber(): Int {
-    val unitId = currentSentence?.unitId ?: return focusSentenceIndex + 1
-    chapters.forEach { chapter ->
-        val position = chapter.sentences.indexOfFirst { it.unitId == unitId }
-        if (position >= 0) return position + 1
-    }
-    return focusSentenceIndex + 1
-}
-

@@ -2,7 +2,10 @@ package com.reallanguage.app.feature.scene.presentation
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -33,7 +36,7 @@ import java.io.File
 import java.io.FileOutputStream
 
 class SceneChineseReviewScreenTest {
-    @get:Rule val composeRule = createComposeRule()
+    @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Test fun rendersSeparatedReviewWorkspaceAndRealActions() {
         val actions = mutableListOf<SceneChineseReviewAction>()
@@ -149,6 +152,13 @@ class SceneChineseReviewScreenTest {
     }
 
     @Test fun capturesCompleteDialogueCardsForVisualQa() {
+        composeRule.activityRule.scenario.onActivity {
+            it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            com.reallanguage.app.core.app.configureFocusedLearningWindow(it.window)
+        }
+        composeRule.waitUntil(5_000) {
+            composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        }
         val session = SceneQuestionSession(
             SceneStart.DirectDescription("手机没电后联系等待的朋友"), SceneContentType.DIALOGUE,
             emptyList(), operationId = "visual-qa",
@@ -170,6 +180,8 @@ class SceneChineseReviewScreenTest {
             }
         }
         composeRule.onNodeWithTag("scene-review-unit-u1").assertIsDisplayed()
+        composeRule.onNodeWithTag("scene-review-portrait-poster").assertIsDisplayed()
+        composeRule.onAllNodesWithText("对话").assertCountEquals(1)
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         FileOutputStream(File(context.cacheDir, "scene-review-qa.png")).use {
             composeRule.onRoot().captureToImage().asAndroidBitmap()

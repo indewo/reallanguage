@@ -4,55 +4,86 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reallanguage.app.R
 import com.reallanguage.app.core.designsystem.EditorialFont
 import com.reallanguage.app.core.designsystem.RlColor
+import com.reallanguage.app.core.designsystem.RlShape
 import com.reallanguage.app.feature.formation.presentation.EditorialSheet
 
-/** Labels remain native; long context flows outside the bounded artwork instead of being clipped. */
 @Composable
 internal fun SceneSummaryPoster(topic: String, type: String, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier) {
-        val width = maxWidth
-        val height = maxHeight
+        val posterHeight = maxHeight
+        val captionWidth = maxWidth * .72f
+        val captionHeight = posterHeight * .33f
         val density = LocalDensity.current
+        val titleStyle = TextStyle(
+            color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
+            fontSize = 16.sp, lineHeight = 20.sp, textAlign = TextAlign.Center,
+        )
+        val typeStyle = TextStyle(
+            color = RlColor.OnPrimary, fontFamily = EditorialFont.Serif, fontSize = 12.sp, lineHeight = 15.sp,
+        )
         val measurer = rememberTextMeasurer()
-        val topicStyle = TextStyle(fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 19.sp)
-        val topicHeight = with(density) { measurer.measure(topic, topicStyle,
-            constraints = Constraints(maxWidth = (width * .49f).roundToPx().coerceAtLeast(1))).size.height.toDp() }
-        // The safe rectangles belong to the paper labels, not to the overall image.
-        // If real text cannot fit, reflow it as a separate native paper module.
-        val natural = density.fontScale > 1.35f || height < 290.dp || topicHeight > height * .09f
-        if (natural) {
-            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Image(painterResource(R.drawable.rl_v73_scene_type_dialogue), null, Modifier.fillMaxWidth().height(minOf(260.dp, height * .45f)), contentScale = ContentScale.Fit)
-                EditorialSheet(contentPadding = 16.dp, contentSpacing = 8.dp) {
-                    Text(topic, Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold, color = RlColor.Ink, fontSize = 18.sp, lineHeight = 28.sp)
-                    Text("形式 · $type", Modifier.fillMaxWidth(), textAlign = TextAlign.Center, fontFamily = EditorialFont.Serif, color = RlColor.Ink, fontSize = 15.sp, lineHeight = 24.sp)
+        val titleLayout = measurer.measure(topic, titleStyle,
+            constraints = Constraints(maxWidth = with(density) { captionWidth.roundToPx() }.coerceAtLeast(1)))
+        val typeHeight = with(density) { measurer.measure(type, typeStyle).size.height.toDp() }
+
+        if (density.fontScale > 1.35f || titleLayout.lineCount > 2 ||
+            with(density) { titleLayout.size.height.toDp() } + typeHeight + 12.dp > captionHeight
+        ) {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Image(painterResource(R.drawable.rl_v73_scene_type_dialogue), null,
+                    Modifier.fillMaxWidth().height(minOf(230.dp, posterHeight * .52f)), contentScale = ContentScale.Fit)
+                EditorialSheet(contentPadding = 12.dp) {
+                    ScenePosterCaption(topic, type, titleStyle, typeStyle, Modifier.fillMaxWidth())
                 }
             }
         } else {
-            Image(painterResource(R.drawable.rl_v73_scene_generation_poster), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
-            Text(topic, Modifier.offset(x = width * .19f, y = height * .105f).width(width * .49f),
-                color = RlColor.OnPrimary, style = topicStyle, textAlign = TextAlign.Center)
-            Text(type, Modifier.offset(x = width * .20f, y = height * .195f).width(width * .24f),
-                color = RlColor.OnPrimary, fontFamily = EditorialFont.Serif, fontSize = 13.sp, lineHeight = 18.sp, textAlign = TextAlign.Center)
-            Text("形式 · $type", Modifier.offset(x = width * .20f, y = height * .655f).width(width * .48f),
-                color = RlColor.Ink, fontFamily = EditorialFont.Serif, fontSize = 16.sp, lineHeight = 25.sp, textAlign = TextAlign.Center)
+            Image(painterResource(R.drawable.rl_scene_review_portrait_poster), null,
+                Modifier.matchParentSize().testTag("scene-review-portrait-poster"), contentScale = ContentScale.FillBounds)
+            ScenePosterCaption(
+                topic, type, titleStyle, typeStyle,
+                Modifier.align(Alignment.TopCenter).offset(y = posterHeight * .60f)
+                    .width(captionWidth).height(captionHeight),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScenePosterCaption(
+    topic: String,
+    type: String,
+    titleStyle: TextStyle,
+    typeStyle: TextStyle,
+    modifier: Modifier,
+) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)) {
+        Text(topic, Modifier.fillMaxWidth(), style = titleStyle)
+        Surface(color = Color(0xFF35546D), shape = RlShape.Small) {
+            Text(type, Modifier.padding(horizontal = 10.dp, vertical = 4.dp), style = typeStyle)
         }
     }
 }
