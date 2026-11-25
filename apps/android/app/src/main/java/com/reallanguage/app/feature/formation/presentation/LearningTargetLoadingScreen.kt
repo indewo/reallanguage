@@ -127,7 +127,7 @@ internal fun ProcessingNotebookArtwork(modifier: Modifier, topic: String? = null
             .verticalScroll(rememberScrollState()).padding(5.dp), color = RlColor.Ink,
             fontFamily = EditorialFont.Serif, fontWeight = FontWeight.Bold,
             fontSize = 18.sp, lineHeight = 24.sp, textAlign = TextAlign.Center)
-        Image(painterResource(R.drawable.rl_target_loading_notebook_20261124), null,
+        Image(painterResource(R.drawable.rl_processing_conversation_cards), null,
             Modifier.weight(1f).fillMaxWidth(), contentScale = ContentScale.Fit)
     }
 }
