@@ -171,7 +171,7 @@ private fun ProcessingStageCard(stage: ProcessPaperStage, index: Int, active: In
         Image(paper, null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
             colorFilter = ColorFilter.tint(color, BlendMode.Modulate))
         Image(paper, null, Modifier.matchParentSize().padding(start = 4.dp, end = 4.dp, bottom = 4.dp),
-            contentScale = ContentScale.FillBounds)
+            contentScale = ContentScale.FillBounds, colorFilter = NeutralNotebookPaper)
         if (compact) Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             symbol()

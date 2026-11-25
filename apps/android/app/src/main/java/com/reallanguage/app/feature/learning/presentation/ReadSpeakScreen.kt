@@ -49,10 +49,17 @@ fun ReadSpeakScreen(
             )
         },
         footer = {
-            ReadSpeakControls(state, onAction)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
+                ReadSpeakStatus(state)
+                ReadSpeakControls(state, onAction)
+            }
         },
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(RlSpace.Space12)) {
+    ) {}
+}
+
+@Composable
+private fun ReadSpeakStatus(state: ReadSpeakUiState) {
+        Column(verticalArrangement = Arrangement.spacedBy(RlSpace.Space8)) {
             if (state.audioFailed) Text(stringResource(R.string.learning_audio_failed), color = RlColor.Error)
             if (state.progressFailed) {
                 Text(
@@ -66,7 +73,7 @@ fun ReadSpeakScreen(
                 shape = RlShape.Small,
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(RlSpace.Space12),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = RlSpace.Space12, vertical = RlSpace.Space8),
                     horizontalArrangement = Arrangement.spacedBy(RlSpace.Space12),
                 ) {
                     Icon(
@@ -96,7 +103,6 @@ fun ReadSpeakScreen(
                 }
             }
         }
-    }
 }
 
 @Composable

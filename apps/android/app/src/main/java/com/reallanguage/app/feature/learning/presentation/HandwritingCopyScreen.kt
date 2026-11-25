@@ -213,6 +213,8 @@ private fun HandwritingControls(state: HandwritingCopyUiState, onAction: (Handwr
                 RlPrimaryButton(
                     text = stringResource(
                         if (state.copyInProgress) R.string.handwriting_finished
+                        else if (state.chapter.sentences.filter { it.isFocus }.lastOrNull()?.sentenceId != state.currentFocusSentenceId)
+                            R.string.handwriting_next_sentence
                         else R.string.handwriting_continue,
                     ),
                     enabled = if (state.copyInProgress) !state.saving

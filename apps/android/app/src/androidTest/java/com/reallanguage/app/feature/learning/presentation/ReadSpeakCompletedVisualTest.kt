@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -60,14 +61,12 @@ class ReadSpeakCompletedVisualTest {
         assertEquals("The punch-hole artwork must retain its source aspect ratio",
             320f / 1536f, holes.width / holes.height, .02f)
 
-        val arrow = compose.onNodeWithTag("learning-current-trailing-arrow").assertIsDisplayed()
-            .fetchSemanticsNode().boundsInRoot
-        instrumentation.uiAutomation.waitForIdle(200, 5_000)
-        val bitmap = requireNotNull(instrumentation.uiAutomation.takeScreenshot())
+        val bitmap = compose.onNodeWithTag("learning-current-trailing-arrow").assertIsDisplayed()
+            .captureToImage().asAndroidBitmap()
         try {
             val coloredXs = buildList {
-                for (y in arrow.top.toInt().coerceAtLeast(0) until arrow.bottom.toInt().coerceAtMost(bitmap.height)) {
-                    for (x in arrow.left.toInt().coerceAtLeast(0) until arrow.right.toInt().coerceAtMost(bitmap.width)) {
+                for (y in 0 until bitmap.height) {
+                    for (x in 0 until bitmap.width) {
                         val color = bitmap.getPixel(x, y)
                         val red = android.graphics.Color.red(color)
                         val green = android.graphics.Color.green(color)
@@ -78,10 +77,10 @@ class ReadSpeakCompletedVisualTest {
             }
             assertTrue("The trailing arrow needs visible action-colored pixels", coloredXs.isNotEmpty())
             assertTrue("A left-pointing triangle has its color centroid to the right of center",
-                coloredXs.average() > arrow.center.x)
+                coloredXs.average() > (bitmap.width - 1) / 2f)
 
             val output = File(instrumentation.targetContext.cacheDir, CAPTURE_NAME)
-            output.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
+            output.outputStream().use { check(compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)) }
             assertTrue("Completed-state evidence must be a nonempty PNG", output.length() > 0L)
         } finally { bitmap.recycle() }
     }

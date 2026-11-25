@@ -83,8 +83,7 @@ private fun ReviewContext(state: SceneChineseReviewUiState, modifier: Modifier =
         is SceneStart.Recommendation -> start.recommendation.shortTopicZh
         is SceneStart.Template -> start.template.titleZh
     }
-    SceneSummaryPoster(topic, if (state.session.contentType == SceneContentType.DIALOGUE) "对话" else "短文",
-        state.session.answers.firstOrNull()?.answerZh?.takeIf(String::isNotBlank), modifier)
+    SceneSummaryPoster(topic, if (state.session.contentType == SceneContentType.DIALOGUE) "对话" else "短文", modifier)
 }
 
 @Composable

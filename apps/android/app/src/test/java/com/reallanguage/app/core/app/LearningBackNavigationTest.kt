@@ -61,6 +61,25 @@ class LearningBackNavigationTest {
     }
 
     @Test
+    fun multiFocusBackUsesThePreviousPracticeAndSkipsContextOnlySentences() {
+        val multi = chapter.copy(sentences = chapter.sentences + listOf(
+            FixedLearningSentence("context", "For context.", "语境。", false),
+            FixedLearningSentence("second", "Second.", "第二句。", true),
+        ))
+        assertEquals(HomeDiaryRoute.ResumeLearning(multi.chapterId, "LR-04", focus),
+            learningPreviousRoute(HomeDiaryRoute.ReadSpeak(multi, "second", explanation, expressions)))
+        assertEquals(HomeDiaryRoute.ResumeLearning(multi.chapterId, "LR-04", "second"),
+            learningPreviousRoute(HomeDiaryRoute.AudioDictation(multi, focus, explanation, expressions)))
+        assertEquals(HomeDiaryRoute.ResumeLearning(multi.chapterId, "LR-05", focus),
+            learningPreviousRoute(HomeDiaryRoute.AudioDictation(multi, "second", explanation, expressions)))
+        val previousExplanation = learningPreviousRoute(
+            HomeDiaryRoute.ExplanationReading(multi, "second", explanation, expressions),
+        ) as HomeDiaryRoute.ChapterExplanation
+        assertEquals(focus, previousExplanation.focusSentenceId)
+        assertEquals(multi, previousExplanation.chapter)
+    }
+
+    @Test
     fun correctionBackPreservesTheUsersDictationDraft() {
         val previous = learningPreviousRoute(
             HomeDiaryRoute.ReadWriteCorrection(chapter, focus, explanation, expressions, "kept draft"),

@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
@@ -43,12 +45,20 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
     val back = { onAction(SceneQuestionsAction.BackRequested) }
     BackHandler(onBack = back)
     val question = state.currentQuestion ?: state.history.lastOrNull()?.question.takeIf { state.loading }
-    val options = question?.options.orEmpty().distinct()
+    val options = question?.options.orEmpty().map(String::trim)
+        .filter { it.isNotBlank() && !customAnswerOption.matches(it) }.distinct()
     var custom by rememberSaveable(question?.questionId) {
         mutableStateOf(options.isEmpty() || (state.answerText.isNotBlank() && state.answerText !in options))
     }
     var customDraft by rememberSaveable(question?.questionId) {
         mutableStateOf(state.answerText.takeIf { it !in options }.orEmpty())
+    }
+    val customAnswer = remember(question?.questionId) { BringIntoViewRequester() }
+    LaunchedEffect(custom, question?.questionId, state.loading, state.error) {
+        if (custom && options.isNotEmpty() && !state.loading && state.error == null) {
+            withFrameNanos { }
+            customAnswer.bringIntoView()
+        }
     }
     val selected = if (state.loading && state.currentQuestion == null)
         state.history.lastOrNull()?.answer?.answerZh.orEmpty() else state.answerText
@@ -115,7 +125,8 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                                                     onAction(SceneQuestionsAction.AnswerChanged(it))
                                                 },
                                                 label = { Text("我的回答") },
-                                                modifier = Modifier.fillMaxWidth().testTag("scene-questions-answer"),
+                                                modifier = Modifier.fillMaxWidth().bringIntoViewRequester(customAnswer)
+                                                    .testTag("scene-questions-answer"),
                                             )
                                         }
                                     }
@@ -157,6 +168,8 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
         }
     }
 }
+
+private val customAnswerOption = Regex("^(?:其他|其它|自己填写|自行填写|自定义(?:回答)?|自行回答)(?:[（(](?:请)?(?:说明|填写|补充|自填)[）)])?[：:]?$")
 
 @Composable
 private fun LearningContextTitle() {
@@ -225,7 +238,7 @@ private fun AnswerPaper(text: String, selected: Boolean, enabled: Boolean, modif
     Box(modifier.heightIn(min = 44.dp).selectable(selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)) {
         Image(painterResource(R.drawable.rl_notebook_panel_20261124), null, Modifier.matchParentSize(),
             contentScale = ContentScale.FillBounds, colorFilter = if (selected)
-                ColorFilter.tint(androidx.compose.ui.graphics.Color(0xFFD7DDB8), BlendMode.Modulate) else null)
+                ColorFilter.tint(androidx.compose.ui.graphics.Color(0xFFD7DDB8), BlendMode.Modulate) else NeutralNotebookPaper)
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Icon(if (selected) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked, null,

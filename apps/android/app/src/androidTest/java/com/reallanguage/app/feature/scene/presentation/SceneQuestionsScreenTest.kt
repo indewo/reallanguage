@@ -168,7 +168,7 @@ class SceneQuestionsScreenTest {
                 SceneQuestionsScreen(SceneQuestionsUiState(
                     start = SceneStart.DirectDescription("沟通计划"),
                     contentType = SceneContentType.DIALOGUE,
-                    currentQuestion = SceneQuestion("custom", "在哪里沟通？", listOf("办公室", "线上会议")),
+                    currentQuestion = SceneQuestion("custom", "在哪里沟通？", listOf("办公室", "线上会议", "其他", "自行填写")),
                     loading = false, answerText = answer,
                 )) { action ->
                     when (action) {
@@ -179,10 +179,12 @@ class SceneQuestionsScreenTest {
                 }
             }
         }
+        composeRule.onNodeWithText("其他").assertDoesNotExist()
+        composeRule.onNodeWithText("自行填写").assertDoesNotExist()
         composeRule.onNodeWithTag("scene-questions-custom-answer").performScrollTo().performClick()
         composeRule.runOnIdle { assertEquals("", answer) }
         composeRule.onNodeWithTag("scene-questions-submit").assertIsNotEnabled()
-        composeRule.onNodeWithTag("scene-questions-answer").performScrollTo().performTextReplacement("在园区咖啡店")
+        composeRule.onNodeWithTag("scene-questions-answer").assertIsDisplayed().performTextReplacement("在园区咖啡店")
         composeRule.onNodeWithTag("scene-questions-submit").performClick()
         composeRule.runOnIdle { assertEquals("在园区咖啡店", submitted) }
     }

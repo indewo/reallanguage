@@ -17,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
@@ -31,6 +32,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.reallanguage.app.R
+
+// Bring the cream sheet closer to the app's warm off-white without flattening its fibers.
+internal val NeutralNotebookPaper = ColorFilter.colorMatrix(ColorMatrix().apply {
+    this[0, 0] = .99f
+    this[1, 1] = 1.025f
+    this[2, 2] = 1.07f
+})
 
 /** Shared blank material, with actual text and controls laid out above it. */
 @Composable
@@ -103,7 +111,8 @@ internal fun NotebookPanel(modifier: Modifier = Modifier, scroll: ScrollState? =
         } else painterResource(R.drawable.rl_notebook_panel_20261124)
         Image(paper, null,
             Modifier.matchParentSize(), contentScale = ContentScale.FillBounds,
-            colorFilter = tint?.let { ColorFilter.tint(it, androidx.compose.ui.graphics.BlendMode.Modulate) })
+            colorFilter = tint?.let { ColorFilter.tint(it, androidx.compose.ui.graphics.BlendMode.Modulate) }
+                ?: NeutralNotebookPaper.takeIf { trimOuterMargin })
         Column(Modifier.fillMaxSize().padding(safePadding).clipToBounds(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             header?.invoke()
             Column(Modifier.weight(1f).fillMaxWidth().clipToBounds()

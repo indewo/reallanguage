@@ -197,6 +197,7 @@
     <string name="handwriting_finished">我已写完</string>
     <string name="handwriting_copy_again">再抄一遍</string>
     <string name="handwriting_continue">进入音频听写</string>
+    <string name="handwriting_next_sentence">下一句 · 读＋说</string>
     <string name="handwriting_saving">正在保存本步完成状态……</string>
     <string name="handwriting_save_failed">保存失败，笔迹未保存。请再次继续。</string>
     <string name="dev_preview_handwriting">手写抄写</string>
