@@ -45,7 +45,6 @@ export interface SceneFormationProvider {
   ): Promise<unknown>;
 }
 
-const MINIMUM_SCENE_QUESTIONS = 3;
 const MAXIMUM_SCENE_QUESTIONS = 10;
 
 export class GenerateSceneRecommendations {
@@ -142,6 +141,7 @@ export class GetNextSceneQuestion {
       remainingQuestions: number;
       remainingContentBudget: number;
       stepIndex: number;
+      allowEarlyGeneration?: true | undefined;
     }>,
   ) {
     if (
@@ -167,9 +167,9 @@ export class GetNextSceneQuestion {
         ...command,
         start: providerStart,
         minimumOutputUnits: 3,
-        minimumQuestions: MINIMUM_SCENE_QUESTIONS,
+        minimumQuestions: command.allowEarlyGeneration ? 0 : 3,
+        preferredMaximumQuestions: 3,
         maximumQuestions: MAXIMUM_SCENE_QUESTIONS,
-        reassessAfterEveryAnswer: command.stepIndex >= MINIMUM_SCENE_QUESTIONS,
         preferredConcreteSceneMoments: 1,
         maximumConcreteSceneMoments: 2,
         missingOutsideChosenMomentIsNonBlocking: true,
@@ -189,7 +189,8 @@ export class GetNextSceneQuestion {
     }
     if (value.action === "GENERATE") {
       if (
-        command.confirmedAnswers.length < MINIMUM_SCENE_QUESTIONS ||
+        (!command.allowEarlyGeneration && command.confirmedAnswers.length < 3) ||
+        (command.confirmedAnswers.length === 0 && command.start.kind !== "DIRECT_DESCRIPTION") ||
         !arrayOfStrings(value.collectedFacts) ||
         !arrayOfStrings(value.missingNonBlockingFacts)
       )
@@ -241,7 +242,7 @@ export class GenerateSceneDraft {
     if (
       !command.accountId ||
       !command.commandId ||
-      command.session.answers.length < 1 ||
+      (command.session.answers.length === 0 && command.session.start.kind !== "DIRECT_DESCRIPTION") ||
       command.remainingContentBudget < 3 ||
       command.remainingContentBudget > 10 ||
       (command.task === "SCENE_ARTICLE_DRAFT_V1") !==
@@ -267,6 +268,9 @@ export class GenerateSceneDraft {
         ? `${answer.questionZh.trim()}：${answer.answerZh}`
         : answer.answerZh,
     );
+    if (confirmedAnswerFacts.length === 0 && command.session.start.kind === "DIRECT_DESCRIPTION") {
+      confirmedAnswerFacts.push(command.session.start.description);
+    }
     const generateCandidate = async (
       attempt: number,
       fidelityIssues: readonly SceneFidelityIssue[] = [],

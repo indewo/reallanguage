@@ -24,6 +24,7 @@ enum class SceneQuestionsError { REQUEST_FAILED, INVALID_RESPONSE, INSUFFICIENT_
 sealed interface SceneQuestionsAction {
     data class AnswerChanged(val answer: String) : SceneQuestionsAction
     data object AnswerSubmitted : SceneQuestionsAction
+    data object GenerateWithAnswers : SceneQuestionsAction
     data object PreviousRequested : SceneQuestionsAction
     data object BackRequested : SceneQuestionsAction
     data object ExitRequested : SceneQuestionsAction

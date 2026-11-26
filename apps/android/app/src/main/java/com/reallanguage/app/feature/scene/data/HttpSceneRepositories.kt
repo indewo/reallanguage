@@ -352,6 +352,7 @@ private fun sceneQuestionInput(request: SceneQuestionRequest): Map<String, Any> 
     "remainingQuestions" to request.remainingQuestions,
     "remainingContentBudget" to request.remainingContentBudget,
     "stepIndex" to request.stepIndex,
+    "allowEarlyGeneration" to true,
 )
 
 private fun sceneQuestionCommandId(input: Map<String, Any>): String {
@@ -366,6 +367,7 @@ private fun sceneQuestionCommandId(input: Map<String, Any>): String {
                     output.writeInt(text.size); output.write(text)
                 }
                 is Int -> { output.writeByte(2); output.writeInt(value) }
+                is Boolean -> { output.writeByte(5); output.writeBoolean(value) }
                 is List<*> -> {
                     output.writeByte(3); output.writeInt(value.size)
                     value.forEach { write(requireNotNull(it)) }

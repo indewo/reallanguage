@@ -41,6 +41,12 @@ class SceneQuestionsViewModel(
                 it.copy(answerText = action.answer, error = null)
             }
             SceneQuestionsAction.AnswerSubmitted -> submitAnswer()
+            SceneQuestionsAction.GenerateWithAnswers -> {
+                val state = mutableUiState.value
+                if (!state.loading && state.confirmedAnswers.size >= 3) {
+                    effectChannel.trySend(SceneQuestionsEffect.OpenGeneration(session()))
+                }
+            }
             SceneQuestionsAction.PreviousRequested -> previous()
             SceneQuestionsAction.BackRequested -> effectChannel.trySend(SceneQuestionsEffect.ReturnToPrevious)
             SceneQuestionsAction.ExitRequested -> effectChannel.trySend(
@@ -125,7 +131,7 @@ class SceneQuestionsViewModel(
                 }
             }
             is SceneQuestionResult.Generate -> {
-                if (state.confirmedAnswers.isEmpty()) {
+                if (state.confirmedAnswers.isEmpty() && start !is SceneStart.DirectDescription) {
                     mutableUiState.update { it.copy(loading = false, error = SceneQuestionsError.INVALID_RESPONSE) }
                 } else {
                     mutableUiState.update { it.copy(loading = false) }

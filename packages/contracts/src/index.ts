@@ -985,7 +985,7 @@ const sceneSessionSchema = z.object({
   operationId: z.string().min(1).max(128),
   start: sceneStartSchema,
   contentType: z.enum(["DIALOGUE", "ARTICLE"]),
-  answers: z.array(sceneAnswerSchema).min(1).max(10),
+  answers: z.array(sceneAnswerSchema).max(10),
   collectedFacts: z.array(z.string()),
   missingNonBlockingFacts: z.array(z.string()),
 });
@@ -1018,6 +1018,7 @@ export const sceneRecommendationResultSchema = z.object({
     .max(4),
 });
 export const sceneNextQuestionRequestSchema = z.object({
+  allowEarlyGeneration: z.literal(true).optional(),
   operationId: z.string().min(1).max(128),
   start: sceneStartSchema,
   contentType: z.enum(["DIALOGUE", "ARTICLE"]),

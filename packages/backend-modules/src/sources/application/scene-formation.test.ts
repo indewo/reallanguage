@@ -526,6 +526,21 @@ describe("scene formation application boundary", () => {
     ).rejects.toThrow("Invalid next-question output");
   });
 
+  it("accepts a complete direct description without questions for a compatible client", async () => {
+    const result = { action: "GENERATE", collectedFacts: ["请酒店前台换一间安静的房间"], missingNonBlockingFacts: [] };
+    const execute = vi.fn().mockResolvedValue(result);
+    const command = {
+      accountId: "account", commandId: "command", operationId: "operation",
+      start: { kind: "DIRECT_DESCRIPTION" as const, description: "房间太吵，想请酒店前台换一间安静的房间" },
+      contentType: "DIALOGUE" as const, confirmedAnswers: [], remainingQuestions: 10,
+      remainingContentBudget: 6, stepIndex: 0, allowEarlyGeneration: true as const,
+    };
+    const next = new GetNextSceneQuestion({ execute });
+    await expect(next.execute(command)).resolves.toEqual(result);
+    await expect(next.execute({ ...command, start: { kind: "TEMPLATE", templateId: "travel", titleZh: "旅行", scopeZh: "住宿" } }))
+      .rejects.toThrow("Invalid next-question output");
+  });
+
   it("reassesses after the third answer and generates as soon as one concrete moment is sufficient", async () => {
     const execute = vi.fn().mockResolvedValue({
       action: "GENERATE",
@@ -562,7 +577,7 @@ describe("scene formation application boundary", () => {
       expect.objectContaining({
         minimumQuestions: 3,
         maximumQuestions: 10,
-        reassessAfterEveryAnswer: true,
+        preferredMaximumQuestions: 3,
         preferredConcreteSceneMoments: 1,
         maximumConcreteSceneMoments: 2,
         missingOutsideChosenMomentIsNonBlocking: true,
