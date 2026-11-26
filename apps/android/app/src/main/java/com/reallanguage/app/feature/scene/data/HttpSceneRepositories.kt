@@ -249,7 +249,10 @@ class HttpSceneFormationRepositories(
             if (!questionOwnerIsActive() || response.statusCode != 200) return SceneQuestionResult.Failed
             val value = JSONObject(response.body)
             val result = when (value.getString("action")) {
-                "ASK" -> SceneQuestionResult.Ask(SceneQuestion(value.getString("questionId"), value.getString("questionZh"), value.getJSONArray("options").strings()))
+                "ASK" -> SceneQuestionResult.Ask(
+                    SceneQuestion(value.getString("questionId"), value.getString("questionZh"), value.getJSONArray("options").strings()),
+                    value.optString("practiceGoalRef").takeIf { !value.isNull("practiceGoalRef") && it.isNotBlank() },
+                )
                 "GENERATE" -> SceneQuestionResult.Generate(
                     value.getJSONArray("collectedFacts").strings(), value.getJSONArray("missingNonBlockingFacts").strings(),
                     value.optString("practiceGoalRef").takeIf { !value.isNull("practiceGoalRef") && it.isNotBlank() },
@@ -358,7 +361,8 @@ private fun sceneQuestionInput(request: SceneQuestionRequest): Map<String, Any> 
     "remainingContentBudget" to request.remainingContentBudget,
     "stepIndex" to request.stepIndex,
     "allowEarlyGeneration" to true,
-)
+    "questionPolicyVersion" to 2,
+).apply { request.practiceGoalRef?.let { put("practiceGoalRef", it) } }
 
 private fun sceneQuestionCommandId(input: Map<String, Any>): String {
     val bytes = ByteArrayOutputStream()

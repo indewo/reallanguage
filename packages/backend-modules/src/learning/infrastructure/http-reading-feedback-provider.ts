@@ -25,6 +25,7 @@ export class HttpReadingFeedbackProvider implements ReadingFeedbackProvider {
           sentenceId: command.sentenceId,
           targetTextEn: command.targetTextEn,
           completionSignal: command.completionSignal,
+          conciseFeedback: command.conciseFeedback,
           audio: {
             mimeType: command.audioMimeType,
             base64: command.audioBase64,

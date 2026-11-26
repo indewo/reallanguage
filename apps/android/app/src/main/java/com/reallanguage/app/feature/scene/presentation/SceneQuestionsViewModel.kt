@@ -32,6 +32,7 @@ class SceneQuestionsViewModel(
     val uiState: StateFlow<SceneQuestionsUiState> = mutableUiState.asStateFlow()
     private val effectChannel = Channel<SceneQuestionsEffect>(Channel.BUFFERED)
     val effects = effectChannel.receiveAsFlow()
+    private var lockedPracticeGoal: String? = null
 
     init { requestNext() }
 
@@ -43,8 +44,9 @@ class SceneQuestionsViewModel(
             SceneQuestionsAction.AnswerSubmitted -> submitAnswer()
             SceneQuestionsAction.GenerateWithAnswers -> {
                 val state = mutableUiState.value
-                if (!state.loading && state.confirmedAnswers.size >= 3) {
-                    effectChannel.trySend(SceneQuestionsEffect.OpenGeneration(session()))
+                if (state.canGenerateWithAnswers) {
+                    val goal = lockedPracticeGoal ?: if (start is SceneStart.DirectDescription) "description" else null
+                    effectChannel.trySend(SceneQuestionsEffect.OpenGeneration(session(practiceGoalRef = goal)))
                 }
             }
             SceneQuestionsAction.PreviousRequested -> previous()
@@ -82,6 +84,7 @@ class SceneQuestionsViewModel(
             } ?: return
             AnsweredSceneQuestion(question, answer)
         } ?: return
+        if (lockedPracticeGoal == "answer:${previous.answer.questionId}") lockedPracticeGoal = null
         mutableUiState.update {
             it.copy(
                 currentQuestion = previous.question,
@@ -107,6 +110,7 @@ class SceneQuestionsViewModel(
                         remainingContentBudget = remainingContentBudget,
                         operationId = operationId,
                         stepIndex = answers.size,
+                        practiceGoalRef = lockedPracticeGoal,
                     ),
                 )
             } catch (cancellation: CancellationException) {
@@ -122,6 +126,7 @@ class SceneQuestionsViewModel(
         val state = mutableUiState.value
         when (result) {
             is SceneQuestionResult.Ask -> {
+                lockedPracticeGoal = result.practiceGoalRef ?: lockedPracticeGoal
                 if (state.confirmedAnswers.size >= 10) {
                     mutableUiState.update { it.copy(loading = false, error = SceneQuestionsError.INVALID_RESPONSE) }
                 } else {
@@ -158,7 +163,7 @@ class SceneQuestionsViewModel(
     private fun session(
         collectedFacts: List<String> = emptyList(),
         missingFacts: List<String> = emptyList(),
-        practiceGoalRef: String? = null,
+        practiceGoalRef: String? = lockedPracticeGoal,
     ) = SceneQuestionSession(
         start = start,
         contentType = contentType,

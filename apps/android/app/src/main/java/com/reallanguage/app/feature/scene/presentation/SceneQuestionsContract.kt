@@ -17,7 +17,11 @@ data class SceneQuestionsUiState(
     val history: List<AnsweredSceneQuestion> = emptyList(),
     val loading: Boolean = true,
     val error: SceneQuestionsError? = null,
-)
+) {
+    val canGenerateWithAnswers: Boolean
+        get() = !loading && (confirmedAnswers.size >= 3 ||
+            (start is SceneStart.DirectDescription && start.description.isNotBlank()))
+}
 
 enum class SceneQuestionsError { REQUEST_FAILED, INVALID_RESPONSE, INSUFFICIENT_INFORMATION }
 

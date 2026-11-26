@@ -45,6 +45,7 @@ export class GeneratePatternPractice {
       throw new Error("Invalid pattern practice output");
     }
     const ids = new Set<string>();
+    const prompts = new Set<string>();
     const examples = output.examples.map((value) => {
       if (!record(value)) throw new Error("Invalid pattern practice output");
       const fields = [
@@ -59,11 +60,13 @@ export class GeneratePatternPractice {
           (field) =>
             typeof value[field] !== "string" || !String(value[field]).trim(),
         ) ||
-        ids.has(String(value.exampleId))
+        ids.has(String(value.exampleId)) ||
+        prompts.has(practicePromptKey(String(value.aiPromptEn)))
       ) {
         throw new Error("Invalid pattern practice output");
       }
       ids.add(String(value.exampleId));
+      prompts.add(practicePromptKey(String(value.aiPromptEn)));
       return Object.fromEntries(fields.map((field) => [field, value[field]]));
     });
     return { status: "READY" as const, patternId: command.patternId, examples };
@@ -72,3 +75,6 @@ export class GeneratePatternPractice {
 
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
+
+const practicePromptKey = (value: string) =>
+  value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();

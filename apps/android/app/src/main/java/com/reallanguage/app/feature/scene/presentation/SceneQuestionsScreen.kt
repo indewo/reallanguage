@@ -142,7 +142,7 @@ fun SceneQuestionsScreen(state: SceneQuestionsUiState, onAction: (SceneQuestions
                 }
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (state.confirmedAnswers.size >= 3 && !state.loading) {
+                if (state.canGenerateWithAnswers) {
                     NotebookAction("按已有信息生成", { onAction(SceneQuestionsAction.GenerateWithAnswers) },
                         Modifier.weight(1.4f).testTag("scene-questions-generate-now"))
                 } else if (LocalDensity.current.fontScale <= 1.3f) Spacer(Modifier.weight(.95f))

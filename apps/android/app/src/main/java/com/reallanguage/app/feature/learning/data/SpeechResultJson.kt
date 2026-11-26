@@ -61,12 +61,7 @@ internal fun JSONObject.readingFeedbackWire(): ReadingFeedbackWire {
                 evidence = ReadingFeedbackEvidence.valueOf(item.speechString("evidence")),
             )
         }.also { parsed ->
-            require(parsed.size == 3)
-            require(parsed.map { it.aspect } == listOf(
-                ReadingFeedbackAspect.WORD_OR_PHRASE,
-                ReadingFeedbackAspect.RHYTHM,
-                ReadingFeedbackAspect.COMPLETENESS,
-            ))
+            require(parsed.size <= 3 && parsed.distinctBy { it.aspect }.size == parsed.size)
         }
     }.orEmpty()
     return ReadingFeedbackWire(

@@ -110,7 +110,31 @@ internal suspend fun generateCapturePassages(
                 BilingualSentence("p${index+1}-s${j+1}",sentence.getString("textEn"),sentence.getString("textZh"))
             })
     }
-    return HomeDiaryRoute.Bilingual(text, origin, shape, commandId, paragraphs, back)
+    val selected = (back as? HomeDiaryRoute.SceneChineseReview)?.takeIf {
+        origin == CaptureOrigin.AI_SCENE && it.session.practiceGoalRef != null
+    }?.let { scene ->
+        fun key(value: String) = value
+            .replaceFirst(Regex("^\\s*(?:用户|对方|我)[：:]\\s*"), "")
+            .replace(Regex("[\\s\\p{P}]+"), "")
+        val goalUnits = scene.draft.units.filter { scene.session.practiceGoalRef in it.factReferences }
+        val goalText = goalUnits.singleOrNull()?.textZh?.trim().orEmpty()
+        val candidate = key(goalText)
+        val sentences = paragraphs.flatMap { it.sentences }
+        val exact = sentences.filter { key(it.textZh) == candidate }.singleOrNull()
+        // A request may be split from its greeting and reason. Prefer the final
+        // question only when its Chinese text still matches the end of the source.
+        val question = if (goalText.endsWith("？") || goalText.endsWith("?")) {
+            val matchingSuffix = sentences.filter {
+                val sentence = key(it.textZh)
+                sentence.isNotEmpty() && candidate.endsWith(sentence) &&
+                    (it.textEn.trimEnd().endsWith("?") || it.textZh.trimEnd().endsWith("？"))
+            }.singleOrNull()
+            matchingSuffix ?: paragraphs.filter { key(it.textZh) == candidate }.singleOrNull()
+                ?.sentences?.filter { it.textEn.trimEnd().endsWith("?") }?.singleOrNull()
+        } else null
+        (exact ?: question)?.takeIf { candidate.isNotEmpty() }?.let { setOf(it.id) }.orEmpty()
+    }.orEmpty()
+    return HomeDiaryRoute.Bilingual(text, origin, shape, commandId, paragraphs, back, selected)
 }
 
 internal fun HomeDiaryRoute.Bilingual.learningTargets(): HomeDiaryRoute.LearningTargets {

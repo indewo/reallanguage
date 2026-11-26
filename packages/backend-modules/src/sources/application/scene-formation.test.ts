@@ -118,6 +118,18 @@ describe("scene draft factual gate", () => {
       .rejects.toThrow("Scene repair changed unaffected units");
     expect(execute.mock.calls[2]?.[1]).toMatchObject({ generationMode: "FACT_REPAIR" });
   });
+
+  it("merges only corrected turns before reviewing the whole draft", async () => {
+    const fixed = { ...units[2], textZh: "我完成后同步项目组。" };
+    const execute = vi.fn()
+      .mockResolvedValueOnce({ draftId: "model", contentType: "DIALOGUE", units })
+      .mockResolvedValueOnce(fail)
+      .mockResolvedValueOnce({ draftId: "repair", contentType: "DIALOGUE", units: [fixed] })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
+    const result = await new GenerateSceneDraft({ execute }).execute({ ...command, draftVersion: 2 });
+    expect(result.units).toEqual([units[0], units[1], fixed]);
+    expect(execute.mock.calls[3]?.[1]).toMatchObject({ units: result.units });
+  });
   it("repairs once under distinct metered identities and only returns the reviewed correction", async () => {
     const repaired = units.map((unit) =>
       unit.unitId === "u3"
@@ -585,7 +597,7 @@ describe("scene formation application boundary", () => {
       remainingContentBudget: 6, stepIndex: 0, allowEarlyGeneration: true as const,
     };
     const next = new GetNextSceneQuestion({ execute });
-    await expect(next.execute(command)).resolves.toEqual(result);
+    await expect(next.execute(command)).resolves.toEqual({ ...result, practiceGoalRef: "description" });
     await expect(next.execute({ ...command, start: { kind: "TEMPLATE", templateId: "travel", titleZh: "旅行", scopeZh: "住宿" } }))
       .rejects.toThrow("Invalid next-question output");
   });

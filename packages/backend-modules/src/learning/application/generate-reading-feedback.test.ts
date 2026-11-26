@@ -37,6 +37,13 @@ const feedbackItems = [
 ] as const;
 
 describe("GenerateReadingFeedback", () => {
+  it("accepts a completed concise result without filler advice", async () => {
+    const result = await new GenerateReadingFeedback({ generate: vi.fn().mockResolvedValue({
+      feedbackZh: "朗读完整。", feedbackItems: [], transcript: command.targetTextEn,
+      feedbackConfidence: 0.9, action: "CONTINUE",
+    }) }).execute({ ...command, conciseFeedback: true });
+    expect(result).toMatchObject({ contentComplete: true, issueKind: "NONE", feedbackItems: [] });
+  });
   it("compares smart apostrophes without changing the delivered recognition text", async () => {
     const transcript = "I’d like to learn English.";
     const result = await new GenerateReadingFeedback({ generate: vi.fn().mockResolvedValue({

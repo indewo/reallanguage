@@ -618,6 +618,7 @@ class JsonReadSpeakWireCodec : ReadSpeakWireCodec {
         .put("sentenceId", sentenceId)
         .put("targetTextEn", targetTextEn)
         .put("completionSignal", completionSignal.name)
+        .put("conciseFeedback", true)
         .put("audioMimeType", audio.mimeType)
         .put("audioBase64", Base64.encodeToString(audio.file.readBytes(), Base64.NO_WRAP))
         .put("commandId", commandId)

@@ -434,7 +434,8 @@ class JsonFullSentenceSpeakingWireCodec : FullSentenceSpeakingWireCodec {
     }
     override fun trainingRequest(chapterId: String, sentenceId: String, targetTextEn: String, audio: CapturedReadSpeakAudio) =
         audioBody(chapterId, sentenceId, audio)
-            .put("targetTextEn", targetTextEn).put("completionSignal", "MANUAL_CONFIRMATION").toString()
+            .put("targetTextEn", targetTextEn).put("completionSignal", "MANUAL_CONFIRMATION")
+            .put("conciseFeedback", true).toString()
     override fun trainingResult(body: String) = JSONObject(body).readingFeedbackWire().let {
         ReadingFeedbackResult.Ready(ReadingFeedback(
             it.feedbackZh,

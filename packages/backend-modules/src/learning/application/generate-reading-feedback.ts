@@ -8,6 +8,7 @@ export type ReadingFeedbackCommand = Readonly<{
   audioMimeType: "audio/mp4";
   audioBase64: string;
   commandId: string;
+  conciseFeedback?: true | undefined;
 }>;
 
 export interface ReadingFeedbackProvider {
@@ -30,7 +31,7 @@ export class GenerateReadingFeedback {
     }
     const output = await this.provider.generate(command);
     const items = record(output) ? output.feedbackItems : null;
-    const feedbackItems = Array.isArray(items) && items.length === feedbackAspects.length
+    const feedbackItems = Array.isArray(items) && (command.conciseFeedback ? items.length <= 3 : items.length === feedbackAspects.length)
       ? feedbackAspects.map((aspect) => {
           const item: unknown = items.find(
             (candidate: unknown) => record(candidate) && candidate.aspect === aspect,
@@ -38,8 +39,10 @@ export class GenerateReadingFeedback {
           return record(item) && item.targetText === undefined
             ? { ...item, targetText: null }
             : item;
-        })
+        }).filter((item) => item !== undefined)
       : null;
+    const validItems = validFeedbackItems(feedbackItems) &&
+      Array.isArray(items) && items.length === feedbackItems.length;
     if (
       !record(output) ||
       typeof output.feedbackZh !== "string" ||
@@ -49,7 +52,7 @@ export class GenerateReadingFeedback {
       !Number.isFinite(output.feedbackConfidence) ||
       output.feedbackConfidence < 0 ||
       output.feedbackConfidence > 1 ||
-      !validFeedbackItems(feedbackItems) ||
+      !validItems ||
       (output.action !== "CONTINUE" && output.action !== "REPEAT_FOR_CLARITY")
     ) {
       const invalidFields = !record(output) ? ["object"] : [
@@ -57,14 +60,22 @@ export class GenerateReadingFeedback {
         ...(typeof output.transcript !== "string" ? ["transcript"] : []),
         ...(typeof output.feedbackConfidence !== "number" || !Number.isFinite(output.feedbackConfidence) ||
           output.feedbackConfidence < 0 || output.feedbackConfidence > 1 ? ["feedbackConfidence"] : []),
-        ...(!validFeedbackItems(feedbackItems) ? ["feedbackItems"] : []),
+        ...(!validItems ? ["feedbackItems"] : []),
         ...(output.action !== "CONTINUE" && output.action !== "REPEAT_FOR_CLARITY" ? ["action"] : []),
       ];
       throw new Error(`Invalid reading feedback output (${invalidFields.join(", ")})`);
     }
+    if (!validFeedbackItems(feedbackItems)) throw new Error("Invalid reading feedback items");
     const recognizedWords = normalize(output.transcript);
     const contentComplete = Boolean(recognizedWords) && recognizedWords === normalize(command.targetTextEn);
+    const issueKind = output.feedbackConfidence === 0 || !recognizedWords
+      ? "RECOGNITION_UNCERTAIN"
+      : !contentComplete
+        ? normalize(command.targetTextEn).startsWith(`${recognizedWords} `)
+          ? "INCOMPLETE" : "RECOGNITION_UNCERTAIN"
+        : feedbackItems.some((item) => record(item) && item.evidence === "AUDIO") ? "PRONUNCIATION" : "NONE";
     return {
+      ...(command.conciseFeedback ? { issueKind } : {}),
       feedbackZh: output.feedbackZh,
       feedbackItems,
       transcript: output.transcript,
@@ -95,9 +106,9 @@ const validFeedbackItems = (
   suggestionZh: string;
   evidence: "AUDIO" | "TRANSCRIPT" | "GENERAL";
 }> => {
-  if (!Array.isArray(value) || value.length !== 3) return false;
-  return value.every((item, index) => {
-    if (!record(item) || item.aspect !== feedbackAspects[index]) return false;
+  if (!Array.isArray(value) || value.length > 3) return false;
+  return value.every((item) => {
+    if (!record(item) || !feedbackAspects.some((aspect) => aspect === item.aspect)) return false;
     if (
       item.targetText !== null &&
       (typeof item.targetText !== "string" || !item.targetText.trim())

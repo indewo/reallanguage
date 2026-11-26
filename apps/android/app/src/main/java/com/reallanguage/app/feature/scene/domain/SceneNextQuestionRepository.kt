@@ -20,10 +20,11 @@ data class SceneQuestionRequest(
     val remainingContentBudget: Int,
     val operationId: String,
     val stepIndex: Int,
+    val practiceGoalRef: String? = null,
 )
 
 sealed interface SceneQuestionResult {
-    data class Ask(val question: SceneQuestion) : SceneQuestionResult
+    data class Ask(val question: SceneQuestion, val practiceGoalRef: String? = null) : SceneQuestionResult
     data class Generate(
         val collectedFacts: List<String>,
         val missingNonBlockingFacts: List<String>,

@@ -143,6 +143,7 @@ export class GetNextSceneQuestion {
       remainingContentBudget: number;
       stepIndex: number;
       allowEarlyGeneration?: true | undefined;
+      practiceGoalRef?: string | undefined;
     }>,
   ) {
     if (
@@ -163,12 +164,15 @@ export class GetNextSceneQuestion {
             shortTopicZh: command.start.shortTopicZh,
           }
         : command.start;
+    const facts = sceneFactSources(command.start, command.confirmedAnswers);
+    const lockedGoal = facts.find((fact) => fact.id === command.practiceGoalRef);
+    if (command.practiceGoalRef && !lockedGoal) throw new Error("Unknown scene practice goal reference");
     const value = record(
       await this.provider.execute("SCENE_NEXT_QUESTION_V1", {
         ...command,
         start: providerStart,
         minimumOutputUnits: command.allowEarlyGeneration ? (command.contentType === "ARTICLE" ? 1 : 2) : 3,
-        ...(command.allowEarlyGeneration ? { factSources: sceneFactSources(command.start, command.confirmedAnswers) } : {}),
+        ...(command.allowEarlyGeneration ? { factSources: facts } : {}),
         minimumQuestions: command.allowEarlyGeneration ? 0 : 3,
         preferredMaximumQuestions: 3,
         maximumQuestions: MAXIMUM_SCENE_QUESTIONS,
@@ -197,9 +201,9 @@ export class GetNextSceneQuestion {
         !arrayOfStrings(value.missingNonBlockingFacts)
       )
         throw new Error("Invalid next-question output");
-      const practiceGoalRef = value.practiceGoalRef;
-      if (practiceGoalRef !== undefined && !sceneFactSources(command.start, command.confirmedAnswers)
-        .some((source) => source.id === practiceGoalRef))
+      const practiceGoalRef = lockedGoal?.id ?? value.practiceGoalRef ??
+        (command.allowEarlyGeneration && command.start.kind === "DIRECT_DESCRIPTION" ? "description" : undefined);
+      if (practiceGoalRef !== undefined && !facts.some((source) => source.id === practiceGoalRef))
         throw new Error("Unknown scene practice goal reference");
       return {
         action: "GENERATE" as const,
@@ -227,6 +231,9 @@ export class GetNextSceneQuestion {
       questionId: value.questionId,
       questionZh: value.questionZh,
       options: value.options,
+      ...(lockedGoal ? { practiceGoalRef: lockedGoal.id } :
+        typeof value.practiceGoalRef === "string" && facts.some((source) => source.id === value.practiceGoalRef)
+          ? { practiceGoalRef: value.practiceGoalRef } : {}),
     };
   }
 }
@@ -311,15 +318,23 @@ export class GenerateSceneDraft {
           ...(command.draftVersion === 2 ? { factSources, practiceGoal: goal ?? null } : {}),
         }),
       );
+      const patchOnly = attempt > 0 && command.draftVersion === 2;
+      const outputUnits = Array.isArray(value.units) ? value.units.map(parseUnit) : [];
+      if (patchOnly && (!previousUnits || !outputUnits.length ||
+        new Set(outputUnits.map((unit) => unit.unitId)).size !== outputUnits.length ||
+        outputUnits.some((unit) => !fidelityIssues.some((issue) => issue.unitId === unit.unitId)))) {
+        throw new Error("Scene repair changed unaffected units");
+      }
+      const originalUnits = patchOnly && previousUnits
+        ? previousUnits.map((unit) => outputUnits.find((replacement) => replacement.unitId === unit.unitId) ?? unit)
+        : outputUnits;
       if (
         !strings(value, ["draftId", "contentType"]) ||
         value.contentType !== command.session.contentType ||
-        !Array.isArray(value.units) ||
-        value.units.length < minimumOutputUnits ||
-        value.units.length > command.remainingContentBudget
+        originalUnits.length < minimumOutputUnits ||
+        originalUnits.length > command.remainingContentBudget
       )
         throw new Error("Invalid scene generation output");
-      const originalUnits = value.units.map(parseUnit);
       if (command.draftVersion === 2 && originalUnits.some((unit) =>
         unit.factReferences.some((ref) => !factSources.some((source) => source.id === ref))))
         throw new Error("Unknown scene draft fact reference");

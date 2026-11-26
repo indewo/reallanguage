@@ -1020,6 +1020,7 @@ export const sceneRecommendationResultSchema = z.object({
 });
 export const sceneNextQuestionRequestSchema = z.object({
   allowEarlyGeneration: z.literal(true).optional(),
+  practiceGoalRef: z.string().min(1).max(160).optional(),
   operationId: z.string().min(1).max(128),
   start: sceneStartSchema,
   contentType: z.enum(["DIALOGUE", "ARTICLE"]),
@@ -1035,6 +1036,7 @@ export const sceneNextQuestionResultSchema = z.discriminatedUnion("action", [
     questionId: z.string().min(1).max(128),
     questionZh: z.string().min(1),
     options: z.array(z.string()),
+    practiceGoalRef: z.string().min(1).max(160).optional(),
   }),
   z.object({
     action: z.literal("GENERATE"),
@@ -1088,6 +1090,7 @@ export const sceneEditReviewResultSchema = z.discriminatedUnion("decision", [
 ]);
 
 export const readingFeedbackRequestSchema = z.object({
+  conciseFeedback: z.literal(true).optional(),
   chapterId: z.string().min(1).max(128),
   sentenceId: z.string().min(1).max(128),
   targetTextEn: z.string().min(1).max(1_000),
@@ -1106,6 +1109,7 @@ export const readingFeedbackRequestSchema = z.object({
 });
 
 export const readingFeedbackResultSchema = z.object({
+  issueKind: z.enum(["NONE", "INCOMPLETE", "RECOGNITION_UNCERTAIN", "PRONUNCIATION"]).optional(),
   feedbackZh: z.string().min(1),
   feedbackItems: z
     .array(
@@ -1117,7 +1121,7 @@ export const readingFeedbackResultSchema = z.object({
         evidence: z.enum(["AUDIO", "TRANSCRIPT", "GENERAL"]),
       }),
     )
-    .length(3),
+    .max(3),
   transcript: z.string(),
   contentComplete: z.boolean(),
   feedbackConfidence: z.number().min(0).max(1),
