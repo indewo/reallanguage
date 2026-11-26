@@ -27,6 +27,7 @@ sealed interface SceneQuestionResult {
     data class Generate(
         val collectedFacts: List<String>,
         val missingNonBlockingFacts: List<String>,
+        val practiceGoalRef: String? = null,
     ) : SceneQuestionResult
     data object InsufficientInformation : SceneQuestionResult
     data object Failed : SceneQuestionResult
@@ -39,6 +40,7 @@ data class SceneQuestionSession(
     val collectedFacts: List<String> = emptyList(),
     val missingNonBlockingFacts: List<String> = emptyList(),
     val operationId: String,
+    val practiceGoalRef: String? = null,
 )
 
 interface SceneNextQuestionRepository {

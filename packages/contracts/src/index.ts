@@ -988,6 +988,7 @@ const sceneSessionSchema = z.object({
   answers: z.array(sceneAnswerSchema).max(10),
   collectedFacts: z.array(z.string()),
   missingNonBlockingFacts: z.array(z.string()),
+  practiceGoalRef: z.string().min(1).max(160).optional(),
 });
 export const sceneRecommendationRequestSchema = z.object({
   sources: z
@@ -1039,10 +1040,12 @@ export const sceneNextQuestionResultSchema = z.discriminatedUnion("action", [
     action: z.literal("GENERATE"),
     collectedFacts: z.array(z.string()),
     missingNonBlockingFacts: z.array(z.string()),
+    practiceGoalRef: z.string().min(1).max(160).optional(),
   }),
   z.object({ action: z.literal("INSUFFICIENT_INFORMATION") }),
 ]);
 export const sceneDraftRequestSchema = z.object({
+  draftVersion: z.literal(2).optional(),
   task: z.enum(["SCENE_DIALOGUE_TURN_V1", "SCENE_ARTICLE_DRAFT_V1"]),
   session: sceneSessionSchema,
   remainingContentBudget: z.number().int().min(3).max(10),
@@ -1052,7 +1055,7 @@ export const sceneDraftRequestSchema = z.object({
 export const sceneDraftResultSchema = z.object({
   draftId: z.string().min(1).max(128),
   contentType: z.enum(["DIALOGUE", "ARTICLE"]),
-  units: z.array(sceneUnitSchema).min(3).max(10),
+  units: z.array(sceneUnitSchema).min(1).max(10),
 });
 export const sceneEditReviewRequestSchema = z.object({
   contentType: z.enum(["DIALOGUE", "ARTICLE"]),

@@ -250,7 +250,10 @@ class HttpSceneFormationRepositories(
             val value = JSONObject(response.body)
             val result = when (value.getString("action")) {
                 "ASK" -> SceneQuestionResult.Ask(SceneQuestion(value.getString("questionId"), value.getString("questionZh"), value.getJSONArray("options").strings()))
-                "GENERATE" -> SceneQuestionResult.Generate(value.getJSONArray("collectedFacts").strings(), value.getJSONArray("missingNonBlockingFacts").strings())
+                "GENERATE" -> SceneQuestionResult.Generate(
+                    value.getJSONArray("collectedFacts").strings(), value.getJSONArray("missingNonBlockingFacts").strings(),
+                    value.optString("practiceGoalRef").takeIf { !value.isNull("practiceGoalRef") && it.isNotBlank() },
+                )
                 "INSUFFICIENT_INFORMATION" -> SceneQuestionResult.InsufficientInformation
                 else -> SceneQuestionResult.Failed
             }
@@ -264,6 +267,7 @@ class HttpSceneFormationRepositories(
         val token = runtime.accessToken ?: return SceneGenerationResult.Failed
         return runCatching {
             val body = JSONObject().put("task", request.task.taskId)
+                .put("draftVersion", 2)
                 .put("session", request.session.json())
                 .put("remainingContentBudget", request.remainingContentBudget)
                 .put("commandId", commandId)
@@ -325,6 +329,7 @@ private fun SceneAnswer.json() = JSONObject()
     .apply { questionZh?.let { put("questionZh", it) } }
     .put("answerZh", answerZh)
 private fun SceneQuestionSession.json() = JSONObject().put("operationId", operationId).put("start", start.json()).put("contentType", contentType.name).put("answers", JSONArray(answers.map(SceneAnswer::json))).put("collectedFacts", JSONArray(collectedFacts)).put("missingNonBlockingFacts", JSONArray(missingNonBlockingFacts))
+    .apply { practiceGoalRef?.let { put("practiceGoalRef", it) } }
 private fun SceneDraftUnit.json() = JSONObject().put("unitId", unitId).put("speaker", speaker?.name ?: JSONObject.NULL).put("textZh", textZh).put("factReferences", JSONArray(factReferences))
 private fun JSONObject.unit() = SceneDraftUnit(getString("unitId"), if (isNull("speaker")) null else SceneSpeaker.valueOf(getString("speaker")), getString("textZh"), getJSONArray("factReferences").strings())
 private fun JSONArray.strings() = List(length()) { getString(it) }

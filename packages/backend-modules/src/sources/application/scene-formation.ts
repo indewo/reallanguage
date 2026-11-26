@@ -37,6 +37,7 @@ export type SceneSessionPayload = Readonly<{
   answers: readonly SceneAnswerPayload[];
   collectedFacts: readonly string[];
   missingNonBlockingFacts: readonly string[];
+  practiceGoalRef?: string | undefined;
 }>;
 export interface SceneFormationProvider {
   execute(
@@ -166,7 +167,8 @@ export class GetNextSceneQuestion {
       await this.provider.execute("SCENE_NEXT_QUESTION_V1", {
         ...command,
         start: providerStart,
-        minimumOutputUnits: 3,
+        minimumOutputUnits: command.allowEarlyGeneration ? (command.contentType === "ARTICLE" ? 1 : 2) : 3,
+        ...(command.allowEarlyGeneration ? { factSources: sceneFactSources(command.start, command.confirmedAnswers) } : {}),
         minimumQuestions: command.allowEarlyGeneration ? 0 : 3,
         preferredMaximumQuestions: 3,
         maximumQuestions: MAXIMUM_SCENE_QUESTIONS,
@@ -195,10 +197,15 @@ export class GetNextSceneQuestion {
         !arrayOfStrings(value.missingNonBlockingFacts)
       )
         throw new Error("Invalid next-question output");
+      const practiceGoalRef = value.practiceGoalRef;
+      if (practiceGoalRef !== undefined && !sceneFactSources(command.start, command.confirmedAnswers)
+        .some((source) => source.id === practiceGoalRef))
+        throw new Error("Unknown scene practice goal reference");
       return {
         action: "GENERATE" as const,
         collectedFacts: value.collectedFacts,
         missingNonBlockingFacts: value.missingNonBlockingFacts,
+        ...(typeof practiceGoalRef === "string" ? { practiceGoalRef } : {}),
       };
     }
     if (
@@ -237,6 +244,7 @@ export class GenerateSceneDraft {
       session: SceneSessionPayload;
       remainingContentBudget: number;
       previousUnits?: readonly SceneUnitPayload[] | undefined;
+      draftVersion?: 2 | undefined;
     }>,
   ) {
     if (
@@ -271,6 +279,12 @@ export class GenerateSceneDraft {
     if (confirmedAnswerFacts.length === 0 && command.session.start.kind === "DIRECT_DESCRIPTION") {
       confirmedAnswerFacts.push(command.session.start.description);
     }
+    const factSources = sceneFactSources(command.session.start, command.session.answers);
+    const goal = factSources.find((source) => source.id === command.session.practiceGoalRef);
+    if (command.session.practiceGoalRef && !goal) throw new Error("Unknown scene practice goal reference");
+    const minimumOutputUnits = command.draftVersion === 2
+      ? (command.session.contentType === "ARTICLE" ? 1 : 2)
+      : 3;
     const generateCandidate = async (
       attempt: number,
       fidelityIssues: readonly SceneFidelityIssue[] = [],
@@ -292,18 +306,23 @@ export class GenerateSceneDraft {
           ...(generationSettings === undefined
             ? {}
             : { settings: generationSettings }),
-          minimumOutputUnits: 3,
+          minimumOutputUnits,
+          generationMode: attempt > 0 ? "FACT_REPAIR" : command.previousUnits?.length ? "USER_REGENERATE" : "INITIAL",
+          ...(command.draftVersion === 2 ? { factSources, practiceGoal: goal ?? null } : {}),
         }),
       );
       if (
         !strings(value, ["draftId", "contentType"]) ||
         value.contentType !== command.session.contentType ||
         !Array.isArray(value.units) ||
-        value.units.length < 3 ||
+        value.units.length < minimumOutputUnits ||
         value.units.length > command.remainingContentBudget
       )
         throw new Error("Invalid scene generation output");
       const originalUnits = value.units.map(parseUnit);
+      if (command.draftVersion === 2 && originalUnits.some((unit) =>
+        unit.factReferences.some((ref) => !factSources.some((source) => source.id === ref))))
+        throw new Error("Unknown scene draft fact reference");
       if (new Set(originalUnits.map((unit) => unit.unitId)).size !== originalUnits.length)
         throw new Error("Duplicate scene unit identity");
       const maximumUnitCodePoints =
@@ -342,7 +361,7 @@ export class GenerateSceneDraft {
           )
           .join("");
       if (
-        previousUnits?.length &&
+        attempt === 0 && previousUnits?.length &&
         normalizedContent(units) === normalizedContent(previousUnits)
       )
         throw new Error("Scene regeneration repeated previous content");
@@ -356,6 +375,16 @@ export class GenerateSceneDraft {
         throw new Error("Invalid scene generation output");
       if (new Set(units.map((unit) => unit.unitId)).size !== units.length)
         throw new Error("Duplicate scene unit identity");
+      if (attempt > 0 && command.draftVersion === 2 && previousUnits) {
+        const preserved = previousUnits.filter((unit) => !fidelityIssues.some((issue) => issue.unitId === unit.unitId));
+        const retained = units.filter((unit) => preserved.some((old) => old.unitId === unit.unitId));
+        if (preserved.length !== retained.length || preserved.some((old, index) => {
+          const unit = retained[index]!;
+          return old.unitId !== unit.unitId || old.speaker !== unit.speaker ||
+            old.textZh !== unit.textZh || JSON.stringify(old.factReferences) !== JSON.stringify(unit.factReferences);
+        }))
+          throw new Error("Scene repair changed unaffected units");
+      }
       return {
         contentType: value.contentType as "DIALOGUE" | "ARTICLE",
         units,
@@ -371,6 +400,7 @@ export class GenerateSceneDraft {
           session: { ...providerSession, collectedFacts: confirmedAnswerFacts },
           contentType: candidate.contentType,
           units: candidate.units,
+          ...(command.draftVersion === 2 ? { factSources, practiceGoal: goal ?? null } : {}),
         }),
         candidate.units,
       );
@@ -398,6 +428,7 @@ type SceneFidelityIssue = Readonly<{
     | "ROLE_CHANGED"
     | "TEMPORAL_CHANGED"
     | "INTENT_CHANGED"
+    | "PRACTICE_GOAL_MISSING"
     | "CONTRADICTION";
   explanationZh: string;
 }>;
@@ -421,6 +452,7 @@ const parseSceneFidelityReview = (
         "ROLE_CHANGED",
         "TEMPORAL_CHANGED",
         "INTENT_CHANGED",
+        "PRACTICE_GOAL_MISSING",
         "CONTRADICTION",
       ].includes(String(issue.reason))
     )
@@ -571,3 +603,11 @@ const strings = (value: Record<string, unknown>, keys: string[]) =>
   );
 const arrayOfStrings = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
+
+const sceneFactSources = (start: SceneStartPayload, answers: readonly SceneAnswerPayload[]) => [
+  ...(start.kind === "DIRECT_DESCRIPTION" ? [{ id: "description", textZh: start.description }] : []),
+  ...answers.map((answer) => ({
+    id: `answer:${answer.questionId}`,
+    textZh: answer.questionZh ? `${answer.questionZh}：${answer.answerZh}` : answer.answerZh,
+  })),
+];

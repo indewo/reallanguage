@@ -137,7 +137,7 @@ class SceneQuestionsViewModel(
                     mutableUiState.update { it.copy(loading = false) }
                     effectChannel.send(
                         SceneQuestionsEffect.OpenGeneration(
-                            session(result.collectedFacts, result.missingNonBlockingFacts),
+                            session(result.collectedFacts, result.missingNonBlockingFacts, result.practiceGoalRef),
                         ),
                     )
                 }
@@ -158,12 +158,14 @@ class SceneQuestionsViewModel(
     private fun session(
         collectedFacts: List<String> = emptyList(),
         missingFacts: List<String> = emptyList(),
+        practiceGoalRef: String? = null,
     ) = SceneQuestionSession(
         start = start,
         contentType = contentType,
         answers = mutableUiState.value.confirmedAnswers,
         collectedFacts = collectedFacts,
         missingNonBlockingFacts = missingFacts,
+        practiceGoalRef = practiceGoalRef,
         operationId = operationId,
     )
 }

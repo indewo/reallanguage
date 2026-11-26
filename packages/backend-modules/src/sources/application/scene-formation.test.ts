@@ -69,6 +69,55 @@ describe("scene draft factual gate", () => {
       },
     ],
   };
+  it("passes the selected goal to drafting and review of a two-turn scene", async () => {
+    const short = units.slice(0, 2).map((unit) => ({ ...unit, factReferences: ["answer:q1"] }));
+    const execute = vi.fn()
+      .mockResolvedValueOnce({ draftId: "model", contentType: "DIALOGUE", units: short })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
+    const result = await new GenerateSceneDraft({ execute }).execute({
+      ...command, draftVersion: 2, session: { ...command.session, practiceGoalRef: "answer:q1" },
+    });
+    expect(result.units).toEqual(short);
+    const goal = { id: "answer:q1", textZh: "完成后同步项目组" };
+    expect(execute.mock.calls[0]?.[1]).toMatchObject({ minimumOutputUnits: 2, generationMode: "INITIAL", practiceGoal: goal });
+    expect(execute.mock.calls[1]?.[1]).toMatchObject({ practiceGoal: goal });
+  });
+
+  it("rejects references outside the current scene", async () => {
+    const execute = vi.fn().mockResolvedValue({ draftId: "model", contentType: "DIALOGUE",
+      units: [{ ...units[0], factReferences: ["answer:unknown"] }, ...units.slice(1)] });
+    await expect(new GenerateSceneDraft({ execute }).execute({ ...command, draftVersion: 2 }))
+      .rejects.toThrow("Unknown scene draft fact reference");
+  });
+
+  it("allows a single paragraph for a direct description on v2", async () => {
+    const short = [{ unitId: "p1", speaker: null, textZh: "我想请酒店前台换一间安静的房间。", factReferences: ["description"] }];
+    const draft = { draftId: "model", contentType: "ARTICLE", units: short };
+    const execute = vi.fn().mockResolvedValueOnce(draft)
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
+    const request = {
+      ...command, task: "SCENE_ARTICLE_DRAFT_V1" as const,
+      session: { ...command.session, contentType: "ARTICLE" as const, answers: [],
+        start: { kind: "DIRECT_DESCRIPTION" as const, description: "想请酒店前台换一间安静的房间" } },
+    };
+    await expect(new GenerateSceneDraft({ execute }).execute({ ...request, draftVersion: 2 }))
+      .resolves.toMatchObject({ units: short });
+    await expect(new GenerateSceneDraft({ execute: async () => draft }).execute(request))
+      .rejects.toThrow("Invalid scene generation output");
+  });
+
+  it("rejects a v2 correction that also rewrites an unaffected turn", async () => {
+    const execute = vi.fn()
+      .mockResolvedValueOnce({ draftId: "model", contentType: "DIALOGUE", units })
+      .mockResolvedValueOnce(fail)
+      .mockResolvedValueOnce({ draftId: "repair", contentType: "DIALOGUE", units: [
+        { ...units[0], textZh: "我星期五完成报告。" }, units[1],
+        { ...units[2], textZh: "我完成后同步项目组。" },
+      ] });
+    await expect(new GenerateSceneDraft({ execute }).execute({ ...command, draftVersion: 2 }))
+      .rejects.toThrow("Scene repair changed unaffected units");
+    expect(execute.mock.calls[2]?.[1]).toMatchObject({ generationMode: "FACT_REPAIR" });
+  });
   it("repairs once under distinct metered identities and only returns the reviewed correction", async () => {
     const repaired = units.map((unit) =>
       unit.unitId === "u3"

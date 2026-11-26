@@ -165,13 +165,15 @@ private fun SceneQuestionSession.toRecoveryJson() = fields("start" to start.toRe
         answer.questionZh?.let { put("questionZh", it) }
     } }),
     "collectedFacts" to JSONArray(collectedFacts), "missingNonBlockingFacts" to JSONArray(missingNonBlockingFacts), "operationId" to operationId)
+    .apply { practiceGoalRef?.let { put("practiceGoalRef", it) } }
 private fun JSONObject.recoverySession(): SceneQuestionSession {
-    checked(setOf("start", "contentType", "answers", "collectedFacts", "missingNonBlockingFacts", "operationId"))
+    checked(setOf("start", "contentType", "answers", "collectedFacts", "missingNonBlockingFacts", "operationId"), setOf("practiceGoalRef"))
     return SceneQuestionSession(obj("start").recoveryStart(), enum("contentType"), objects("answers") { answer ->
         answer.checked(setOf("questionId", "answerZh"), setOf("questionZh"))
         SceneAnswer(answer.string("questionId"), answer.string("answerZh"),
             if (answer.has("questionZh")) answer.nullableString("questionZh") else null)
-    }, strings("collectedFacts"), strings("missingNonBlockingFacts"), string("operationId"))
+    }, strings("collectedFacts"), strings("missingNonBlockingFacts"), string("operationId"),
+        if (has("practiceGoalRef")) string("practiceGoalRef") else null)
 }
 private fun SceneGeneratedDraft.toRecoveryJson() = fields("draftId" to draftId, "contentType" to contentType.name,
     "units" to JSONArray(units.map { fields("unitId" to it.unitId, "speaker" to it.speaker?.name, "textZh" to it.textZh, "factReferences" to JSONArray(it.factReferences)) }))
