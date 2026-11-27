@@ -184,7 +184,10 @@
     <string name="read_speak_ready">触摸并沿着英文句子滑动，录音会自动开始。</string>
     <string name="read_speak_listening">正在录音，滑完后点击“录完了”。</string>
     <string name="read_speak_processing">正在检查是否读完……</string>
-    <string name="read_speak_incomplete">未读完</string>
+    <string name="read_speak_incomplete">没有听到句尾</string>
+    <string name="read_speak_recognition_uncertain">没听清，请核对识别结果</string>
+    <string name="read_speak_recognized_text">识别为：%1$s</string>
+    <string name="read_speak_confirm_finished">确认已读完</string>
     <string name="read_speak_failed">麦克风权限或识别未完成，本步骤仍保留。</string>
     <string name="read_speak_play">播放</string>
     <string name="read_speak_start">读一遍</string>

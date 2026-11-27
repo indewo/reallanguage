@@ -6,6 +6,7 @@ import com.reallanguage.app.feature.formation.data.FormationPayloadSave
 import com.reallanguage.app.feature.formation.data.FormationRecoveryFileStore
 import com.reallanguage.app.feature.learning.domain.ReadSpeakCompletionSignal
 import com.reallanguage.app.feature.learning.domain.ReadSpeakFeedbackResult
+import com.reallanguage.app.feature.learning.domain.ReadSpeakIssue
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -88,18 +89,21 @@ class EncryptedReadSpeakRecoveryJournal(
 /** Versioned length-prefixed UTF-8, not Java modified UTF-8 and not Android's JSON implementation. */
 private object ReadSpeakRecoveryCodec {
     private const val MAGIC = 0x524c5233 // RLR3: this payload cannot be decoded as a formation snapshot.
-    private const val VERSION = 1
+    private const val VERSION = 2
+    private const val MAX_TRANSCRIPT_BYTES = 2048
     private const val MAX_BODY_BYTES = 12_000_000
     private const val MAX_COMMAND_BYTES = 1024
     private const val MAX_FEEDBACK_BYTES = 1_000_000
-    private const val MAX_PAYLOAD_BYTES = MAX_BODY_BYTES + MAX_COMMAND_BYTES + MAX_FEEDBACK_BYTES + 128
+    private const val MAX_PAYLOAD_BYTES = MAX_BODY_BYTES + MAX_COMMAND_BYTES + MAX_FEEDBACK_BYTES + MAX_TRANSCRIPT_BYTES + 128
 
     fun encode(snapshot: ReadSpeakRecoverySnapshot): ByteArray {
         validate(snapshot)
+        val feedback = snapshot.delivered as? ReadSpeakFeedbackResult.Ready
+        val version = if (feedback?.issue != null || feedback?.transcript != null) VERSION else 1
         return ByteArrayOutputStream().use { bytes ->
             DataOutputStream(bytes).use { output ->
                 output.writeInt(MAGIC)
-                output.writeInt(VERSION)
+                output.writeInt(version)
                 output.writeInt(when (snapshot.signal) {
                     ReadSpeakCompletionSignal.TOUCH_REACHED_END -> 1
                     ReadSpeakCompletionSignal.RECOGNITION_COMPLETE -> 2
@@ -121,6 +125,10 @@ private object ReadSpeakRecoveryCodec {
                         output.writeInt(1)
                         output.writeText(result.feedbackZh, MAX_FEEDBACK_BYTES)
                         output.writeByte(if (result.contentComplete) 1 else 0)
+                        if (version >= 2) {
+                            output.writeUTF(result.issue?.name.orEmpty())
+                            output.writeText(result.transcript.orEmpty(), MAX_TRANSCRIPT_BYTES)
+                        }
                     }
                     ReadSpeakFeedbackResult.CompletedWithoutAudio -> output.writeInt(2)
                     ReadSpeakFeedbackResult.Failed -> error("A failed request is not a delivered candidate")
@@ -134,7 +142,9 @@ private object ReadSpeakRecoveryCodec {
     fun decode(bytes: ByteArray): ReadSpeakRecoverySnapshot {
         require(bytes.size in 1..MAX_PAYLOAD_BYTES)
         return DataInputStream(ByteArrayInputStream(bytes)).use { input ->
-            require(input.readInt() == MAGIC && input.readInt() == VERSION)
+            require(input.readInt() == MAGIC)
+            val version = input.readInt()
+            require(version in 1..VERSION)
             val signal = when (input.readInt()) {
                 1 -> ReadSpeakCompletionSignal.TOUCH_REACHED_END
                 2 -> ReadSpeakCompletionSignal.RECOGNITION_COMPLETE
@@ -158,7 +168,9 @@ private object ReadSpeakRecoveryCodec {
                     0 -> false
                     1 -> true
                     else -> error("Invalid completion boolean")
-                })
+                }, if (version >= 2) input.readUTF().takeIf(String::isNotEmpty)?.let {
+                    ReadSpeakIssue.valueOf(it)
+                } else null, if (version >= 2) input.readText(MAX_TRANSCRIPT_BYTES).ifEmpty { null } else null)
                 2 -> ReadSpeakFeedbackResult.CompletedWithoutAudio
                 else -> error("Unknown delivered candidate")
             }

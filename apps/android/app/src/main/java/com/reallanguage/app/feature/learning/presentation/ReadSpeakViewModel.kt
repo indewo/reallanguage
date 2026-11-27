@@ -99,6 +99,8 @@ class ReadSpeakViewModel(
                 captureFailed = false,
                 highlightedWordCount = 0,
                 feedbackZh = null,
+                recognitionUncertain = false,
+                recognizedText = null,
                 pendingFeedbackRetry = false,
                 feedbackRetryBlocked = false,
             )
@@ -139,6 +141,8 @@ class ReadSpeakViewModel(
                                 submitting = false,
                                 captureFailed = true,
                                 feedbackZh = result.feedbackZh,
+                                recognitionUncertain = result.issue != com.reallanguage.app.feature.learning.domain.ReadSpeakIssue.INCOMPLETE,
+                                recognizedText = result.transcript,
                             )
                         }
                         return@launch
@@ -149,6 +153,8 @@ class ReadSpeakViewModel(
                             completed = true,
                             captureFailed = false,
                             feedbackZh = result.feedbackZh,
+                            recognitionUncertain = false,
+                            recognizedText = null,
                         )
                     }
                 }
@@ -214,6 +220,9 @@ class ReadSpeakViewModel(
                             (result is ReadSpeakFeedbackResult.Ready &&
                                 (recovery.signal != ReadSpeakCompletionSignal.RECOGNITION_COMPLETE || result.contentComplete))
                         restored = restored.copy(completed = completed, captureFailed = !completed,
+                            recognitionUncertain = !completed && result is ReadSpeakFeedbackResult.Ready &&
+                                result.issue != com.reallanguage.app.feature.learning.domain.ReadSpeakIssue.INCOMPLETE,
+                            recognizedText = (result as? ReadSpeakFeedbackResult.Ready)?.transcript,
                             feedbackZh = when (result) {
                                 is ReadSpeakFeedbackResult.Ready -> result.feedbackZh
                                 ReadSpeakFeedbackResult.CompletedWithoutAudio -> null

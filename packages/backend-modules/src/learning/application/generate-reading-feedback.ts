@@ -71,7 +71,7 @@ export class GenerateReadingFeedback {
     const issueKind = output.feedbackConfidence === 0 || !recognizedWords
       ? "RECOGNITION_UNCERTAIN"
       : !contentComplete
-        ? normalize(command.targetTextEn).startsWith(`${recognizedWords} `)
+        ? output.acousticTranscriptAgrees === true && normalize(command.targetTextEn).startsWith(`${recognizedWords} `)
           ? "INCOMPLETE" : "RECOGNITION_UNCERTAIN"
         : feedbackItems.some((item) => record(item) && item.evidence === "AUDIO") ? "PRONUNCIATION" : "NONE";
     return {

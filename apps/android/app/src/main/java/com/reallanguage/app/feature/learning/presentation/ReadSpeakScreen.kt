@@ -89,6 +89,7 @@ private fun ReadSpeakStatus(state: ReadSpeakUiState) {
                                     state.pendingFeedbackRetry -> R.string.learning_audio_retry_pending
                                     state.completed -> R.string.pattern_speaking_read_complete
                                     state.feedbackRetryBlocked -> R.string.full_sentence_speaking_retry_blocked
+                                    state.recognitionUncertain -> R.string.read_speak_recognition_uncertain
                                     state.captureFailed && state.feedbackZh != null -> R.string.read_speak_incomplete
                                     state.captureFailed -> R.string.read_speak_failed
                                     state.listening -> R.string.read_speak_listening
@@ -99,6 +100,11 @@ private fun ReadSpeakStatus(state: ReadSpeakUiState) {
                             color = if (state.captureFailed) RlColor.Error else RlColor.Ink,
                             style = MaterialTheme.typography.titleMedium,
                         )
+                        if (state.recognitionUncertain && state.recognizedText != null) {
+                            Text(stringResource(R.string.read_speak_recognized_text, state.recognizedText),
+                                maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
@@ -128,7 +134,7 @@ private fun ReadSpeakControls(state: ReadSpeakUiState, onAction: (ReadSpeakActio
             )
         } else if (state.captureFailed) {
             LearningAction(
-                text = stringResource(R.string.read_speak_manual_finished),
+                text = stringResource(if (state.recognitionUncertain) R.string.read_speak_confirm_finished else R.string.read_speak_manual_finished),
                 onClick = { onAction(ReadSpeakAction.ManualFinished) },
                 enabled = !state.submitting,
                 modifier = Modifier.weight(1f).fillMaxHeight().testTag("read_speak_manual_finished"),

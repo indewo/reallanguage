@@ -628,6 +628,8 @@ class JsonReadSpeakWireCodec : ReadSpeakWireCodec {
         ReadSpeakFeedbackResult.Ready(
             feedbackZh = it.feedbackZh,
             contentComplete = it.contentComplete,
+            issue = it.issue,
+            transcript = it.transcript.take(512).takeIf(String::isNotBlank),
         )
     }
 }

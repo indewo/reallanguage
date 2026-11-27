@@ -6,10 +6,14 @@ enum class ReadSpeakCompletionSignal {
     MANUAL_CONFIRMATION,
 }
 
+enum class ReadSpeakIssue { NONE, INCOMPLETE, RECOGNITION_UNCERTAIN, PRONUNCIATION }
+
 sealed interface ReadSpeakFeedbackResult {
     data class Ready(
         val feedbackZh: String,
         val contentComplete: Boolean = true,
+        val issue: ReadSpeakIssue? = null,
+        val transcript: String? = null,
     ) : ReadSpeakFeedbackResult
     /** User-confirmed training only, with no successful audio evaluation or mastery result. */
     data object CompletedWithoutAudio : ReadSpeakFeedbackResult

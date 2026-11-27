@@ -52,6 +52,22 @@ class ReadSpeakScreenTest {
         assert(actions.contains(ReadSpeakAction.ManualFinished))
     }
 
+    @Test fun uncertainRecognitionShowsTranscriptAndLetsLearnerConfirmCompletion() {
+        val actions = mutableListOf<ReadSpeakAction>()
+        val state = ReadSpeakUiState(
+            FixedLearningChapter("c1", 1, listOf(FixedLearningSentence("s1", "I felt calm.", "我很平静。", true))),
+            "s1",
+            captureFailed = true,
+            recognitionUncertain = true,
+            recognizedText = "I felt cold.",
+        )
+        composeRule.setContent { RlTheme { ReadSpeakScreen(state, actions::add) } }
+        composeRule.onNodeWithText("没听清，请核对识别结果").assertIsDisplayed()
+        composeRule.onNodeWithText("识别为：I felt cold.").assertIsDisplayed()
+        composeRule.onNodeWithText("确认已读完").assertIsDisplayed().performClick()
+        assertEquals(listOf(ReadSpeakAction.ManualFinished), actions)
+    }
+
     @Test
     fun showsChapterInlineReadingCaptureAndManualFallback() {
         val actions = mutableListOf<ReadSpeakAction>()

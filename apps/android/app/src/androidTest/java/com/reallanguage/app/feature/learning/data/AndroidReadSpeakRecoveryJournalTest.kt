@@ -10,6 +10,8 @@ import com.reallanguage.app.feature.formation.data.fixedSourceAccountHash
 import com.reallanguage.app.feature.learning.domain.CheckpointSaveResult
 import com.reallanguage.app.feature.learning.domain.OrdinaryLearningCheckpoint
 import com.reallanguage.app.feature.learning.domain.ReadSpeakCompletionSignal
+import com.reallanguage.app.feature.learning.domain.ReadSpeakFeedbackResult
+import com.reallanguage.app.feature.learning.domain.ReadSpeakIssue
 import com.reallanguage.app.testing.IsolatedLearningDatabaseContext
 import java.io.File
 import java.security.KeyStore
@@ -28,6 +30,23 @@ import org.junit.Test
 
 /** Real private SQLite and non-exportable test KeyStore keys; NOT_AUDIO is never sent or played. */
 class AndroidReadSpeakRecoveryJournalTest {
+    @Test fun recognizedTextAndUncertaintySurviveJournalRecreation() = isolated {
+        val first = journal()
+        assertEquals(0L, first.save(null, pending))
+        val feedback = ReadSpeakFeedbackResult.Ready(
+            feedbackZh = "识别结果需要核对",
+            contentComplete = false,
+            issue = ReadSpeakIssue.RECOGNITION_UNCERTAIN,
+            transcript = "Could you help me switch rooms?",
+        )
+        val delivered = pending.copy(delivered = feedback, phase = ReadSpeakRecoveryPhase.Delivered)
+        assertEquals(1L, first.save(0, delivered))
+        val recreated = journal(session = session(account), keys = newKeys())
+        assertEquals(ReadSpeakRecoveryLoad.Loaded(1L, delivered), recreated.load())
+        assertFalse(payloadBytes().values.single().toByteArray().toString(Charsets.UTF_8)
+            .contains(requireNotNull(feedback.transcript)))
+    }
+
     @Test fun accountCleanupRemovesOnlyItsJournalAndPurposeKeyWithoutChangingAnotherAccount() = isolated {
         assertEquals(0L, journal().save(null, pending))
         val otherJournal = journal(session = session(otherAccount), chapterId = otherChapter, sentenceId = otherSentence)

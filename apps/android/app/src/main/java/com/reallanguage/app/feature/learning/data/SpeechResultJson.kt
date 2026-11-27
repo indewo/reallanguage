@@ -40,6 +40,7 @@ internal data class ReadingFeedbackWire(
     val feedbackItems: List<ReadingFeedbackDetail>,
     val action: ReadingFeedbackAction,
     val transcript: String,
+    val issue: com.reallanguage.app.feature.learning.domain.ReadSpeakIssue? = null,
 )
 
 internal fun JSONObject.readingFeedbackWire(): ReadingFeedbackWire {
@@ -71,6 +72,9 @@ internal fun JSONObject.readingFeedbackWire(): ReadingFeedbackWire {
         feedbackItems,
         ReadingFeedbackAction.valueOf(speechString("action")),
         speechString("transcript", allowEmpty = true),
+        optString("issueKind").let { name ->
+            com.reallanguage.app.feature.learning.domain.ReadSpeakIssue.entries.firstOrNull { it.name == name }
+        },
     )
 }
 

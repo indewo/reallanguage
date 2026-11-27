@@ -37,6 +37,16 @@ const feedbackItems = [
 ] as const;
 
 describe("GenerateReadingFeedback", () => {
+  it("only labels a missing tail when independent acoustic evidence agrees", async () => {
+    const output = { feedbackZh: "请核对识别结果。", feedbackItems: [], transcript: "I felt calm",
+      feedbackConfidence: .9, action: "REPEAT_FOR_CLARITY" };
+    const service = new GenerateReadingFeedback({ generate: vi.fn()
+      .mockResolvedValueOnce(output)
+      .mockResolvedValueOnce({ ...output, acousticTranscriptAgrees: true }) });
+    const request = { ...command, conciseFeedback: true as const };
+    await expect(service.execute(request)).resolves.toMatchObject({ issueKind: "RECOGNITION_UNCERTAIN" });
+    await expect(service.execute(request)).resolves.toMatchObject({ issueKind: "INCOMPLETE" });
+  });
   it("accepts a completed concise result without filler advice", async () => {
     const result = await new GenerateReadingFeedback({ generate: vi.fn().mockResolvedValue({
       feedbackZh: "朗读完整。", feedbackItems: [], transcript: command.targetTextEn,

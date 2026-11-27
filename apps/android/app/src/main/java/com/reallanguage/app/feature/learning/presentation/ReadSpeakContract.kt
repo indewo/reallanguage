@@ -22,6 +22,8 @@ data class ReadSpeakUiState(
     val progressFailed: Boolean = false,
     val pendingFeedbackRetry: Boolean = false,
     val feedbackRetryBlocked: Boolean = false,
+    val recognitionUncertain: Boolean = false,
+    val recognizedText: String? = null,
 )
 
 sealed interface ReadSpeakAction {
