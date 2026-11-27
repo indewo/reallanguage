@@ -574,11 +574,25 @@ describe("LocalOpenAiMeteredProvider", () => {
     ).resolves.toMatchObject({
       decision: "INCONCLUSIVE",
       pronunciationIntelligible: false,
+      feedbackZh: "这次没听清，请再说一遍。",
     });
     const contentRequest = JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body));
     expect(
       JSON.parse(contentRequest.input).input.pronunciationEvidence.language,
     ).toBe("zh");
+  });
+  it("does not ask for pattern coaching when independent recognition produced no English", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({
+      choices: [{ message: { content: JSON.stringify({
+        observedTranscript: "Could you help me?", language: "en", intelligible: true,
+        confidence: 0.9, wordIssues: [], rhythmIssues: [],
+      }) } }],
+    })));
+    const client = new OpenAiLocalClient("test-key", "test-model", fetcher, async () => "d2F2");
+    await expect(client.generateJson("PATTERN_PRACTICE_FEEDBACK_V1", {
+      audioBase64: "bTRh", audioMimeType: "audio/mp4", transcript: "",
+    })).resolves.toEqual({ status: "INCONCLUSIVE" });
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
   it("records the audio model for an audio assessment receipt", async () => {
     const provider = new LocalOpenAiMeteredProvider({

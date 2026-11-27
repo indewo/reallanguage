@@ -230,7 +230,7 @@ export class GetNextSceneQuestion {
       action: "ASK" as const,
       questionId: value.questionId,
       questionZh: value.questionZh,
-      options: value.options,
+      options: uniqueSceneOptions(value.options),
       ...(lockedGoal ? { practiceGoalRef: lockedGoal.id } :
         typeof value.practiceGoalRef === "string" && facts.some((source) => source.id === value.practiceGoalRef)
           ? { practiceGoalRef: value.practiceGoalRef } : {}),
@@ -287,6 +287,10 @@ export class GenerateSceneDraft {
       confirmedAnswerFacts.push(command.session.start.description);
     }
     const factSources = sceneFactSources(command.session.start, command.session.answers);
+    const confirmedText = [
+      ...(command.session.start.kind === "DIRECT_DESCRIPTION" ? [command.session.start.description] : []),
+      ...command.session.answers.map((answer) => answer.answerZh),
+    ].join("\n");
     const goal = factSources.find((source) => source.id === command.session.practiceGoalRef);
     if (command.session.practiceGoalRef && !goal) throw new Error("Unknown scene practice goal reference");
     const minimumOutputUnits = command.draftVersion === 2
@@ -320,13 +324,16 @@ export class GenerateSceneDraft {
       );
       const patchOnly = attempt > 0 && command.draftVersion === 2;
       const outputUnits = Array.isArray(value.units) ? value.units.map(parseUnit) : [];
-      if (patchOnly && (!previousUnits || !outputUnits.length ||
+      const replacements = patchOnly
+        ? outputUnits.filter((unit) => fidelityIssues.some((issue) => issue.unitId === unit.unitId))
+        : outputUnits;
+      if (patchOnly && (!previousUnits || !replacements.length ||
         new Set(outputUnits.map((unit) => unit.unitId)).size !== outputUnits.length ||
-        outputUnits.some((unit) => !fidelityIssues.some((issue) => issue.unitId === unit.unitId)))) {
-        throw new Error("Scene repair changed unaffected units");
+        outputUnits.some((unit) => !previousUnits.some((old) => old.unitId === unit.unitId)))) {
+        throw new Error("Scene repair returned no usable replacements");
       }
       const originalUnits = patchOnly && previousUnits
-        ? previousUnits.map((unit) => outputUnits.find((replacement) => replacement.unitId === unit.unitId) ?? unit)
+        ? previousUnits.map((unit) => replacements.find((replacement) => replacement.unitId === unit.unitId) ?? unit)
         : outputUnits;
       if (
         !strings(value, ["draftId", "contentType"]) ||
@@ -369,17 +376,6 @@ export class GenerateSceneDraft {
         )
       )
         throw new Error("Scene unit is too long for focused learning");
-      const normalizedContent = (items: readonly SceneUnitPayload[]) =>
-        items
-          .map((unit) =>
-            unit.textZh.normalize("NFKC").replace(/[\s\p{P}\p{S}]/gu, ""),
-          )
-          .join("");
-      if (
-        attempt === 0 && previousUnits?.length &&
-        normalizedContent(units) === normalizedContent(previousUnits)
-      )
-        throw new Error("Scene regeneration repeated previous content");
       if (
         value.contentType === "ARTICLE"
           ? units.some((unit) => unit.speaker !== null)
@@ -419,13 +415,17 @@ export class GenerateSceneDraft {
         }),
         candidate.units,
       );
-      if (review.decision === "PASS") break;
+      const issues = [...review.issues, ...unconfirmedBookingFacts(candidate.units, confirmedText)];
+      if (issues.length === 0) break;
       if (attempt === 1)
         throw new Error("Scene draft failed factual fidelity review");
       // One bounded corrective attempt; never immediately hammer a supplier.
       await new Promise((resolve) => setTimeout(resolve, 100 + randomInt(151)));
-      candidate = await generateCandidate(1, review.issues, candidate.units);
+      candidate = await generateCandidate(1, issues, candidate.units);
     }
+    const previous = command.previousUnits;
+    if (previous?.length && sceneContentKey(candidate.units) === sceneContentKey(previous))
+      throw new Error("Scene regeneration repeated previous content");
     return {
       draftId: `scene-${createHash("sha256")
         .update(JSON.stringify([command.accountId, command.commandId]))
@@ -447,6 +447,27 @@ type SceneFidelityIssue = Readonly<{
     | "CONTRADICTION";
   explanationZh: string;
 }>;
+
+// A template can provide a conversation topic, but it cannot supply a surname or a booking fact.
+const unconfirmedBookingFacts = (
+  units: readonly SceneUnitPayload[],
+  confirmedText: string,
+): SceneFidelityIssue[] => units.flatMap((unit) => {
+  const claims = [
+    ...[...unit.textZh.matchAll(/(?:我姓|本人姓)([\p{Script=Han}]{1,2})(?=[，。！、；,.!;\s]|$)/gu)].map((match) => `姓${match[1]}`),
+    ...[...unit.textZh.matchAll(/(?:姓名是|我叫|本人叫)[“"「]?([\p{Script=Han}]{2,5})[”"」]?(?=[，。！、；,.!;\s]|$)/gu)]
+      .map((match) => match[1]!)
+      .filter((claim) => !/^(什么|谁|本人|我本人|本人姓名|我的名字|我的姓名|你的名字|您的名字)$/u.test(claim)),
+    ...[...unit.textZh.matchAll(/(?:我|已经|有的[，,])[^。！？!?；;]{0,12}(?:预订|订了)(?:了|一间|两间|一套|两套|的)*(大床|双床|单人|双人|标准|豪华|家庭)(?:房|间)/gu)].map((match) => match[1]!),
+  ];
+  const unsupported = [...new Set(claims.filter((claim) => !confirmedText.includes(claim)))];
+  return unsupported.length ? [{
+    unitId: unit.unitId,
+    reason: "UNSUPPORTED_FACT",
+    explanationZh: `用户未确认“${unsupported.join("、")}”。保留沟通目的，改为请对方核对信息，省略未经确认的具体内容。`,
+  }] : [];
+});
+
 const parseSceneFidelityReview = (
   raw: unknown,
   units: readonly SceneUnitPayload[],
@@ -561,6 +582,21 @@ const normalizeQuestion = (value: string) =>
     .normalize("NFKC")
     .replace(/[\s\p{P}\p{S}]/gu, "")
     .toLocaleLowerCase();
+const sceneContentKey = (units: readonly SceneUnitPayload[]) =>
+  units.map((unit) => unit.textZh.normalize("NFKC").replace(/[\s\p{P}\p{S}]/gu, "")).join("");
+
+const uniqueSceneOptions = (options: readonly string[]): string[] => {
+  const seen = new Set<string>();
+  const cleaned: string[] = [];
+  for (const option of options) {
+    const key = normalizeQuestion(option);
+    if (!key || seen.has(key) || /^(其他(请说明|请填写)?|自行填写|自定义|自己填写)$/u.test(key)) continue;
+    seen.add(key);
+    cleaned.push(option.trim());
+    if (cleaned.length === 5) break;
+  }
+  return cleaned;
+};
 const recoverableSceneFacts = (
   command: Readonly<{
     start: SceneStartPayload;

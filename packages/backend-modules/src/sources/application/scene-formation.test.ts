@@ -82,6 +82,31 @@ describe("scene draft factual gate", () => {
     expect(execute.mock.calls[0]?.[1]).toMatchObject({ minimumOutputUnits: 2, generationMode: "INITIAL", practiceGoal: goal });
     expect(execute.mock.calls[1]?.[1]).toMatchObject({ practiceGoal: goal });
   });
+  it.each([
+    ["有的，我姓李，预订了一间大床房。", "姓李、大床"],
+    ["有的，我预订了房间，姓名是李明。", "李明"],
+  ])("repairs invented booking details even when the model reviewer accepts %s", async (textZh, unsupported) => {
+    const other = { unitId: "a", speaker: "OTHER" as const, textZh: "您好，请问您有预订吗？", factReferences: [] };
+    const invented = { unitId: "b", speaker: "USER" as const, textZh, factReferences: [] };
+    const corrected = { ...invented, textZh: "有的，麻烦您帮我核对一下预订信息。" };
+    const execute = vi.fn()
+      .mockResolvedValueOnce({ draftId: "draft", contentType: "DIALOGUE", units: [other, invented] })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] })
+      .mockResolvedValueOnce({ draftId: "patch", contentType: "DIALOGUE", units: [corrected] })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
+    await expect(new GenerateSceneDraft({ execute }).execute({
+      ...command,
+      draftVersion: 2,
+      previousUnits: [other, invented],
+      session: { ...command.session,
+        start: { kind: "TEMPLATE", templateId: "travel", titleZh: "旅行、交通与住宿", scopeZh: "旅行" },
+        answers: [{ questionId: "check-in", answerZh: "办理入住，核对预订信息" }],
+      },
+    })).resolves.toMatchObject({ units: [other, corrected] });
+    expect(execute.mock.calls[2]?.[1].fidelityIssues).toEqual([
+      { unitId: "b", reason: "UNSUPPORTED_FACT", explanationZh: expect.stringContaining(unsupported) },
+    ]);
+  });
 
   it("rejects references outside the current scene", async () => {
     const execute = vi.fn().mockResolvedValue({ draftId: "model", contentType: "DIALOGUE",
@@ -106,16 +131,18 @@ describe("scene draft factual gate", () => {
       .rejects.toThrow("Invalid scene generation output");
   });
 
-  it("rejects a v2 correction that also rewrites an unaffected turn", async () => {
+  it("keeps the original unaffected turn when v2 correction also returns rewritten context", async () => {
+    const corrected = { ...units[2], textZh: "我完成后同步项目组。" };
     const execute = vi.fn()
       .mockResolvedValueOnce({ draftId: "model", contentType: "DIALOGUE", units })
       .mockResolvedValueOnce(fail)
       .mockResolvedValueOnce({ draftId: "repair", contentType: "DIALOGUE", units: [
         { ...units[0], textZh: "我星期五完成报告。" }, units[1],
-        { ...units[2], textZh: "我完成后同步项目组。" },
-      ] });
+        corrected,
+      ] })
+      .mockResolvedValueOnce({ decision: "PASS", issues: [] });
     await expect(new GenerateSceneDraft({ execute }).execute({ ...command, draftVersion: 2 }))
-      .rejects.toThrow("Scene repair changed unaffected units");
+      .resolves.toMatchObject({ units: [units[0], units[1], corrected] });
     expect(execute.mock.calls[2]?.[1]).toMatchObject({ generationMode: "FACT_REPAIR" });
   });
 
@@ -792,6 +819,19 @@ describe("scene formation application boundary", () => {
       expect(serialized).not.toContain("来自旧对话");
       expect(serialized).not.toContain("secret-source");
     }
+  });
+
+  it("omits duplicate choices and model-supplied custom input", async () => {
+    const app = new GetNextSceneQuestion({ execute: async () => ({
+      action: "ASK", questionId: "goal", questionZh: "你想练哪种表达？",
+      options: [" 办理入住 ", "办理入住！", "", "其他（请填写）", "请前台换房", "问退房时间"],
+    }) });
+    await expect(app.execute({
+      accountId: "a", commandId: "c", operationId: "o",
+      start: { kind: "TEMPLATE", templateId: "hotel", titleZh: "住酒店", scopeZh: "住宿" },
+      contentType: "DIALOGUE", confirmedAnswers: [],
+      remainingQuestions: 10, remainingContentBudget: 10, stepIndex: 0,
+    })).resolves.toMatchObject({ options: ["办理入住", "请前台换房", "问退房时间"] });
   });
 
   it("rejects an exactly repeated question", async () => {

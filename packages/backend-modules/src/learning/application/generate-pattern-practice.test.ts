@@ -24,6 +24,29 @@ describe("GeneratePatternPractice", () => {
       "Invalid pattern practice output",
     );
   });
+
+  it("rejects a prompt that supplies the complete response", async () => {
+    const example = ready.examples[0]!;
+    const app = new GeneratePatternPractice({
+      generate: async () => ({
+        ...ready, examples: [{ ...example, aiPromptEn: `Please say: ${example.targetResponseEn}` }],
+      }),
+    });
+    await expect(app.execute(command)).rejects.toThrow("Invalid pattern practice output");
+  });
+
+  it("rejects different prompts that train the exact same response", async () => {
+    const example = ready.examples[0]!;
+    const app = new GeneratePatternPractice({
+      generate: async () => ({
+        ...ready, examples: ready.examples.concat({
+          ...example, exampleId: "e2", aiPromptEn: "Tell me how you traveled to school.",
+          targetResponseEn: "I used to walk to school!",
+        }),
+      }),
+    });
+    await expect(app.execute(command)).rejects.toThrow("Invalid pattern practice output");
+  });
 });
 
 const ready = {
